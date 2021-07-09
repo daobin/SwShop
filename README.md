@@ -1,2 +1,2 @@
 # SwShop
-SAAS电商平台，基于Swoole的高性能PHP协程框架
+基于 PHP/Swoole 的高性能电商平台
