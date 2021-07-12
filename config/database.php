@@ -6,9 +6,9 @@ return [
         'master' => [
             'host' => '192.168.16.66',
             'port' => 3306,
-            'username' => 'root',
-            'password' => 'root',
-            'database' => 'sw_shop',
+            'username' => 'xxxxxx',
+            'password' => 'xxxxxx',
+            'database' => 'xxxxxx',
             'charset' => 'utf8mb4',
             'table_prefix' => 'hd_',
         ],
@@ -16,6 +16,6 @@ return [
     'redis' => [
         'host' => '127.0.0.1',
         'port' => 16379,
-        'auth' => '255.133'
+        'auth' => 'xxxxxx'
     ],
 ];
