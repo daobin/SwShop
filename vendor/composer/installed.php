@@ -10,6 +10,15 @@
         'dev' => true,
     ),
     'versions' => array(
+        'aliyuncs/oss-sdk-php' => array(
+            'pretty_version' => 'v2.4.2',
+            'version' => '2.4.2.0',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../aliyuncs/oss-sdk-php',
+            'aliases' => array(),
+            'reference' => '0c9d902c33847c07efc66c4cdf823deaea8fc2b6',
+            'dev_requirement' => false,
+        ),
         'daobin/swshop' => array(
             'pretty_version' => '1.0.0+no-version-set',
             'version' => '1.0.0.0',

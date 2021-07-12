@@ -12,6 +12,10 @@ class ComposerStaticInitac96ecb4cab02b367f677877656be9b5
             'Psr\\Log\\' => 8,
             'Psr\\Container\\' => 14,
         ),
+        'O' => 
+        array (
+            'OSS\\' => 4,
+        ),
         'A' => 
         array (
             'App\\' => 4,
@@ -26,6 +30,10 @@ class ComposerStaticInitac96ecb4cab02b367f677877656be9b5
         'Psr\\Container\\' => 
         array (
             0 => __DIR__ . '/..' . '/psr/container/src',
+        ),
+        'OSS\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/aliyuncs/oss-sdk-php/src/OSS',
         ),
         'App\\' => 
         array (

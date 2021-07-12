@@ -33,9 +33,6 @@ class DbHelper
         self::$sqlBuild = null;
     }
 
-    /**
-     * @return DbHelper
-     */
     public static function connection()
     {
         if (empty(self::$db)) {
@@ -50,7 +47,13 @@ class DbHelper
             self::$tablePrefix = $config['table_prefix'];
 
             try {
-                self::$db = new \PDO($dns, $config['username'], $config['password']);
+                $options = [
+                    \PDO::ATTR_EMULATE_PREPARES => false,
+                    \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+                    \PDO::ATTR_CASE => \PDO::CASE_NATURAL,
+//                    \PDO::ATTR_ORACLE_NULLS => \PDO::NULL_NATURAL,
+                ];
+                self::$db = new \PDO($dns, $config['username'], $config['password'], $options);
             } catch (\PDOException $e) {
                 throw new \PDOException('SQL: Connection Error');
             }
@@ -63,10 +66,9 @@ class DbHelper
         return self::$instance;
     }
 
-    public function table($table)
+    public function table(string $table)
     {
         self::connection();
-
         self::$sqlBuild['table'] = '`' . trim(self::$tablePrefix) . trim($table) . '`';
         return $this;
     }
@@ -74,9 +76,8 @@ class DbHelper
     public function fields(array $fields)
     {
         self::connection();
-
         if (empty($fields)) {
-            return self::$instance;
+            return $this;
         }
 
         $selectFields = '`' . implode('`, `', $fields) . '`';
@@ -89,7 +90,6 @@ class DbHelper
     public function where(array $where)
     {
         self::connection();
-
         self::$sqlBuild['where'] ??= [];
         self::$sqlBuild['where'] = array_merge(self::$sqlBuild['where'], $where);
         return $this;
@@ -98,7 +98,6 @@ class DbHelper
     public function whereOr(array $where)
     {
         self::connection();
-
         self::$sqlBuild['where_or'] ??= [];
         self::$sqlBuild['where_or'] = array_merge(self::$sqlBuild['where_or'], $where);
         return $this;
@@ -124,13 +123,13 @@ class DbHelper
     public function limit(int $offset = 0, int $count = 10)
     {
         self::connection();
-
         self::$sqlBuild['limit'] = $offset . ', ' . $count;
         return $this;
     }
 
     public function page(int $page = 1, int $pageSize = 10)
     {
+        self::connection();
         return $this->limit(($page - 1) * $pageSize, $pageSize);
     }
 
@@ -158,17 +157,26 @@ class DbHelper
 
     public function update(array $data)
     {
-
+        self::connection();
+        $preData = self::buildSql('update', $data);
+        self::$stmt->execute($preData);
+        return self::$stmt->rowCount();
     }
 
     public function delete()
     {
-
+        self::connection();
+        $preData = self::buildSql('delete');
+        self::$stmt->execute($preData);
+        return self::$stmt->rowCount();
     }
 
-    public function insert()
+    public function insert(array $data)
     {
-
+        self::connection();
+        $preData = self::buildSql('insert', $data);
+        self::$stmt->execute($preData);
+        return self::$stmt->rowCount() > 0 ? self::$db->lastInsertId() : 0;
     }
 
     private static function buildWhere()
@@ -179,8 +187,15 @@ class DbHelper
         if (!empty(self::$sqlBuild['where'])) {
             $where = [];
             foreach (self::$sqlBuild['where'] as $field => $value) {
-                $where[] = '`' . $field . '` = ?';
-                $preData[] = $value;
+                if (is_array($value)) {
+                    $opt = trim(reset($value));
+                    $value = end($value);
+                    $where[] = '`' . $field . '` ' . $opt . ' ?';
+                } else {
+                    $where[] = '`' . $field . '` = ?';
+                }
+
+                $preData[] = trim($value);
             }
             $preSql = implode(' AND ', $where);
         }
@@ -188,8 +203,15 @@ class DbHelper
         if (!empty(self::$sqlBuild['where_or'])) {
             $where = [];
             foreach (self::$sqlBuild['where_or'] as $field => $value) {
-                $where[] = '`' . $field . '` = ?';
-                $preData[] = $value;
+                if (is_array($value)) {
+                    $opt = trim(reset($value));
+                    $value = end($value);
+                    $where[] = '`' . $field . '` ' . $opt . ' ?';
+                } else {
+                    $where[] = '`' . $field . '` = ?';
+                }
+
+                $preData[] = trim($value);
             }
             if ($preSql) {
                 $preSql .= ' AND (' . implode(' OR ', $where) . ')';
@@ -247,13 +269,15 @@ class DbHelper
                 }
 
                 $setSql = '';
-                list($preSql, $preData) = self::buildWhere();
+                $setData = [];
                 foreach ($data as $field => $value) {
                     $setSql .= '`' . $field . '` = ?, ';
-                    $preData[] = $value;
+                    $setData[] = $value;
                 }
                 $setSql = trim($setSql, ', ');
 
+                list($preSql, $preData) = self::buildWhere();
+                $preData = array_merge($setData, $preData);
                 $preSql = 'UPDATE ' . self::$sqlBuild['table'] . ' SET ' . $setSql . ' WHERE ' . $preSql;
                 break;
             case 'DELETE':
@@ -267,7 +291,7 @@ class DbHelper
                 list($preSql, $preData) = self::buildWhere();
                 $preSql = 'DELETE FROM ' . self::$sqlBuild['table'] . ' WHERE ' . $preSql;
                 break;
-            case 'INSERT INTO':
+            case 'INSERT':
                 if (!isset($data['shop_id'])) {
                     throw new \PDOException('SQL: Data Invalid');
                 }
@@ -278,12 +302,16 @@ class DbHelper
                     $preData[] = $value;
                 }
                 $preSql = trim($preSql, ', ') . ') VALUES(' . str_repeat('?, ', count($preData));
-                $preSql = trim($preSql, '?, ') . ')';
+                $preSql = trim($preSql, ', ') . ')';
                 break;
             default:
                 throw new \PDOException('SQL: Build Type Error');
         }
 
+//        print_r($preSql);
+//        print_r(PHP_EOL);
+//        print_r($preData);
+//        print_r(PHP_EOL);
         self::$stmt = self::$db->prepare($preSql);
         return $preData;
     }

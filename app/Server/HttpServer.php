@@ -44,7 +44,7 @@ class HttpServer
         $requestUri = trim($request->server['request_uri'], '/');
 
         // 路由设置
-        [$controller, $action] = explode('/', $requestUri);
+        [$controller, $action] = $requestUri ? explode('/', $requestUri) : ['index', 'index'];
         $controller = empty($controller) ? 'index' : $controller;
         $controller = strtolower($controller);
         $controller = str_replace('_', '', ucwords($controller, '_'));
