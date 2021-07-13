@@ -29,8 +29,11 @@ class DbHelper
 
     public function __destruct()
     {
+        self::$db = null;
         self::$stmt = null;
         self::$sqlBuild = null;
+        self::$tablePrefix = null;
+        self::$instance = null;
     }
 
     public static function connection()
@@ -51,7 +54,6 @@ class DbHelper
                     \PDO::ATTR_EMULATE_PREPARES => false,
                     \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
                     \PDO::ATTR_CASE => \PDO::CASE_NATURAL,
-//                    \PDO::ATTR_ORACLE_NULLS => \PDO::NULL_NATURAL,
                 ];
                 self::$db = new \PDO($dns, $config['username'], $config['password'], $options);
             } catch (\PDOException $e) {
@@ -312,7 +314,18 @@ class DbHelper
 //        print_r(PHP_EOL);
 //        print_r($preData);
 //        print_r(PHP_EOL);
-        self::$stmt = self::$db->prepare($preSql);
+        try{
+            self::$stmt = self::$db->prepare($preSql);
+        }catch (\PDOException $e){
+            // 断连重连机制
+            if(strtoupper($e->getCode()) == 'HY000'){
+                self::$db = null;
+                self::connection();
+                self::$stmt = self::$db->prepare($preSql);
+            }else{
+                throw $e;
+            }
+        }
         return $preData;
     }
 }

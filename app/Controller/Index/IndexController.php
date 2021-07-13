@@ -9,6 +9,6 @@ class IndexController extends Controller
 {
     public function index()
     {
-        return 'Hello Index::index';
+        return '<h1>Hello Index::index</h1>';
     }
 }

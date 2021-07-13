@@ -18,17 +18,18 @@ class HttpServer
     {
         // 加载配置项
         ConfigHelper::initConfig();
-
         // 加载多语言
         LanguageHelper::initLang();
+        // 设置一键协程化 Hook 的函数范围
+        \Co::set(['hook_flags' => SWOOLE_HOOK_TCP]);
 
-        // 加载 HTTP 服务
+        // 设置 HTTP 服务
         $server = new \Swoole\Http\Server($host, $port);
         $server->set([
 //            'daemonize' => true,
-            'open_eof_check' => true,
-            'open_eof_split' => true,
-            'package_eof' => "\r\n",
+            'open_length_check' => true,
+            'worker_num' => swoole_cpu_num() * 2,
+            'enable_coroutine' => true,
             'enable_static_handler' => true,
             'document_root' => ROOT_DIR . 'public',
             'http_index_files' => [
