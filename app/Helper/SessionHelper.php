@@ -23,7 +23,7 @@ class SessionHelper
         $this->request = $request;
         $this->response = $response;
         $this->redis = RedisHelper::openRedis();
-        $this->expire = (int)ConfigHelper::get('database.redis.expire', 1800);
+        $this->expire = (int)ConfigHelper::get('redis.expire', 1800);
     }
 
     public function start($domain)
@@ -37,6 +37,7 @@ class SessionHelper
 
         $expire = time() + $this->expire;
         $this->response->cookie(self::SS_NAME, $this->sid, $expire, '/', $domain, false, true);
+        print_r($this->sid);
         $this->set(self::SS_NAME, $this->sid);
         $this->redis->expire(self::SS_NAME . '_' . $this->sid, $this->expire);
     }

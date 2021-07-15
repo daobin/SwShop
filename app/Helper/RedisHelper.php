@@ -15,6 +15,7 @@ class RedisHelper
      * Redis 客户端
      */
     private static $redis;
+    public static $expire;
 
     /**
      * Redis 服务器开启并检测
@@ -33,7 +34,7 @@ class RedisHelper
         }
 
         try {
-            $redisCfgs = ConfigHelper::get('database.redis');
+            $redisCfgs = ConfigHelper::get('redis');
 
             self::$redis = new \Redis();
             self::$redis->connect($redisCfgs['host'], $redisCfgs['port'], 0.2);

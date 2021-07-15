@@ -11,10 +11,15 @@ namespace App\Helper;
 
 class ConfigHelper
 {
+    private static $initConfigStatus;
     private static $configMaps;
 
     public static function initConfig()
     {
+        if (self::$initConfigStatus) {
+            return;
+        }
+
         $configFiles = glob(ROOT_DIR . 'config/*.php', GLOB_ERR);
         if (empty($configFiles)) {
             return;
@@ -29,6 +34,8 @@ class ConfigHelper
             $configName = strtolower($configName);
             self::$configMaps[$configName] = include $configFile;
         }
+
+        self::$initConfigStatus = true;
     }
 
     public static function get($key, $default = null)
@@ -59,8 +66,54 @@ class ConfigHelper
         return $value;
     }
 
+    public static function getAll()
+    {
+        return self::$configMaps;
+    }
+
     public static function set($key, $value)
     {
         self::$configMaps['sw_shop'][$key] = $value;
+    }
+
+    public static function initConfigFromDb($shopId)
+    {
+        self::initConfig();
+        $groups = self::get('app.init_db_config', []);
+        if (empty($groups)){
+            return;
+        }
+
+        foreach($groups as $group){
+            $configRows = DbHelper::connection()->table('config')
+                ->where(['shop_id' => (int)$shopId, 'config_group' => $group])
+                ->select();
+
+            self::$configMaps[$group] = self::formatConfigFromDb($configRows);
+        }
+    }
+
+    private static function formatConfigFromDb($configRows): array
+    {
+        if (empty($configRows)) {
+            return [];
+        }
+
+        $configList = [];
+        foreach ($configRows as $configRow) {
+            $key = strtolower($configRow['config_key']);
+            $configList[$key] = trim($configRow['config_value']);
+            switch (strtolower($configRow['value_type'])) {
+                case 'int':
+                    $configList[$key] = (int)$configList[$configRow['config_key']];
+                    break;
+                case 'password':
+                    break;
+                case 'radio':
+                    break;
+            }
+        }
+
+        return $configList;
     }
 }

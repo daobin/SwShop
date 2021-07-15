@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Helper\ConfigHelper;
 use App\Helper\DbHelper;
 use App\Helper\LanguageHelper;
 use App\Helper\SessionHelper;
@@ -64,7 +65,11 @@ class Controller
         $redirectStatus = (int)$shopInfo['shop_domain2_redirect_code'];
         if ($domain == $shopInfo['shop_domain2'] && in_array($redirectStatus, [301, 302], true) && !empty($shopInfo['shop_domain'])) {
             $this->response->redirect('http://' . $shopInfo['shop_domain'], $redirectStatus);
+            return;
         }
+
+        // 初始化店铺管理配置
+        ConfigHelper::initConfigFromDb($shopInfo['shop_id']);
 
         // 验证合法开启会话
         $this->session = new SessionHelper($this->request, $this->response);
@@ -76,15 +81,14 @@ class Controller
      */
     private function loginStatusCheck()
     {
-        switch(strtolower($this->request->module)){
+        switch (strtolower($this->request->module)) {
             case 'index':
                 $needLoginPage = [];
-                if(in_array(strtolower($this->request->controller), $needLoginPage)){
+                if (in_array(strtolower($this->request->controller), $needLoginPage)) {
                     $this->response->redirect('/login.html');
                 }
                 break;
             case 'spadmin':
-                $this->session->set('spadmin_login', true);
                 break;
         }
     }
