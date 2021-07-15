@@ -32,14 +32,20 @@ class DbHelper
         self::$db = null;
         self::$stmt = null;
         self::$sqlBuild = null;
-        self::$tablePrefix = null;
         self::$instance = null;
     }
 
-    public static function connection()
+    public static function connection($init = true)
     {
+        if ($init) {
+            self::$stmt = null;
+            self::$sqlBuild = null;
+        }
+
         if (empty(self::$db)) {
             $config = ConfigHelper::get('database.mysql.master');
+            self::$tablePrefix = $config['table_prefix'];
+
             $dns = sprintf(
                 'mysql:host=%s;port=%s;dbname=%s;charset=%s',
                 $config['host'],
@@ -47,7 +53,6 @@ class DbHelper
                 $config['database'],
                 $config['charset']
             );
-            self::$tablePrefix = $config['table_prefix'];
 
             try {
                 $options = [
@@ -70,14 +75,14 @@ class DbHelper
 
     public function table(string $table)
     {
-        self::connection();
+        self::connection(false);
         self::$sqlBuild['table'] = '`' . trim(self::$tablePrefix) . trim($table) . '`';
         return $this;
     }
 
     public function fields(array $fields)
     {
-        self::connection();
+        self::connection(false);
         if (empty($fields)) {
             return $this;
         }
@@ -91,7 +96,7 @@ class DbHelper
 
     public function where(array $where)
     {
-        self::connection();
+        self::connection(false);
         self::$sqlBuild['where'] ??= [];
         self::$sqlBuild['where'] = array_merge(self::$sqlBuild['where'], $where);
         return $this;
@@ -99,7 +104,7 @@ class DbHelper
 
     public function whereOr(array $where)
     {
-        self::connection();
+        self::connection(false);
         self::$sqlBuild['where_or'] ??= [];
         self::$sqlBuild['where_or'] = array_merge(self::$sqlBuild['where_or'], $where);
         return $this;
@@ -107,7 +112,7 @@ class DbHelper
 
     public function orderBy(array $orderBy)
     {
-        self::connection();
+        self::connection(false);
         if (empty($orderBy)) {
             return $this;
         }
@@ -124,20 +129,19 @@ class DbHelper
 
     public function limit(int $offset = 0, int $count = 10)
     {
-        self::connection();
+        self::connection(false);
         self::$sqlBuild['limit'] = $offset . ', ' . $count;
         return $this;
     }
 
     public function page(int $page = 1, int $pageSize = 10)
     {
-        self::connection();
         return $this->limit(($page - 1) * $pageSize, $pageSize);
     }
 
     public function select()
     {
-        self::connection();
+        self::connection(false);
         if (empty(self::$sqlBuild['limit'])) {
             self::limit();
         }
@@ -149,7 +153,7 @@ class DbHelper
 
     public function find()
     {
-        self::connection();
+        self::connection(false);
         self::limit(0, 1);
 
         $preData = self::buildSql('select');
@@ -159,7 +163,7 @@ class DbHelper
 
     public function update(array $data)
     {
-        self::connection();
+        self::connection(false);
         $preData = self::buildSql('update', $data);
         self::$stmt->execute($preData);
         return self::$stmt->rowCount();
@@ -167,7 +171,7 @@ class DbHelper
 
     public function delete()
     {
-        self::connection();
+        self::connection(false);
         $preData = self::buildSql('delete');
         self::$stmt->execute($preData);
         return self::$stmt->rowCount();
@@ -175,7 +179,7 @@ class DbHelper
 
     public function insert(array $data)
     {
-        self::connection();
+        self::connection(false);
         $preData = self::buildSql('insert', $data);
         self::$stmt->execute($preData);
         return self::$stmt->rowCount() > 0 ? self::$db->lastInsertId() : 0;
@@ -197,7 +201,7 @@ class DbHelper
                     $where[] = '`' . $field . '` = ?';
                 }
 
-                $preData[] = trim($value);
+                $preData[] = $value;
             }
             $preSql = implode(' AND ', $where);
         }
@@ -213,7 +217,7 @@ class DbHelper
                     $where[] = '`' . $field . '` = ?';
                 }
 
-                $preData[] = trim($value);
+                $preData[] = $value;
             }
             if ($preSql) {
                 $preSql .= ' AND (' . implode(' OR ', $where) . ')';
@@ -314,15 +318,15 @@ class DbHelper
 //        print_r(PHP_EOL);
 //        print_r($preData);
 //        print_r(PHP_EOL);
-        try{
+        try {
             self::$stmt = self::$db->prepare($preSql);
-        }catch (\PDOException $e){
+        } catch (\PDOException $e) {
             // 断连重连机制
-            if(strtoupper($e->getCode()) == 'HY000'){
+            if (strtoupper($e->getCode()) == 'HY000') {
                 self::$db = null;
                 self::connection();
                 self::$stmt = self::$db->prepare($preSql);
-            }else{
+            } else {
                 throw $e;
             }
         }

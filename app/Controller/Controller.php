@@ -5,12 +5,17 @@ namespace App\Controller;
 
 use App\Helper\DbHelper;
 use App\Helper\LanguageHelper;
+use App\Helper\SessionHelper;
 use App\Helper\TemplateHelper;
 
 class Controller
 {
     protected $request;
     protected $response;
+    /**
+     * @var SessionHelper
+     */
+    protected $session;
 
     public function __construct($request, $response)
     {
@@ -20,6 +25,9 @@ class Controller
         $this->initCheck();
     }
 
+    /**
+     * 店铺数据初始化及合法性验证
+     */
     private function initCheck()
     {
         if (empty($this->request->header['host'])) {
@@ -35,8 +43,12 @@ class Controller
 
         $domain = $domain[$domainArrCnt - 2] . '.' . $domain[$domainArrCnt - 1];
         $this->shopCheck($domain);
+        $this->loginStatusCheck();
     }
 
+    /**
+     * 店铺合法性验证
+     */
     private function shopCheck($domain)
     {
         $shopInfo = DbHelper::connection()->table('sys_shop')
@@ -52,6 +64,28 @@ class Controller
         $redirectStatus = (int)$shopInfo['shop_domain2_redirect_code'];
         if ($domain == $shopInfo['shop_domain2'] && in_array($redirectStatus, [301, 302], true) && !empty($shopInfo['shop_domain'])) {
             $this->response->redirect('http://' . $shopInfo['shop_domain'], $redirectStatus);
+        }
+
+        // 验证合法开启会话
+        $this->session = new SessionHelper($this->request, $this->response);
+        $this->session->start($domain);
+    }
+
+    /**
+     * 店铺登录状态验证
+     */
+    private function loginStatusCheck()
+    {
+        switch(strtolower($this->request->module)){
+            case 'index':
+                $needLoginPage = [];
+                if(in_array(strtolower($this->request->controller), $needLoginPage)){
+                    $this->response->redirect('/login.html');
+                }
+                break;
+            case 'spadmin':
+                $this->session->set('spadmin_login', true);
+                break;
         }
     }
 

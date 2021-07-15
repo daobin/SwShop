@@ -1,4 +1,8 @@
 <?php
+/**
+ * 店铺购物流程页
+ * User: dao bin
+ */
 declare(strict_types=1);
 
 namespace App\Controller\Index;

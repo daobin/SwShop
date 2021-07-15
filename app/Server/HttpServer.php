@@ -11,6 +11,7 @@ namespace App\Server;
 
 use App\Helper\ConfigHelper;
 use App\Helper\LanguageHelper;
+use App\Helper\RouteHelper;
 
 class HttpServer
 {
@@ -21,7 +22,7 @@ class HttpServer
         // 加载多语言
         LanguageHelper::initLang();
         // 设置一键协程化 Hook 的函数范围
-        \Co::set(['hook_flags' => SWOOLE_HOOK_TCP]);
+        \Co::set(['hook_flags' => SWOOLE_HOOK_ALL]);
 
         // 设置 HTTP 服务
         $server = new \Swoole\Http\Server($host, $port);
@@ -42,27 +43,16 @@ class HttpServer
 
     public static function requestHandler($request, $response)
     {
-        $requestUri = trim($request->server['request_uri'], '/');
-
-        // 路由设置
-        [$controller, $action] = $requestUri ? explode('/', $requestUri) : ['index', 'index'];
-        $controller = empty($controller) ? 'index' : $controller;
-        $controller = strtolower($controller);
-        $controller = str_replace('_', '', ucwords($controller, '_'));
-        $action = empty($action) ? 'index' : $action;
-        $action = strtolower($action);
-
         try {
             $charset = ConfigHelper::get('app.charset', 'UTF-8');
 
-            // 默认加载模块
-            $module = ConfigHelper::get('app.default_module', 'Index');
-            $module = ucfirst(strtolower($module));
-
+            // 路由设置
+            list($module, $controller, $action) = RouteHelper::buildRoute($request);
             $request->module = $module;
             $request->controller = $controller;
             $request->action = $action;
 
+            // 调用路由资源
             $controller = 'App\\Controller\\' . $module . '\\' . $controller . 'Controller';
             $return = (new $controller($request, $response))->$action();
             if (is_array($return) || is_object($return)) {
