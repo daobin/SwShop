@@ -14,6 +14,7 @@ use App\Controller\Controller;
 class AjaxController extends Controller
 {
     public function login(){
+
         return ['status' => 'success'];
     }
 }

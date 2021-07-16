@@ -1,8 +1,9 @@
 <?php
 /**
  * 路由配置文件
- *
  * 目前只支持GET、POST两种请求方式的简单路由，不含路由组等复杂功能
+ * User: dao bin
+ * Date: 2021/7/16
  */
 declare(strict_types=1);
 

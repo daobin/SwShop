@@ -35,6 +35,27 @@ class SessionHelper
             $this->sid = $this->createSessionId();
         }
 
+        // 防止第三方恶意获取客户会话ID
+        $clientId = $this->request->server['remote_addr'] ?? '';
+        $chkSidArr = explode('_', $this->sid);
+        if(count($chkSidArr) != 2 || (int)end($chkSidArr) != ip2long($clientId)){
+            $this->sid = $this->createSessionId();
+        }
+
+        $expire = time() + $this->expire;
+        $this->response->cookie(self::SS_NAME, $this->sid, $expire, '/', $domain, false, true);
+        $this->set(self::SS_NAME, $this->sid);
+        $this->redis->expire(self::SS_NAME . '_' . $this->sid, $this->expire);
+    }
+
+    public function renameKey($domain)
+    {
+        $oldKey = self::SS_NAME . '_' . $this->sid;
+
+        $this->sid = $this->createSessionId();
+        // 避免大量无用会话数据占用内存，直接将旧会话变更为新会话
+        $this->redis->rename($oldKey, self::SS_NAME . '_' . $this->sid);
+
         $expire = time() + $this->expire;
         $this->response->cookie(self::SS_NAME, $this->sid, $expire, '/', $domain, false, true);
         $this->set(self::SS_NAME, $this->sid);
@@ -82,8 +103,11 @@ class SessionHelper
 
     private function createSessionId(): string
     {
+        $clientId = $this->request->server['remote_addr'] ?? '';
+
         $sid = random_bytes(8);
         $sid = bin2hex($sid) . time();
+        $sid .= $clientId ? '_' . ip2long($clientId) : '';
         return strtoupper($sid);
     }
 }
