@@ -62,9 +62,9 @@ class HttpServer
                 $response->header('Content-type', 'text/html; charset=' . $charset);
                 $response->end($return);
             }
-        } catch (\Exception | \Error $e) {
+        } catch (\ErrorException | \Exception | \Error $e) {
             print_r($e->getMessage() . PHP_EOL);
-            print_r($e->getFile() . ' :: ' . $e->getLine() . PHP_EOL);
+            print_r($e->getFile() . ' >> ' . $e->getLine() . PHP_EOL);
 
             $response->end(LanguageHelper::get('hi_friend'));
         }

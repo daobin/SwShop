@@ -103,9 +103,7 @@ class RouteHelper
     {
         $url = '/';
         $rule = array_search(self::$routeList, $modCtrlAct);
-        if (empty($rule) || $rule == '/') {
-            // Nothing
-        } else if (!empty($params)) {
+        if (!empty($rule) && $rule != '/' && !empty($params)) {
             foreach ($params as $param => $value) {
                 if (strpos($rule, '<' . $param . '>') !== false) {
                     $rule = str_replace('<' . $param . '>', $value, $rule);

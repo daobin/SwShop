@@ -14,36 +14,16 @@ use OSS\OssClient;
 
 class OssHelper
 {
-    /**
-     * @var OssClient
-     */
-    private static $ossClient;
-    private static $bucket;
-
-    private static function initOssClient()
-    {
-        if (empty(self::$ossClient)) {
-            try {
-                self::$bucket = ConfigHelper::get('oss.bucket');
-
-                $accessKeyId = ConfigHelper::get('oss.access_key_id');
-                $accessKeySecret = ConfigHelper::get('oss.access_key_secret');
-                $endpoint = ConfigHelper::get('oss.endpoint');
-                self::$ossClient = new OssClient($accessKeyId, $accessKeySecret, $endpoint);
-            } catch (OssException $e) {
-                throw new OssException('OSS Invalid: ' . $e->getMessage());
-            }
-        }
-    }
-
     public static function putObjectForCss($filename, $content)
     {
-        self::initOssClient();
+        $object = 'swshop/static/' . $filename;
+        $ossCfgs = ConfigHelper::get('oss');
+        print_r($object.PHP_EOL);
+        print_r($ossCfgs);
 
         try {
-            $object = 'swshop/static/' . $filename;
-
-            self::$ossClient->putObject(self::$bucket, $object, $content);
+            $ossClient = new OssClient($ossCfgs['access_key_id'], $ossCfgs['access_key_secret'], $ossCfgs['endpoint']);
+            $ossClient->putObject($ossCfgs['bucket'], $object, $content);
         } catch (OssException $e) {
             throw new OssException('OSS Put Invalid: ' . $e->getMessage());
         }
@@ -51,14 +31,14 @@ class OssHelper
 
     public static function putObjectForProductImage($sku, $sort, $imgeFile)
     {
-        self::initOssClient();
-
         try {
             // 原始图片保存在本地，但不对外提供访问
             // 生成缩图上传至 OSS，用以对外提供访问
             $object = 'swshop/cache_image/' . $filename;
+            $ossCfgs = ConfigHelper::get('oss');
 
-            self::$ossClient->putObject(self::$bucket, $object, $content);
+            $ossClient = new OssClient($ossCfgs['access_key_id'], $ossCfgs['access_key_secret'], $ossCfgs['endpoint']);
+            $ossClient->putObject($ossCfgs['bucket'], $object, file_get_contents($imgeFile));
         } catch (OssException $e) {
             throw new OssException('OSS Put Invalid: ' . $e->getMessage());
         }

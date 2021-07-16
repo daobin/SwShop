@@ -105,7 +105,7 @@ class ConfigHelper
             $configList[$key] = trim($configRow['config_value']);
             switch (strtolower($configRow['value_type'])) {
                 case 'int':
-                    $configList[$key] = (int)$configList[$configRow['config_key']];
+                    $configList[$key] = (int)$configList[$key];
                     break;
                 case 'password':
                     break;

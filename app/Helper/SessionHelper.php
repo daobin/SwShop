@@ -37,7 +37,6 @@ class SessionHelper
 
         $expire = time() + $this->expire;
         $this->response->cookie(self::SS_NAME, $this->sid, $expire, '/', $domain, false, true);
-        print_r($this->sid);
         $this->set(self::SS_NAME, $this->sid);
         $this->redis->expire(self::SS_NAME . '_' . $this->sid, $this->expire);
     }

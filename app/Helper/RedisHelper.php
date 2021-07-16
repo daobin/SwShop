@@ -11,37 +11,18 @@ namespace App\Helper;
 
 class RedisHelper
 {
-    /**
-     * Redis 客户端
-     */
     private static $redis;
-    public static $expire;
 
     /**
      * Redis 服务器开启并检测
-     * @return null|\Redis
      */
-    public static function openRedis(): ?\Redis
+    public static function openRedis()
     {
-        if (self::$redis) {
-            try{
-                self::$redis->ping();
-            }catch (\RedisException $e){
-                self::$redis = null;
-                self::openRedis();
-            }
-            return self::$redis;
-        }
+        $redisCfgs = ConfigHelper::get('redis');
 
-        try {
-            $redisCfgs = ConfigHelper::get('redis');
-
-            self::$redis = new \Redis();
-            self::$redis->connect($redisCfgs['host'], $redisCfgs['port'], 0.2);
-            self::$redis->auth($redisCfgs['auth']);
-        } catch (\RedisException $e) {
-            self::$redis = null;
-        }
+        self::$redis = new \Redis();
+        self::$redis->connect($redisCfgs['host'], $redisCfgs['port'], 0.2);
+        self::$redis->auth($redisCfgs['auth']);
 
         return self::$redis;
     }

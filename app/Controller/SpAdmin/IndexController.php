@@ -13,7 +13,12 @@ use App\Controller\Controller;
 
 class IndexController extends Controller
 {
-    public function index(){
-        return 'SP Admin 页';
+    public function index()
+    {
+        return 'SP SpAdmin 页';
+    }
+
+    public function login(){
+        return $this->render();
     }
 }
