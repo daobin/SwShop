@@ -3,8 +3,6 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Helper\ConfigHelper;
-use App\Helper\DbHelper;
 use App\Helper\LanguageHelper;
 use App\Helper\SessionHelper;
 use App\Helper\TemplateHelper;
@@ -31,9 +29,7 @@ class Controller
      */
     private function initCheck()
     {
-        // 开启会话
-        $this->session = new SessionHelper($this->request, $this->response);
-        $this->session->start($this->request->domain);
+        $this->session = SessionHelper::getSession($this->request, $this->response);
 
         $this->loginStatusCheck();
     }
@@ -51,11 +47,12 @@ class Controller
                 }
                 break;
             case 'spadmin':
-                if($this->session->get('spadmin_login_status', 'N') != 'Y' && $this->request->action != 'login'){
+                $loginStatus = $this->session->get('spadmin_login_status', 'N');
+                if ($loginStatus != 'Y' && $this->request->action != 'login') {
                     $this->response->redirect('/spadmin/login.html');
                     return;
                 }
-                if($this->session->get('spadmin_login_status', 'N') == 'Y' && $this->request->action == 'login'){
+                if ($loginStatus == 'Y' && $this->request->action == 'login') {
                     $this->response->redirect('/spadmin');
                     return;
                 }
@@ -74,6 +71,6 @@ class Controller
         print_r(sprintf('Class::Method [%s::%s] Not Found', get_class($this), $name));
 
         $this->response->status(404);
-        return LanguageHelper::get('invalid_access');
+        return LanguageHelper::get('invalid_request');
     }
 }

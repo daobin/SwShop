@@ -18,11 +18,13 @@ class SafeHelper
 
     private $request;
     private $response;
+    private $session;
 
     public function __construct($request, $response)
     {
         $this->request = $request;
         $this->response = $response;
+        $this->session = SessionHelper::getSession($request, $response);
     }
 
     /**
@@ -30,15 +32,14 @@ class SafeHelper
      */
     public function buildCsrfToken($deviceFrom, $operation)
     {
-        $session = new SessionHelper($this->request, $this->response);
         $field = $deviceFrom . $operation;
-        $token = $session->get($field, '');
+        $token = $this->session->get($field, '');
         if (!empty($token)) {
             return $token;
         }
 
         $token = $field . '$' . password_hash(time() . $request->server['request_uri'], PASSWORD_DEFAULT);
-        $session->set($field, $token);
+        $this->session->set($field, $token);
         return $token;
     }
 
@@ -47,13 +48,13 @@ class SafeHelper
      */
     public function chkCsrfToken($token)
     {
-        $field = explode('$', (string)$token);
+        $token = trim((string)$token);
+        $field = empty($token) ? [] : explode('$', $token);
         if (empty($field)) {
             return false;
         }
 
-        $session = new SessionHelper($this->request, $this->response);
-        return $session->get(trim((string)reset($field)), '') == $token;
+        return $this->session->get(trim((string)reset($field)), '') == $token;
     }
 
     /**

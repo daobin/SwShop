@@ -11,6 +11,9 @@ namespace App\Helper;
 
 class RedisHelper
 {
+    /**
+     * @var \Redis
+     */
     private static $redis;
 
     /**
@@ -18,6 +21,15 @@ class RedisHelper
      */
     public static function openRedis()
     {
+        if(self::$redis){
+            try{
+                self::$redis->ping();
+            }catch (\RedisException $e){
+                self::$redis = null;
+                self::openRedis();
+            }
+        }
+
         $redisCfgs = ConfigHelper::get('redis');
 
         self::$redis = new \Redis();

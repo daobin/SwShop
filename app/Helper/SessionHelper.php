@@ -12,21 +12,24 @@ namespace App\Helper;
 class SessionHelper
 {
     const SS_NAME = 'SW_SHOP';
+    private static $instance;
     private $request;
     private $response;
     private $redis;
     private $sid;
     private $expire;
 
-    public function __construct($request, $response)
+    private function __construct($request, $response)
     {
         $this->request = $request;
         $this->response = $response;
         $this->redis = RedisHelper::openRedis();
         $this->expire = (int)ConfigHelper::get('redis.expire', 1800);
+
+        $this->start();
     }
 
-    public function start($domain)
+    private function start()
     {
         $this->sid = $this->parseSessionId();
         if (empty($this->sid)) {
@@ -38,22 +41,32 @@ class SessionHelper
         // 防止第三方恶意获取客户会话ID
         $clientId = $this->request->server['remote_addr'] ?? '';
         $chkSidArr = explode('_', $this->sid);
-        if(count($chkSidArr) != 2 || (int)end($chkSidArr) != ip2long($clientId)){
+        if (count($chkSidArr) != 2 || (int)end($chkSidArr) != ip2long($clientId)) {
             $this->sid = $this->createSessionId();
         }
 
         $expire = time() + $this->expire;
-        $this->response->cookie(self::SS_NAME, $this->sid, $expire, '/', $domain, false, true);
+        $this->response->cookie(self::SS_NAME, $this->sid, $expire, '/', $this->request->domain, false, true);
         $this->set(self::SS_NAME, $this->sid);
         $this->redis->expire(self::SS_NAME . '_' . $this->sid, $this->expire);
+    }
+
+    public static function getSession($request, $response)
+    {
+        if (self::$instance) {
+            return self::$instance;
+        }
+
+        self::$instance = new SessionHelper($request, $response);
+        return self::$instance;
     }
 
     public function renameKey($domain)
     {
         $oldKey = self::SS_NAME . '_' . $this->sid;
 
-        $this->sid = $this->createSessionId();
         // 避免大量无用会话数据占用内存，直接将旧会话变更为新会话
+        $this->sid = $this->createSessionId();
         $this->redis->rename($oldKey, self::SS_NAME . '_' . $this->sid);
 
         $expire = time() + $this->expire;

@@ -12,8 +12,7 @@ namespace App\Helper;
 class RouteHelper
 {
     const URI_SUFFIX = '.html';
-
-    public static $routeList;
+    private static $routeList;
 
     public static function get(string $requestUri, string $modCtrlAct = 'Module.Controller.Action', array $extra = [])
     {
@@ -101,18 +100,35 @@ class RouteHelper
 
     public static function buildUrl(string $modCtrlAct, array $params = [])
     {
-        $url = '/';
-        $rule = array_search(self::$routeList, $modCtrlAct);
-        if (!empty($rule) && $rule != '/' && !empty($params)) {
-            foreach ($params as $param => $value) {
-                if (strpos($rule, '<' . $param . '>') !== false) {
-                    $rule = str_replace('<' . $param . '>', $value, $rule);
-                    unset($params[$param]);
-                }
-            }
-            $url = $rule . self::URI_SUFFIX;
+        $url = '/page-not-found' . self::URI_SUFFIX;
+        if (empty(self::$routeList['get'])) {
+            return $url;
         }
 
+        foreach (self::$routeList['get'] as $uri => $route) {
+            array_pop($route);
+            if ($modCtrlAct == implode('.', $route)) {
+                if (!empty($params)) {
+                    foreach ($params as $param => $value) {
+                        if (strpos($uri, '<' . $param . '>') !== false) {
+                            $uri = str_replace('<' . $param . '>', $value, $uri);
+                            unset($params[$param]);
+                        }
+                    }
+                }
+
+                $url = $uri;
+                if (isset($params['suffix'])) {
+                    $url .= $params['suffix'];
+                    unset($params['suffix']);
+                } else {
+                    $url .= self::URI_SUFFIX;
+                }
+                break;
+            }
+        }
+
+        $url = '/' . $url;
         if (empty($params)) {
             return $url;
         }

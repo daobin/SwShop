@@ -32,6 +32,7 @@ class ConfigHelper
 
             $configName = str_replace('.php', '', basename($configFile));
             $configName = strtolower($configName);
+
             self::$configMaps[$configName] = include $configFile;
         }
 
@@ -80,11 +81,11 @@ class ConfigHelper
     {
         self::initConfig();
         $groups = self::get('app.init_db_config', []);
-        if (empty($groups)){
+        if (empty($groups)) {
             return;
         }
 
-        foreach($groups as $group){
+        foreach ($groups as $group) {
             $configRows = DbHelper::connection()->table('config')
                 ->where(['shop_id' => (int)$shopId, 'config_group' => $group])
                 ->select();

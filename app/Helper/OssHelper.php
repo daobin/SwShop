@@ -18,8 +18,6 @@ class OssHelper
     {
         $object = 'swshop/static/' . $filename;
         $ossCfgs = ConfigHelper::get('oss');
-        print_r($object.PHP_EOL);
-        print_r($ossCfgs);
 
         try {
             $ossClient = new OssClient($ossCfgs['access_key_id'], $ossCfgs['access_key_secret'], $ossCfgs['endpoint']);

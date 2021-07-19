@@ -48,21 +48,18 @@ class HttpServer
         $charset = ConfigHelper::get('app.charset', 'UTF-8');
 
         // 判断是否为异步请求
-        $request->ajax = false;
-        if (isset($request->header['x-requested-with']) && strtoupper($request->header['x-requested-with']) == 'XMLHTTPREQUEST') {
-            $request->ajax = true;
-        }
+        $request->ajax = isset($request->header['x-requested-with']) && strtoupper($request->header['x-requested-with']) == 'XMLHTTPREQUEST';
 
         try {
             if (empty($request->header['host'])) {
-                throw new \Exception('Request Invalid');
+                throw new \Exception(LanguageHelper::get('invalid_request'));
             }
 
             $host = trim($request->header['host']);
             $domain = explode('.', $host);
             $domainArrCnt = count($domain);
             if ($domainArrCnt < 2) {
-                throw new \Exception('Request Invalid');
+                throw new \Exception(LanguageHelper::get('invalid_request'));
             }
 
             // 店铺网站合法性验证
@@ -73,7 +70,7 @@ class HttpServer
                 ->orderBy(['shop_id' => 'desc'])
                 ->find();
             if (empty($shopInfo) || (int)$shopInfo['shop_status'] !== 1) {
-                throw new \Exception('Website Invalid');
+                throw new \Exception(LanguageHelper::get('invalid_website'));
             }
 
             // 店铺多域名情况的跳转处理
@@ -85,9 +82,10 @@ class HttpServer
 
             // 初始化店铺管理配置
             ConfigHelper::initConfigFromDb($shopInfo['shop_id']);
+            $request->shop_id = $shopInfo['shop_id'];
             $request->domain = $domain;
 
-            // POST 提交数据的 CSRF 安全防护
+            // POST 提交数据的 CSRF 安全防护（基于 Redis）
             $reqMethod = trim($request->server['request_method']);
             $reqMethod = strtoupper($reqMethod);
             if ($reqMethod == 'POST') {
@@ -95,10 +93,10 @@ class HttpServer
                 if (!isset($request->post['hash_tk']) || !($safeHelper->chkCsrfToken($request->post['hash_tk']))) {
                     if ($request->ajax) {
                         $response->header('Content-type', 'application/json; charset=' . $charset);
-                        $response->end(json_encode(['status' => 'fail', 'msg' => LanguageHelper::get('hi_friend')]));
+                        $response->end(json_encode(['status' => 'fail', 'msg' => LanguageHelper::get('invalid_request')]));
                     } else {
                         $response->header('Content-type', 'text/html; charset=' . $charset);
-                        $response->end(LanguageHelper::get('hi_friend'));
+                        $response->end(LanguageHelper::get('invalid_request'));
                     }
 
                     return;
@@ -121,16 +119,16 @@ class HttpServer
                 $response->header('Content-type', 'text/html; charset=' . $charset);
                 $response->end($return);
             }
-        } catch (\ErrorException | \Exception | \Error $e) {
+        } catch (\Throwable $e) {
             print_r($e->getMessage() . PHP_EOL);
             print_r($e->getFile() . ' >> ' . $e->getLine() . PHP_EOL);
 
             if ($request->ajax) {
                 $response->header('Content-type', 'application/json; charset=' . $charset);
-                $response->end(json_encode(['status' => 'fail', 'msg' => LanguageHelper::get('hi_friend')]));
+                $response->end(json_encode(['status' => 'fail', 'msg' => LanguageHelper::get('invalid_request')]));
             } else {
                 $response->header('Content-type', 'text/html; charset=' . $charset);
-                $response->end(LanguageHelper::get('hi_friend'));
+                $response->end(LanguageHelper::get('invalid_request'));
             }
         }
     }

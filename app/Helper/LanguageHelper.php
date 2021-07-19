@@ -31,22 +31,22 @@ class LanguageHelper
         }
     }
 
-    public static function get($key){
+    public static function get($code){
         $lang = ConfigHelper::get('app.lang');
         $lang = strtolower($lang);
-        if(isset(self::$langMaps[$lang][$key])){
-            return self::$langMaps[$lang][$key];
+        if(isset(self::$langMaps[$lang][$code])){
+            return self::$langMaps[$lang][$code];
         }
 
         if($lang === 'en'){
-            return '';
+            return $code;
         }
 
         $lang = 'en';
-        if(isset(self::$langMaps[$lang][$key])){
-            return self::$langMaps[$lang][$key];
+        if(isset(self::$langMaps[$lang][$code])){
+            return self::$langMaps[$lang][$code];
         }
 
-        return '';
+        return $code;
     }
 }

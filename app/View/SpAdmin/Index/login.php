@@ -51,18 +51,18 @@
     <div class="layui-form-item margin-top30">
         <div class="layui-form-inline">
             <i class="layui-icon layui-icon-username"></i>
-            <input class="layui-input" type="text" maxlength="16" placeholder="请输入登录账号" name="account"
+            <input class="layui-input" type="text" maxlength="16" placeholder="<?php echo xss_text('enter_account', true); ?>" name="account"
                    lay-verify="account" lay-verType="alert"/>
         </div>
     </div>
     <div class="layui-form-item">
         <i class="layui-icon layui-icon-password"></i>
-        <input class="layui-input" type="password" maxlength="32" placeholder="请输入登录密码" name="password"
+        <input class="layui-input" type="password" maxlength="32" placeholder="<?php echo xss_text('enter_password', true); ?>" name="password"
                lay-verify="password" lay-verType="alert"/>
     </div>
     <div class="layui-form-item margin-top30">
         <input type="hidden" name="hash_tk" value="<?php echo $csrf_token; ?>"/>
-        <input class="layui-btn" type="submit" lay-submit lay-filter="login" value="登录"/>
+        <input class="layui-btn" type="submit" lay-submit lay-filter="login" value="<?php echo xss_text('login', true); ?>"/>
     </div>
 </form>
 <script>
@@ -75,19 +75,19 @@
                 account: function(val){
                     val = $.trim(val);
                     if(val == ''){
-                        return '请输入登录账号';
+                        return '<?php echo xss_text('enter_account', true); ?>';
                     }
                     if(val.length > 16){
-                        return '请输入有效的登录账号';
+                        return '<?php echo xss_text('enter_valid_account_password', true); ?>';
                     }
                 },
                 password: function(val){
                     val = $.trim(val);
                     if(val == ''){
-                        return '请输入登录密码';
+                        return '<?php echo xss_text('enter_password', true); ?>';
                     }
                     if(val.length > 32){
-                        return '请输入有效的登录密码';
+                        return '<?php echo xss_text('enter_valid_account_password', true); ?>';
                     }
                 }
             });
@@ -99,7 +99,7 @@
                     data: formObj.field,
                     success: function (res) {
                         if(res.msg != undefined && res.msg != ''){
-                            layer.msg(res.msg);
+                            layer.alert(res.msg);
                         }
 
                         if(res.status == 'success' && res.url != undefined && res.url != ''){
@@ -107,7 +107,7 @@
                         }
                     },
                     error: function () {
-                        layer.msg('未知错误，请稍候刷新页面重试！');
+                        layer.alert('<?php echo xss_text('unknown_refresh_try_again', true); ?>');
                     }
                 });
                 return false;

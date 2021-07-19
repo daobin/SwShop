@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace App\Controller\SpAdmin;
 
 use App\Controller\Controller;
+use App\Helper\RouteHelper;
 use App\Helper\SafeHelper;
 
 class IndexController extends Controller
@@ -19,7 +20,8 @@ class IndexController extends Controller
         return 'SP SpAdmin 页';
     }
 
-    public function login(){
+    public function login()
+    {
         $safeHelper = new SafeHelper($this->request, $this->response);
         return $this->render(['csrf_token' => $safeHelper->buildCsrfToken('BG', 'login')]);
     }

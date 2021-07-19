@@ -12,7 +12,7 @@ class Widget
     {
         print_r(sprintf('Class::Method [%s::%s] Not Found', get_class($this), $name));
 
-        return LanguageHelper::get('invalid_access');
+        return LanguageHelper::get('invalid_request');
     }
 
     public function render($template, $data = [])

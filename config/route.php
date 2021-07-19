@@ -23,6 +23,7 @@ RouteHelper::get('/<prod_name>-p<prod_id>', 'Index.Product.detail', [
     'prod_id' => '\d+',
 ]);
 RouteHelper::get('/product/category', 'Index.Product.category');
+RouteHelper::get('/page-not-found', 'Index.Index.pageNotFound');
 
 // 店铺管理路由配置
 RouteHelper::get('/spadmin', 'SpAdmin.Index.index');
