@@ -30,7 +30,9 @@ class AjaxController extends Controller
             return ['status' => 'fail', 'msg' => LanguageHelper::get('enter_valid_account_password')];
         }
 
+        $this->session->renameKey($this->request->domain);
         $this->session->set('spadmin_login_status', 'Y');
+        $this->session->remove('BGlogin');
         return ['status' => 'success', 'url' => RouteHelper::buildUrl('SpAdmin.Index.index', ['suffix' => ''])];
     }
 }

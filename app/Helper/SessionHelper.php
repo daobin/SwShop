@@ -12,18 +12,18 @@ namespace App\Helper;
 class SessionHelper
 {
     const SS_NAME = 'SW_SHOP';
-    private static $instance;
+
     private $request;
     private $response;
     private $redis;
     private $sid;
     private $expire;
 
-    private function __construct($request, $response)
+    public function __construct($request, $response)
     {
         $this->request = $request;
         $this->response = $response;
-        $this->redis = RedisHelper::openRedis();
+        $this->redis = RedisHelper::openRedis($request->shop_id);
         $this->expire = (int)ConfigHelper::get('redis.expire', 1800);
 
         $this->start();
@@ -31,7 +31,10 @@ class SessionHelper
 
     private function start()
     {
-        $this->sid = $this->parseSessionId();
+        $this->sid = '';
+        if (isset($this->request->cookie[self::SS_NAME])) {
+            $this->sid = (string)$this->request->cookie[self::SS_NAME];
+        }
         if (empty($this->sid)) {
             $this->sid = $this->createSessionId();
         } else if (!($this->redis->exists(self::SS_NAME . '_' . $this->sid))) {
@@ -39,26 +42,19 @@ class SessionHelper
         }
 
         // 防止第三方恶意获取客户会话ID
-        $clientId = $this->request->server['remote_addr'] ?? '';
+        $clientIp = $this->request->server['remote_addr'] ?? '';
         $chkSidArr = explode('_', $this->sid);
-        if (count($chkSidArr) != 2 || (int)end($chkSidArr) != ip2long($clientId)) {
+        if (count($chkSidArr) != 2 || (int)end($chkSidArr) != ip2long($clientIp)) {
             $this->sid = $this->createSessionId();
         }
 
-        $expire = time() + $this->expire;
-        $this->response->cookie(self::SS_NAME, $this->sid, $expire, '/', $this->request->domain, false, true);
+        // 避免重复获取同一请求会话前后不一致的问题
+        $this->request->cookie[self::SS_NAME] = $this->sid;
+
+        // 更新响应会话
+        $this->response->cookie(self::SS_NAME, $this->sid, time() + $this->expire, '/', $this->request->domain, false, true);
         $this->set(self::SS_NAME, $this->sid);
         $this->redis->expire(self::SS_NAME . '_' . $this->sid, $this->expire);
-    }
-
-    public static function getSession($request, $response)
-    {
-        if (self::$instance) {
-            return self::$instance;
-        }
-
-        self::$instance = new SessionHelper($request, $response);
-        return self::$instance;
     }
 
     public function renameKey($domain)
@@ -69,8 +65,11 @@ class SessionHelper
         $this->sid = $this->createSessionId();
         $this->redis->rename($oldKey, self::SS_NAME . '_' . $this->sid);
 
-        $expire = time() + $this->expire;
-        $this->response->cookie(self::SS_NAME, $this->sid, $expire, '/', $domain, false, true);
+        // 避免重复获取同一请求会话前后不一致的问题
+        $this->request->cookie[self::SS_NAME] = $this->sid;
+
+        // 更新响应会话
+        $this->response->cookie(self::SS_NAME, $this->sid, time() + $this->expire, '/', $domain, false, true);
         $this->set(self::SS_NAME, $this->sid);
         $this->redis->expire(self::SS_NAME . '_' . $this->sid, $this->expire);
     }
@@ -105,22 +104,13 @@ class SessionHelper
         $this->redis->del(self::SS_NAME . '_' . $this->sid);
     }
 
-    private function parseSessionId(): ?string
-    {
-        if (isset($this->request->cookie[self::SS_NAME])) {
-            return (string)$this->request->cookie[self::SS_NAME];
-        }
-
-        return null;
-    }
-
     private function createSessionId(): string
     {
-        $clientId = $this->request->server['remote_addr'] ?? '';
+        $clientIp = $this->request->server['remote_addr'] ?? '';
 
         $sid = random_bytes(8);
         $sid = bin2hex($sid) . time();
-        $sid .= $clientId ? '_' . ip2long($clientId) : '';
+        $sid .= $clientIp ? '_' . ip2long($clientIp) : '';
         return strtoupper($sid);
     }
 }

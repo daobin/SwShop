@@ -24,7 +24,7 @@ class SafeHelper
     {
         $this->request = $request;
         $this->response = $response;
-        $this->session = SessionHelper::getSession($request, $response);
+        $this->session = new SessionHelper($request, $response);
     }
 
     /**
@@ -38,7 +38,7 @@ class SafeHelper
             return $token;
         }
 
-        $token = $field . '$' . password_hash(time() . $request->server['request_uri'], PASSWORD_DEFAULT);
+        $token = $field . '$' . password_hash(time() . $this->request->server['request_uri'], PASSWORD_DEFAULT);
         $this->session->set($field, $token);
         return $token;
     }

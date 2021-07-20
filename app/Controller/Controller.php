@@ -29,7 +29,7 @@ class Controller
      */
     private function initCheck()
     {
-        $this->session = SessionHelper::getSession($this->request, $this->response);
+        $this->session = new SessionHelper($this->request, $this->response);
 
         $this->loginStatusCheck();
     }
