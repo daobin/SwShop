@@ -31,7 +31,8 @@ class TemplateHelper
 
     public static function widget($widget, $action)
     {
-        $widget = ucfirst(strtolower($widget));
+        $widget = ucwords(strtolower($widget), '_');
+        $widget = str_replace('_', '', $widget);
         $widget = 'App\\Widget\\' . $widget . 'Widget';
 
         echo (new $widget())->$action();

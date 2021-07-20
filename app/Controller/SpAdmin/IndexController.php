@@ -17,12 +17,23 @@ class IndexController extends Controller
 {
     public function index()
     {
-        return 'SP SpAdmin 页';
+        return $this->render();
+    }
+
+    public function dashboard()
+    {
+        return $this->render();
     }
 
     public function login()
     {
         $safeHelper = new SafeHelper($this->request, $this->response);
         return $this->render(['csrf_token' => $safeHelper->buildCsrfToken('BG', 'login')]);
+    }
+
+    public function logout()
+    {
+        $this->session->set('spadmin_login_status', 'N');
+        $this->response->redirect('/spadmin/login.html');
     }
 }

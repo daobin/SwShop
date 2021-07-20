@@ -27,14 +27,20 @@ RouteHelper::get('/page-not-found', 'Index.Index.pageNotFound');
 
 // 店铺管理路由配置
 RouteHelper::get('/spadmin', 'SpAdmin.Index.index');
+RouteHelper::get('/spadmin/dashboard', 'SpAdmin.Index.dashboard');
 RouteHelper::get('/spadmin/login', 'SpAdmin.Index.login');
 RouteHelper::post('/spadmin/login', 'SpAdmin.Ajax.login');
+RouteHelper::get('/spadmin/logout', 'SpAdmin.Index.logout');
 RouteHelper::get('/spadmin/config', 'SpAdmin.Config.index');
-RouteHelper::get('/spadmin/categories', 'SpAdmin.Category.index');
+RouteHelper::get('/spadmin/category', 'SpAdmin.Category.index');
 RouteHelper::get('/spadmin/category/<cate_id>', 'SpAdmin.Category.detail', ['cate_id' => '\d+']);
 RouteHelper::post('/spadmin/category/<cate_id>', 'SpAdmin.Ajax.saveCategory', ['cate_id' => '\d+']);
-RouteHelper::get('/spadmin/products', 'SpAdmin.Product.index');
+RouteHelper::get('/spadmin/product', 'SpAdmin.Product.index');
 RouteHelper::get('/spadmin/product/<prod_id>', 'SpAdmin.Product.detail', ['prod_id' => '\d+']);
 RouteHelper::post('/spadmin/product/<prod_id>', 'SpAdmin.Ajax.saveProduct', ['prod_id' => '\d+']);
+RouteHelper::get('/spadmin/customer', 'SpAdmin.Customer.index');
+RouteHelper::get('/spadmin/customer/<customer_id>', 'SpAdmin.Customer.detail', ['customer_id' => '\d+']);
+RouteHelper::get('/spadmin/order', 'SpAdmin.Order.index');
+RouteHelper::get('/spadmin/order/<prod_id>', 'SpAdmin.Order.detail', ['prod_id' => '\d+']);
 
 return [];

@@ -1,0 +1,11 @@
+html, body{width: 100%; margin: 0; padding: 0;}
+a{color: inherit; font-size: inherit !important;}
+a, image, a:active, image:active{border: none !important;}
+
+.hd-color-white{color: #ffffff !important;}
+
+#hd-main{padding-left: 200px;}
+#hd-main .layui-tab{margin: 1px;}
+#hd-main .layui-tab-title{background: #efefef;}
+#hd-main .layui-tab-title>li:first-child>i.layui-tab-close{display: none;}
+#hd-main .layui-tab-title>li.layui-this{background: #ffffff;}
