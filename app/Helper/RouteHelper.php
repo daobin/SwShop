@@ -60,6 +60,7 @@ class RouteHelper
         $requestUri = trim($requestUri, self::URI_SUFFIX);
         $requestUri = trim($requestUri, '/');
         $requestMethod = strtolower($request->server['request_method']);
+
         foreach (['get', 'post'] as $method) {
             if ($method != $requestMethod || !isset(self::$routeList[$method])) {
                 continue;
@@ -71,6 +72,7 @@ class RouteHelper
 
             foreach (self::$routeList[$method] as $rule => $route) {
                 $ruleOrigin = $rule;
+                // 额外参数
                 if (isset($route[3]) && $route[3]) {
                     foreach ($route[3] as $key => $value) {
                         $rule = str_replace('<' . $key . '>', '(' . $value . ')', $rule);
@@ -78,11 +80,10 @@ class RouteHelper
                 }
 
                 // 匹配路由
-                if ($rule && preg_match("/^{$rule}$/", $requestUri, $uriMatches)) {
+                if ($rule && preg_match("#^{$rule}$#", $requestUri, $uriMatches)) {
                     $getParams = [];
                     // 获取路由参数
                     if (preg_match_all('/<([^<>]+)>/', $ruleOrigin, $ruleMatches)) {
-                        array_shift($ruleMatches);
                         foreach ($ruleMatches as $params) {
                             foreach ($params as $idx => $param) {
                                 $getParams[$param] ??= $uriMatches[$idx + 1];

@@ -29,12 +29,12 @@ class TemplateHelper
         return ob_get_clean();
     }
 
-    public static function widget($widget, $action)
+    public static function widget($widget, $action, $params = [])
     {
         $widget = ucwords(strtolower($widget), '_');
         $widget = str_replace('_', '', $widget);
         $widget = 'App\\Widget\\' . $widget . 'Widget';
 
-        echo (new $widget())->$action();
+        echo (new $widget())->$action($params);
     }
 }

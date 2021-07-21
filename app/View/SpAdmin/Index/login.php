@@ -18,6 +18,7 @@
             overflow: hidden;
             background: url("/static/spadmin/login.bg.jpg") center no-repeat;
         }
+
         form {
             width: 268px;
             margin: 288px auto;
@@ -25,22 +26,37 @@
             padding: 10px 30px;
             border-radius: 8px;
         }
-        .layui-form-item{position: relative;}
-        .layui-form-item i.layui-icon{position: absolute; top: 10px; left: 5px;}
+
+        .layui-form-item {
+            position: relative;
+        }
+
+        .layui-form-item i.layui-icon {
+            position: absolute;
+            top: 10px;
+            left: 5px;
+        }
+
         .layui-input {
             border-radius: 6px;
             text-indent: 18px;
         }
-        #logo{display:block; width: 86%; margin: 0 auto;}
-        .margin-top30{margin-top: 30px !important;}
+
+        #logo {
+            display: block;
+            width: 86%;
+            margin: 0 auto;
+        }
+
+        .margin-top30 {
+            margin-top: 30px !important;
+        }
     </style>
 
-    {# HTML5 shim 和 Respond.js 是为了让 IE8 支持 HTML5 元素和媒体查询（media queries）功能 #}
     <!--[if lt IE 9]>
     <script type="text/javascript" src="/static/html5shiv.min.js"></script>
     <script type="text/javascript" src="/static/respond.min.js"></script>
     <![endif]-->
-    <script src="/static/jquery/jquery-3.6.0.min.js"></script>
     <script src="/static/layui/layui.js"></script>
 </head>
 <body>
@@ -51,67 +67,73 @@
     <div class="layui-form-item margin-top30">
         <div class="layui-form-inline">
             <i class="layui-icon layui-icon-username"></i>
-            <input class="layui-input" type="text" maxlength="16" placeholder="<?php echo xss_text('enter_account', true); ?>" name="account"
+            <input class="layui-input" type="text" maxlength="16"
+                   placeholder="<?php echo xss_text('enter_account', true); ?>" name="account"
                    lay-verify="account" lay-verType="alert"/>
         </div>
     </div>
     <div class="layui-form-item">
         <i class="layui-icon layui-icon-password"></i>
-        <input class="layui-input" type="password" maxlength="32" placeholder="<?php echo xss_text('enter_password', true); ?>" name="password"
+        <input class="layui-input" type="password" maxlength="32"
+               placeholder="<?php echo xss_text('enter_password', true); ?>" name="password"
                lay-verify="password" lay-verType="alert"/>
     </div>
     <div class="layui-form-item margin-top30">
         <input type="hidden" name="hash_tk" value="<?php echo $csrf_token; ?>"/>
-        <input class="layui-btn" type="submit" lay-submit lay-filter="login" value="<?php echo xss_text('login', true); ?>"/>
+        <input class="layui-btn" type="submit" lay-submit lay-filter="login"
+               value="<?php echo xss_text('login', true); ?>"/>
     </div>
 </form>
 <script>
-    $(function () {
-        layui.use(['layer', 'form'], function(){
-            let layer = layui.layer;
-            let form = layui.form;
+    window.document.oncontextmenu = function () {
+        return false;
+    };
 
-            form.verify({
-                account: function(val){
-                    val = $.trim(val);
-                    if(val == ''){
-                        return '<?php echo xss_text('enter_account', true); ?>';
+    layui.use(['jquery', 'layer', 'form'], function () {
+        let $ = layui.jquery;
+        let layer = layui.layer;
+        let form = layui.form;
+
+        form.verify({
+            account: function (val) {
+                val = $.trim(val);
+                if (val == '') {
+                    return '<?php echo xss_text('enter_account', true); ?>';
+                }
+                if (val.length > 16) {
+                    return '<?php echo xss_text('enter_valid_account_password', true); ?>';
+                }
+            },
+            password: function (val) {
+                val = $.trim(val);
+                if (val == '') {
+                    return '<?php echo xss_text('enter_password', true); ?>';
+                }
+                if (val.length > 32) {
+                    return '<?php echo xss_text('enter_valid_account_password', true); ?>';
+                }
+            }
+        });
+
+        form.on('submit(login)', function (formObj) {
+            $.ajax({
+                type: 'post',
+                url: window.location.href,
+                data: formObj.field,
+                success: function (res) {
+                    if (res.msg != undefined && res.msg != '') {
+                        layer.alert(res.msg);
                     }
-                    if(val.length > 16){
-                        return '<?php echo xss_text('enter_valid_account_password', true); ?>';
+
+                    if (res.status == 'success' && res.url != undefined && res.url != '') {
+                        window.location.href = res.url;
                     }
                 },
-                password: function(val){
-                    val = $.trim(val);
-                    if(val == ''){
-                        return '<?php echo xss_text('enter_password', true); ?>';
-                    }
-                    if(val.length > 32){
-                        return '<?php echo xss_text('enter_valid_account_password', true); ?>';
-                    }
+                error: function () {
+                    layer.alert('<?php echo xss_text('unknown_refresh_try_again', true); ?>');
                 }
             });
-
-            form.on('submit(login)', function(formObj){
-                $.ajax({
-                    type: 'post',
-                    url: window.location.href,
-                    data: formObj.field,
-                    success: function (res) {
-                        if(res.msg != undefined && res.msg != ''){
-                            layer.alert(res.msg);
-                        }
-
-                        if(res.status == 'success' && res.url != undefined && res.url != ''){
-                            window.location.href = res.url;
-                        }
-                    },
-                    error: function () {
-                        layer.alert('<?php echo xss_text('unknown_refresh_try_again', true); ?>');
-                    }
-                });
-                return false;
-            });
+            return false;
         });
     });
 </script>

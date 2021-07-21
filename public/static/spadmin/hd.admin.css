@@ -1,11 +1,18 @@
-html, body{width: 100%; margin: 0; padding: 0;}
-a{color: inherit; font-size: inherit !important;}
+html, body{width: 100%; height: 100%; margin: 0; padding: 0;}
+a{color: inherit; font-size: inherit !important; cursor: pointer !important;}
 a, image, a:active, image:active{border: none !important;}
 
-.hd-color-white{color: #ffffff !important;}
+.hd-color-white{color: #fff !important;}
+.hd-color-red{color: #f00 !important;}
+.hd-text-right{text-align: right};
 
-#hd-main{padding-left: 200px;}
-#hd-main .layui-tab{margin: 1px;}
+#hd-main .layui-tab{margin: 1px; width: 100%; height: 100%;}
 #hd-main .layui-tab-title{background: #efefef;}
 #hd-main .layui-tab-title>li:first-child>i.layui-tab-close{display: none;}
 #hd-main .layui-tab-title>li.layui-this{background: #ffffff;}
+#hd-main .hd-main-content{position: absolute; top: 60px; bottom: 0; left: 200px; right: 0; overflow: hidden;}
+#hd-main .layui-tab{width: 100%; height: 100%; margin: 0;}
+#hd-main .layui-tab-content{position: absolute; width: 100%; top: 40px; bottom: 0; padding: 0; overflow: hidden;}
+#hd-main .layui-tab-content .layui-tab-item{width: 100%; height: 100%; padding: 10px 0;}
+#hd-main .layui-tab-content iframe{width: 100%; height: 100%; border: none;}
+

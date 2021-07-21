@@ -5,5 +5,5 @@ return [
     'lang' => 'zh',
     'charset' => 'UTF-8',
     'timezone' => 'UTC',
-    'init_db_config' => ['redis', 'oss'],
+    'init_db_config' => ['web_info', 'redis', 'oss'],
 ];

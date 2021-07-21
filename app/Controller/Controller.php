@@ -15,6 +15,7 @@ class Controller
      * @var SessionHelper
      */
     protected $session;
+    protected $spAdminInfo;
 
     public function __construct($request, $response)
     {
@@ -47,12 +48,13 @@ class Controller
                 }
                 break;
             case 'spadmin':
-                $loginStatus = $this->session->get('spadmin_login_status', 'N');
-                if ($loginStatus != 'Y' && $this->request->action != 'login') {
+                $this->spAdminInfo = $this->session->get('sp_admin_info', '');
+                $this->spAdminInfo = $this->spAdminInfo ? json_decode($this->spAdminInfo, true) : [];
+                if (empty($this->spAdminInfo) && !in_array($this->request->action, ['login', 'loginProcess'])) {
                     $this->response->redirect('/spadmin/login.html');
                     return;
                 }
-                if ($loginStatus == 'Y' && $this->request->action == 'login') {
+                if (!empty($this->spAdminInfo) && in_array($this->request->action, ['login', 'loginProcess'])) {
                     $this->response->redirect('/spadmin');
                     return;
                 }

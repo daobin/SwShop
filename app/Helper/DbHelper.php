@@ -148,7 +148,8 @@ class DbHelper
 
         $preData = self::buildSql('select');
         self::$stmt->execute($preData);
-        return self::$stmt->fetchAll(\PDO::FETCH_ASSOC);
+        $result = self::$stmt->fetchAll(\PDO::FETCH_ASSOC);
+        return $this->resetSelectResult($result);
     }
 
     public function find()
@@ -158,7 +159,8 @@ class DbHelper
 
         $preData = self::buildSql('select');
         self::$stmt->execute($preData);
-        return self::$stmt->fetch(\PDO::FETCH_ASSOC);
+        $result = self::$stmt->fetch(\PDO::FETCH_ASSOC);
+        return $this->resetSelectResult($result);
     }
 
     public function update(array $data)
@@ -183,6 +185,36 @@ class DbHelper
         $preData = self::buildSql('insert', $data);
         self::$stmt->execute($preData);
         return self::$stmt->rowCount() > 0 ? self::$db->lastInsertId() : 0;
+    }
+
+    private function resetSelectResult($result){
+        if(empty($result)){
+            return [];
+        }
+
+        if(isset($result[0])){
+            array_walk($result, function(&$item){
+                $lastOperation = [];
+                if(!empty($item['updated_at'])){
+                    $lastOperation[] = date('Y-m-d H:i', $item['updated_at']);
+                }
+                if(!empty($item['updated_by'])){
+                    $lastOperation[] = $item['updated_by'];
+                }
+                $item['last_operation'] = implode('<br/>', $lastOperation);
+            });
+        }else{
+            $lastOperation = [];
+            if(!empty($result['updated_at'])){
+                $lastOperation[] = date('Y-m-d H:i', $result['updated_at']);
+            }
+            if(!empty($result['updated_by'])){
+                $lastOperation[] = $result['updated_by'];
+            }
+            $result['last_operation'] = implode('<br/>', $lastOperation);
+        }
+
+        return $result;
     }
 
     private static function buildWhere()

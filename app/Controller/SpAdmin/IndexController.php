@@ -10,6 +10,8 @@ declare(strict_types=1);
 namespace App\Controller\SpAdmin;
 
 use App\Controller\Controller;
+use App\Helper\DbHelper;
+use App\Helper\LanguageHelper;
 use App\Helper\RouteHelper;
 use App\Helper\SafeHelper;
 
@@ -17,12 +19,18 @@ class IndexController extends Controller
 {
     public function index()
     {
-        return $this->render();
+        $data = [
+            'admin_name' => $this->spAdminInfo['account'] ?? '--'
+        ];
+        return $this->render($data);
     }
 
     public function dashboard()
     {
-        return $this->render();
+        $data = [
+            'admin_name' => $this->spAdminInfo['account'] ?? '--'
+        ];
+        return $this->render($data);
     }
 
     public function login()
@@ -31,9 +39,35 @@ class IndexController extends Controller
         return $this->render(['csrf_token' => $safeHelper->buildCsrfToken('BG', 'login')]);
     }
 
+    public function loginProcess()
+    {
+        $account = $this->request->post['account'] ?? '';
+        $password = $this->request->post['password'] ?? '';
+        if($account == ''){
+            return ['status' => 'fail', 'msg' => LanguageHelper::get('enter_account')];
+        }
+        if($password == ''){
+            return ['status' => 'fail', 'msg' => LanguageHelper::get('enter_password')];
+        }
+
+        $adminInfo = DbHelper::connection()->table('admin')->where(
+            [
+                'shop_id' => $this->request->shop_id,
+                'account' => $account
+            ])->find();
+        if (empty($adminInfo) || !password_verify($password, $adminInfo['password'])) {
+            return ['status' => 'fail', 'msg' => LanguageHelper::get('enter_valid_account_password')];
+        }
+
+        $this->session->renameKey($this->request->domain);
+        $this->session->set('sp_admin_info', json_encode($adminInfo));
+        $this->session->remove('BGlogin');
+        return ['status' => 'success', 'url' => RouteHelper::buildUrl('SpAdmin.Index.index', ['suffix' => ''])];
+    }
+
     public function logout()
     {
-        $this->session->set('spadmin_login_status', 'N');
+        $this->session->clear();
         $this->response->redirect('/spadmin/login.html');
     }
 }
