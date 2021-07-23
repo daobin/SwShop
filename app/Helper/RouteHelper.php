@@ -16,7 +16,7 @@ class RouteHelper
 
     public static function get(string $requestUri, string $modCtrlAct = 'Module.Controller.Action', array $extra = [])
     {
-        $requestUri = trim(strtolower($requestUri), self::URI_SUFFIX);
+        $requestUri = str_ireplace(self::URI_SUFFIX, '', strtolower($requestUri));
         $requestUri = trim($requestUri, '/');
         $modCtrlAct = explode('.', $modCtrlAct);
         $mcaCount = count($modCtrlAct);
@@ -33,7 +33,7 @@ class RouteHelper
 
     public static function post(string $requestUri, string $modCtrlAct = 'Module.Controller.Action', array $extra = [])
     {
-        $requestUri = trim(strtolower($requestUri), self::URI_SUFFIX);
+        $requestUri = str_ireplace(self::URI_SUFFIX, '', strtolower($requestUri));
         $requestUri = trim($requestUri, '/');
         $modCtrlAct = explode('.', $modCtrlAct);
         $mcaCount = count($modCtrlAct);
@@ -57,7 +57,7 @@ class RouteHelper
     public static function buildRoute(&$request)
     {
         $requestUri = preg_replace('/[^\w\d\.\-\/]+/', '', strtolower($request->server['request_uri']));
-        $requestUri = trim($requestUri, self::URI_SUFFIX);
+        $requestUri = str_ireplace(self::URI_SUFFIX, '', $requestUri);
         $requestUri = trim($requestUri, '/');
         $requestMethod = strtolower($request->server['request_method']);
 
@@ -84,10 +84,8 @@ class RouteHelper
                     $getParams = [];
                     // 获取路由参数
                     if (preg_match_all('/<([^<>]+)>/', $ruleOrigin, $ruleMatches)) {
-                        foreach ($ruleMatches as $params) {
-                            foreach ($params as $idx => $param) {
-                                $getParams[$param] ??= $uriMatches[$idx + 1];
-                            }
+                        foreach ($ruleMatches[1] as $idx => $param) {
+                            $getParams[$param] ??= $uriMatches[$idx + 1];
                         }
                     }
                     $request->get = empty($request->get) ? $getParams : array_merge($request->get, $getParams);

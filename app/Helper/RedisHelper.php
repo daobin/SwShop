@@ -9,34 +9,20 @@ declare(strict_types=1);
 
 namespace App\Helper;
 
+use App\Biz\ConfigBiz;
+
 class RedisHelper
 {
     /**
-     * @var \Redis
-     */
-    private static $redis;
-
-    /**
      * Redis 服务器开启并检测
      */
-    public static function openRedis($shopId)
+    public function openRedis($redisHost, $redisPort, $redisAuth, $index)
     {
-        if (self::$redis) {
-            try {
-                self::$redis->ping();
-            } catch (\RedisException $e) {
-                self::$redis = null;
-                self::openRedis();
-            }
-        }
+        $redis = new \Redis();
+        $redis->connect($redisHost, $redisPort, 0.2);
+        $redis->auth($redisAuth);
+        $redis->select($index);
 
-        $redisCfgs = ConfigHelper::get('redis');
-
-        self::$redis = new \Redis();
-        self::$redis->connect($redisCfgs['host'], $redisCfgs['port'], 0.2);
-        self::$redis->auth($redisCfgs['auth']);
-        self::$redis->select($shopId % 10);
-
-        return self::$redis;
+        return $redis;
     }
 }

@@ -11,12 +11,15 @@ namespace App\Helper;
 
 class ConfigHelper
 {
-    private static $initConfigStatus;
     private static $configMaps;
+
+    private function __construct()
+    {
+    }
 
     public static function initConfig()
     {
-        if (self::$initConfigStatus) {
+        if (self::$configMaps) {
             return;
         }
 
@@ -35,24 +38,23 @@ class ConfigHelper
 
             self::$configMaps[$configName] = include $configFile;
         }
-
-        self::$initConfigStatus = true;
     }
 
-    public static function get($key, $default = null)
+    public static function get(string $key, $default = null)
     {
         $key = trim($key, '.');
         if (empty($key)) {
             return $default;
         }
 
-        $value = [];
+        $value = '';
         $keys = explode('.', $key);
         foreach ($keys as $key) {
-            if (empty($value) && (isset(self::$configMaps[$key]) || isset(self::$configMaps['sw_shop'][$key]))) {
+            if (empty($value) && isset(self::$configMaps[$key])) {
                 $value = self::$configMaps[$key];
                 continue;
             }
+
             if (isset($value[$key])) {
                 $value = $value[$key];
                 continue;
@@ -70,51 +72,5 @@ class ConfigHelper
     public static function getAll()
     {
         return self::$configMaps;
-    }
-
-    public static function set($key, $value)
-    {
-        self::$configMaps['sw_shop'][$key] = $value;
-    }
-
-    public static function initConfigFromDb($shopId)
-    {
-        self::initConfig();
-        $groups = self::get('app.init_db_config', []);
-        if (empty($groups)) {
-            return;
-        }
-
-        foreach ($groups as $group) {
-            $configRows = DbHelper::connection()->table('config')
-                ->where(['shop_id' => (int)$shopId, 'config_group' => $group])
-                ->select();
-
-            self::$configMaps[$group] = self::formatConfigFromDb($configRows);
-        }
-    }
-
-    private static function formatConfigFromDb($configRows): array
-    {
-        if (empty($configRows)) {
-            return [];
-        }
-
-        $configList = [];
-        foreach ($configRows as $configRow) {
-            $key = strtolower($configRow['config_key']);
-            $configList[$key] = trim($configRow['config_value']);
-            switch (strtolower($configRow['value_type'])) {
-                case 'int':
-                    $configList[$key] = (int)$configList[$key];
-                    break;
-                case 'password':
-                    break;
-                case 'radio':
-                    break;
-            }
-        }
-
-        return $configList;
     }
 }

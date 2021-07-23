@@ -16,16 +16,12 @@
     <script type="text/javascript" src="/static/respond.min.js"></script>
     <![endif]-->
     <script src="/static/layui/layui.js"></script>
+    <script src="/static/spadmin/hd.admin.js<?php echo \App\Helper\ConfigHelper::get('web_info.timestamp'); ?>"></script>
     <script>
-        window.document.oncontextmenu = function () {
-            return false;
-        };
-
         // 页内 Iframe 导航映射
         var iframeNavMaps = [];
 
-        layui.use(['jquery', 'element'], function () {
-            let $ = layui.jquery;
+        layui.use(['element'], function () {
             let element = layui.element;
 
             element.on('tabDelete(iframe)', function (data) {

@@ -14,6 +14,7 @@ use App\Helper\DbHelper;
 use App\Helper\LanguageHelper;
 use App\Helper\RouteHelper;
 use App\Helper\SafeHelper;
+use App\Helper\SessionHelper;
 
 class HttpServer
 {
@@ -21,8 +22,10 @@ class HttpServer
     {
         // 加载配置项
         ConfigHelper::initConfig();
+
         // 加载多语言
         LanguageHelper::initLang();
+
         // 设置一键协程化 Hook 的函数范围
         \Co::set(['hook_flags' => SWOOLE_HOOK_ALL]);
 
@@ -39,17 +42,12 @@ class HttpServer
                 'index.html'
             ],
         ]);
-        $server->on('Request', [HttpServer::class, 'requestHandler']);
+        $server->on('Request', [$this, 'requestHandler']);
         $server->start();
     }
 
-    public static function requestHandler($request, $response)
+    public function requestHandler($request, $response)
     {
-        $charset = ConfigHelper::get('app.charset', 'UTF-8');
-
-        // 判断是否为异步请求
-        $request->ajax = isset($request->header['x-requested-with']) && strtoupper($request->header['x-requested-with']) == 'XMLHTTPREQUEST';
-
         try {
             if (empty($request->header['host'])) {
                 throw new \Exception(LanguageHelper::get('invalid_request'));
@@ -63,8 +61,9 @@ class HttpServer
             }
 
             // 店铺网站合法性验证
+            $dbHelper = new DbHelper();
             $domain = $domain[$domainArrCnt - 2] . '.' . $domain[$domainArrCnt - 1];
-            $shopInfo = DbHelper::connection()->table('sys_shop')
+            $shopInfo = $dbHelper->table('sys_shop')
                 ->fields(['shop_id', 'shop_status', 'shop_domain', 'shop_domain2', 'shop_domain2_redirect_code'])
                 ->whereOr(['shop_domain' => $domain, 'shop_domain2' => $domain])
                 ->orderBy(['shop_id' => 'desc'])
@@ -80,18 +79,26 @@ class HttpServer
                 return;
             }
 
-            // 初始化店铺管理配置
-            ConfigHelper::initConfigFromDb($shopInfo['shop_id']);
+            // 店铺检验合法，初始化店铺相关配置至 Request 对象
             $request->shop_id = $shopInfo['shop_id'];
             $request->domain = $domain;
 
+            // 目前仅支持 GET 、POST
+            $request->isGet = true;
+            $request->isPost = false;
+            if(isset($request->server['request_method']) && strtoupper($request->server['request_method']) == 'POST'){
+                $request->isGet = false;
+                $request->isPost = true;
+            }
+            // 判断是否为异步请求
+            $request->isAjax = isset($request->header['x-requested-with']) && strtoupper($request->header['x-requested-with']) == 'XMLHTTPREQUEST';
+            $charset = ConfigHelper::get('app.charset', 'UTF-8');
+
             // POST 提交数据的 CSRF 安全防护（基于 Redis）
-            $reqMethod = trim($request->server['request_method']);
-            $reqMethod = strtoupper($reqMethod);
-            if ($reqMethod == 'POST') {
+            if ($request->isPost) {
                 $safeHelper = new SafeHelper($request, $response);
                 if (!isset($request->post['hash_tk']) || !($safeHelper->chkCsrfToken($request->post['hash_tk']))) {
-                    if ($request->ajax) {
+                    if ($request->isAjax) {
                         $response->header('Content-type', 'application/json; charset=' . $charset);
                         $response->end(json_encode(['status' => 'fail', 'msg' => LanguageHelper::get('invalid_request')]));
                     } else {
@@ -109,21 +116,57 @@ class HttpServer
             $request->controller = $controller;
             $request->action = $action;
 
+            // 登录状态验证
+            $session = new SessionHelper($request, $response);
+            switch (strtolower($request->module)) {
+                case 'index':
+                    $needLoginPage = [];
+                    if (in_array(strtolower($request->controller), $needLoginPage)) {
+                        if ($request->isAjax) {
+                            $response->header('Content-type', 'application/json; charset=' . $charset);
+                            $response->end(json_encode(['status' => 'fail', 'url' => '/login.html']));
+                            return;
+                        }
+
+                        $response->redirect('/login.html');
+                        return;
+                    }
+                    break;
+                case 'spadmin':
+                    $spAdminInfo = $session->get('sp_admin_info', '');
+                    $spAdminInfo = $spAdminInfo ? json_decode($spAdminInfo, true) : [];
+                    if (empty($spAdminInfo) && !in_array($request->action, ['login', 'loginProcess'])) {
+                        if ($request->isAjax) {
+                            $response->header('Content-type', 'application/json; charset=' . $charset);
+                            $response->end(json_encode(['status' => 'fail', 'url' => '/spadmin/login.html']));
+                            return;
+                        }
+
+                        $response->redirect('/spadmin/login.html');
+                        return;
+                    }
+                    if (!empty($spAdminInfo) && in_array($request->action, ['login', 'loginProcess'])) {
+                        $response->redirect('/spadmin');
+                        return;
+                    }
+                    break;
+            }
+
             // 调用路由资源
             $controller = 'App\\Controller\\' . $module . '\\' . $controller . 'Controller';
-            $return = (new $controller($request, $response))->$action();
-            if (is_array($return) || is_object($return)) {
+            $result = (new $controller($request, $response))->$action();
+            if (is_array($result) || is_object($result)) {
                 $response->header('Content-type', 'application/json; charset=' . $charset);
-                $response->end(json_encode($return));
+                $response->end(json_encode($result));
             } else {
                 $response->header('Content-type', 'text/html; charset=' . $charset);
-                $response->end($return);
+                $response->end($result);
             }
         } catch (\Throwable $e) {
             print_r($e->getMessage() . PHP_EOL);
             print_r($e->getFile() . ' >> ' . $e->getLine() . PHP_EOL);
 
-            if ($request->ajax) {
+            if ($request->isAjax) {
                 $response->header('Content-type', 'application/json; charset=' . $charset);
                 $response->end(json_encode(['status' => 'fail', 'msg' => LanguageHelper::get('invalid_request')]));
             } else {
@@ -131,5 +174,8 @@ class HttpServer
                 $response->end(LanguageHelper::get('invalid_request'));
             }
         }
+
+        return;
     }
+
 }

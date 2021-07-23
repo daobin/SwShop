@@ -58,6 +58,12 @@
     <script type="text/javascript" src="/static/respond.min.js"></script>
     <![endif]-->
     <script src="/static/layui/layui.js"></script>
+    <script src="/static/spadmin/hd.admin.js<?php echo \App\Helper\ConfigHelper::get('web_info.timestamp'); ?>"></script>
+    <script>
+        if (self != top) {
+            top.location.href = self.location.href;
+        }
+    </script>
 </head>
 <body>
 <form class="layui-form" method="post" autocomplete="off">
@@ -85,16 +91,8 @@
     </div>
 </form>
 <script>
-    window.document.oncontextmenu = function () {
-        return false;
-    };
-
-    layui.use(['jquery', 'layer', 'form'], function () {
-        let $ = layui.jquery;
-        let layer = layui.layer;
-        let form = layui.form;
-
-        form.verify({
+    layui.use(['form'], function(){
+        layui.form.verify({
             account: function (val) {
                 val = $.trim(val);
                 if (val == '') {
@@ -115,24 +113,8 @@
             }
         });
 
-        form.on('submit(login)', function (formObj) {
-            $.ajax({
-                type: 'post',
-                url: window.location.href,
-                data: formObj.field,
-                success: function (res) {
-                    if (res.msg != undefined && res.msg != '') {
-                        layer.alert(res.msg);
-                    }
-
-                    if (res.status == 'success' && res.url != undefined && res.url != '') {
-                        window.location.href = res.url;
-                    }
-                },
-                error: function () {
-                    layer.alert('<?php echo xss_text('unknown_refresh_try_again', true); ?>');
-                }
-            });
+        layui.form.on('submit(login)', function (formObj) {
+            form_submit(window.location.href, formObj.field);
             return false;
         });
     });

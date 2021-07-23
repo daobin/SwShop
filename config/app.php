@@ -2,8 +2,10 @@
 declare(strict_types=1);
 
 return [
-    'lang' => 'zh',
+    // 字符编码
     'charset' => 'UTF-8',
+    // 系统时区
     'timezone' => 'UTC',
-    'init_db_config' => ['web_info', 'redis', 'oss'],
+    //默认语言为第一个
+    'languages' => ['zh', 'en'],
 ];

@@ -20,8 +20,8 @@ class OssHelper
         $ossCfgs = ConfigHelper::get('oss');
 
         try {
-            $ossClient = new OssClient($ossCfgs['access_key_id'], $ossCfgs['access_key_secret'], $ossCfgs['endpoint']);
-            $ossClient->putObject($ossCfgs['bucket'], $object, $content);
+            $ossClient = new OssClient($ossCfgs['oss_access_key_id'], $ossCfgs['oss_access_key_secret'], $ossCfgs['oss_endpoint']);
+            $ossClient->putObject($ossCfgs['oss_bucket'], $object, $content);
         } catch (OssException $e) {
             throw new OssException('OSS Put Invalid: ' . $e->getMessage());
         }
@@ -35,8 +35,8 @@ class OssHelper
             $object = 'swshop/cache_image/' . $filename;
             $ossCfgs = ConfigHelper::get('oss');
 
-            $ossClient = new OssClient($ossCfgs['access_key_id'], $ossCfgs['access_key_secret'], $ossCfgs['endpoint']);
-            $ossClient->putObject($ossCfgs['bucket'], $object, file_get_contents($imgeFile));
+            $ossClient = new OssClient($ossCfgs['oss_access_key_id'], $ossCfgs['oss_access_key_secret'], $ossCfgs['oss_endpoint']);
+            $ossClient->putObject($ossCfgs['oss_bucket'], $object, file_get_contents($imgeFile));
         } catch (OssException $e) {
             throw new OssException('OSS Put Invalid: ' . $e->getMessage());
         }

@@ -10,4 +10,7 @@ return [
     'enter_password' => '请输入密码',
     'enter_valid_account_password' => '请输入一个有效的账号或密码',
     'unknown_refresh_try_again' => '未知错误，请稍候刷新页面重试！',
+    'save' => '保存',
+    'edit' => '编辑',
+    'product_category' => '商品类目',
 ];

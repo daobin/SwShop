@@ -14,123 +14,137 @@ class DbHelper
     /**
      * @var \PDO
      */
-    private static $db;
+    private $db;
     /**
      * @var \PDOStatement
      */
-    private static $stmt;
-    private static $sqlBuild;
-    private static $tablePrefix;
-    private static $instance;
+    private $stmt;
+    private $sqlBuild;
+    private $tablePrefix;
 
-    private function __construct()
+    public function __construct()
     {
+        $this->initDb();
     }
 
-    public function __destruct()
-    {
-        self::$db = null;
-        self::$stmt = null;
-        self::$sqlBuild = null;
-        self::$instance = null;
-    }
+    private function initDb(){
+        $config = ConfigHelper::get('database.mysql.master');
+        $this->tablePrefix = trim($config['table_prefix']);
 
-    public static function connection($init = true)
-    {
-        if ($init) {
-            self::$stmt = null;
-            self::$sqlBuild = null;
+        $dns = sprintf(
+            'mysql:host=%s;port=%s;dbname=%s;charset=%s',
+            $config['host'],
+            $config['port'],
+            $config['database'],
+            $config['charset']
+        );
+
+        try {
+            $options = [
+                \PDO::ATTR_EMULATE_PREPARES => false,
+                \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+                \PDO::ATTR_CASE => \PDO::CASE_NATURAL,
+            ];
+            $this->db = new \PDO($dns, $config['username'], $config['password'], $options);
+        } catch (\PDOException $e) {
+            throw new \PDOException('SQL: Connection Error');
         }
+    }
 
-        if (empty(self::$db)) {
-            $config = ConfigHelper::get('database.mysql.master');
-            self::$tablePrefix = $config['table_prefix'];
+    public function table(string $table, string $as = '')
+    {
+        if (empty($as)) {
+            $this->sqlBuild['table'] = '`' . $this->tablePrefix . trim($table) . '`';
+        } else {
+            $this->sqlBuild['table'] = '`' . $this->tablePrefix . trim($table) . '` as `' . $as . '`';
+        }
+        return $this;
+    }
 
-            $dns = sprintf(
-                'mysql:host=%s;port=%s;dbname=%s;charset=%s',
-                $config['host'],
-                $config['port'],
-                $config['database'],
-                $config['charset']
-            );
+    public function join(string $table, string $as = '', array $on = [])
+    {
+        $onSql = [];
+        if (!empty($on)) {
+            foreach ($on as $field => $field2) {
+                $field = str_replace('.', '`.`', $field);
+                $field2 = str_replace('.', '`.`', $field2);
 
-            try {
-                $options = [
-                    \PDO::ATTR_EMULATE_PREPARES => false,
-                    \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
-                    \PDO::ATTR_CASE => \PDO::CASE_NATURAL,
-                ];
-                self::$db = new \PDO($dns, $config['username'], $config['password'], $options);
-            } catch (\PDOException $e) {
-                throw new \PDOException('SQL: Connection Error');
+                $onSql[] = '`' . $field . '` = `' . $field2 . '`';
             }
+            $onSql = implode(' AND ', $onSql);
+        } else {
+            $onSql = '';
         }
 
-        if (empty(self::$instance)) {
-            self::$instance = new DbHelper();
+        if (empty($as)) {
+            $this->sqlBuild['join'][] = [
+                'table' => '`' . $this->tablePrefix . trim($table) . '`',
+                'on' => $onSql
+            ];
+        } else {
+            $this->sqlBuild['join'][] = [
+                'table' => '`' . $this->tablePrefix . trim($table) . '` as `' . $as . '`',
+                'on' => $onSql
+            ];
         }
-
-        return self::$instance;
-    }
-
-    public function table(string $table)
-    {
-        self::connection(false);
-        self::$sqlBuild['table'] = '`' . trim(self::$tablePrefix) . trim($table) . '`';
         return $this;
     }
 
     public function fields(array $fields)
     {
-        self::connection(false);
         if (empty($fields)) {
             return $this;
         }
 
         $selectFields = '`' . implode('`, `', $fields) . '`';
-        $selectFields = str_replace('`*`', '*', $selectFields);
+        $selectFields = str_replace(['`*`', '.'], ['*', '`.`'], $selectFields);
 
-        self::$sqlBuild['fields'] = $selectFields;
+        $this->sqlBuild['fields'] = $selectFields;
         return $this;
     }
 
     public function where(array $where)
     {
-        self::connection(false);
-        self::$sqlBuild['where'] ??= [];
-        self::$sqlBuild['where'] = array_merge(self::$sqlBuild['where'], $where);
+        if (empty($where)) {
+            return $this;
+        }
+
+        $this->sqlBuild['where'] ??= [];
+        $this->sqlBuild['where'] = array_merge($this->sqlBuild['where'], $where);
         return $this;
     }
 
     public function whereOr(array $where)
     {
-        self::connection(false);
-        self::$sqlBuild['where_or'] ??= [];
-        self::$sqlBuild['where_or'] = array_merge(self::$sqlBuild['where_or'], $where);
+        if (empty($where)) {
+            return $this;
+        }
+
+        $this->sqlBuild['where_or'] ??= [];
+        $this->sqlBuild['where_or'] = array_merge($this->sqlBuild['where_or'], $where);
         return $this;
     }
 
     public function orderBy(array $orderBy)
     {
-        self::connection(false);
         if (empty($orderBy)) {
             return $this;
         }
 
-        self::$sqlBuild['order_by'] = [];
+        $this->sqlBuild['order_by'] = [];
         foreach ($orderBy as $field => $direct) {
             $direct = strtoupper($direct) == 'DESC' ? 'DESC' : 'ASC';
-            self::$sqlBuild['order_by'][] = '`' . $field . '` ' . $direct;
+            $field = str_replace('.', '`.`', $field);
+            $this->sqlBuild['order_by'][] = '`' . $field . '` ' . $direct;
         }
-        self::$sqlBuild['order_by'] = implode(', ', self::$sqlBuild['order_by']);
+        $this->sqlBuild['order_by'] = implode(', ', $this->sqlBuild['order_by']);
 
         return $this;
     }
 
     public function limit(int $offset = 0, int $count = 10)
     {
-        self::connection(false);
-        self::$sqlBuild['limit'] = $offset . ', ' . $count;
+        $this->sqlBuild['limit'] = $offset . ', ' . $count;
         return $this;
     }
 
@@ -141,90 +155,118 @@ class DbHelper
 
     public function select()
     {
-        self::connection(false);
-        if (empty(self::$sqlBuild['limit'])) {
-            self::limit();
-        }
-
-        $preData = self::buildSql('select');
-        self::$stmt->execute($preData);
-        $result = self::$stmt->fetchAll(\PDO::FETCH_ASSOC);
+        $preData = $this->buildSql('select');
+        $this->stmt->execute($preData);
+        $result = $this->stmt->fetchAll(\PDO::FETCH_ASSOC);
         return $this->resetSelectResult($result);
     }
 
     public function find()
     {
-        self::connection(false);
-        self::limit(0, 1);
+        $this->limit(0, 1);
 
-        $preData = self::buildSql('select');
-        self::$stmt->execute($preData);
-        $result = self::$stmt->fetch(\PDO::FETCH_ASSOC);
+        $preData =  $this->buildSql('select');
+        $this->stmt->execute($preData);
+        $result = $this->stmt->fetch(\PDO::FETCH_ASSOC);
         return $this->resetSelectResult($result);
     }
 
     public function update(array $data)
     {
-        self::connection(false);
-        $preData = self::buildSql('update', $data);
-        self::$stmt->execute($preData);
-        return self::$stmt->rowCount();
+        $preData =  $this->buildSql('update', $data);
+        $this->stmt->execute($preData);
+        return $this->stmt->rowCount();
     }
 
     public function delete()
     {
-        self::connection(false);
-        $preData = self::buildSql('delete');
-        self::$stmt->execute($preData);
-        return self::$stmt->rowCount();
+        $preData =  $this->buildSql('delete');
+        $this->stmt->execute($preData);
+        return $this->stmt->rowCount();
     }
 
     public function insert(array $data)
     {
-        self::connection(false);
-        $preData = self::buildSql('insert', $data);
-        self::$stmt->execute($preData);
-        return self::$stmt->rowCount() > 0 ? self::$db->lastInsertId() : 0;
+        $preData =  $this->buildSql('insert', $data);
+        $this->stmt->execute($preData);
+        return $this->stmt->rowCount() > 0 ? $this->db->lastInsertId() : 0;
     }
 
-    private function resetSelectResult($result){
-        if(empty($result)){
+    private function resetSelectResult($result)
+    {
+        if (empty($result)) {
             return [];
         }
 
-        if(isset($result[0])){
-            array_walk($result, function(&$item){
+        if (isset($result[0])) {
+            array_walk($result, function (&$item) {
+                if (isset($item['value_type'])) {
+                    switch (strtolower($item['value_type'])){
+                        case 'int':
+                            if (isset($item['config_value'])) {
+                                $item['config_value'] = intval($item['config_value']);
+                            }
+                            break;
+                        case 'password':
+                            if (isset($item['config_value'])) {
+                                $item['config_value'] = SafeHelper::decodeString($item['config_value']);
+                            }
+                            break;
+                    }
+                }
+
                 $lastOperation = [];
-                if(!empty($item['updated_at'])){
+                if (!empty($item['updated_at'])) {
                     $lastOperation[] = date('Y-m-d H:i', $item['updated_at']);
                 }
-                if(!empty($item['updated_by'])){
-                    $lastOperation[] = $item['updated_by'];
+                if (!empty($item['updated_by'])) {
+                    $lastOperation[] = strtoupper($item['updated_by']);
                 }
-                $item['last_operation'] = implode('<br/>', $lastOperation);
+                $item['last_operation'] = implode(' By ', $lastOperation);
             });
-        }else{
+        } else {
+            if (isset($result['value_type'])) {
+                switch (strtolower($result['value_type'])){
+                    case 'int':
+                        if (isset($result['config_value'])) {
+                            $result['config_value'] = intval($result['config_value']);
+                        }
+                        break;
+                    case 'password':
+                        if (isset($result['config_value'])) {
+                            $result['config_value'] = SafeHelper::decodeString($result['config_value']);
+                        }
+                        break;
+                    case 'radio':
+                        if (isset($result['config_value'])) {
+                            $result['config_value'] = json_decode($result['config_value'], true);
+                        }
+                        break;
+                }
+            }
+
             $lastOperation = [];
-            if(!empty($result['updated_at'])){
+            if (!empty($result['updated_at'])) {
                 $lastOperation[] = date('Y-m-d H:i', $result['updated_at']);
             }
-            if(!empty($result['updated_by'])){
-                $lastOperation[] = $result['updated_by'];
+            if (!empty($result['updated_by'])) {
+                $lastOperation[] = strtoupper($result['updated_by']);
             }
-            $result['last_operation'] = implode('<br/>', $lastOperation);
+            $result['last_operation'] = implode(' By ', $lastOperation);
         }
 
         return $result;
     }
 
-    private static function buildWhere()
+    private function buildWhere()
     {
         $preSql = '';
         $preData = [];
 
-        if (!empty(self::$sqlBuild['where'])) {
+        if (!empty($this->sqlBuild['where'])) {
             $where = [];
-            foreach (self::$sqlBuild['where'] as $field => $value) {
+            foreach ($this->sqlBuild['where'] as $field => $value) {
+                $field = str_replace('.', '`.`', $field);
                 if (is_array($value)) {
                     $opt = trim(reset($value));
                     $value = end($value);
@@ -238,9 +280,10 @@ class DbHelper
             $preSql = implode(' AND ', $where);
         }
 
-        if (!empty(self::$sqlBuild['where_or'])) {
+        if (!empty($this->sqlBuild['where_or'])) {
             $where = [];
-            foreach (self::$sqlBuild['where_or'] as $field => $value) {
+            foreach ($this->sqlBuild['where_or'] as $field => $value) {
+                $field = str_replace('.', '`.`', $field);
                 if (is_array($value)) {
                     $opt = trim(reset($value));
                     $value = end($value);
@@ -263,12 +306,19 @@ class DbHelper
             throw new \PDOException('SQL: Condition Build Invalid');
         }
 
+        if (
+            substr($this->sqlBuild['table'], 0, 8) != '`hd_sys_'
+            && substr_count($preSql, '`shop_id`') < 1
+        ) {
+            throw new \PDOException('SQL: Condition Invalid');
+        }
+
         return [$preSql, $preData];
     }
 
-    private static function buildSql(string $buildType, array $data = [])
+    private function buildSql(string $buildType, array $data = [])
     {
-        if (empty(self::$sqlBuild['table'])) {
+        if (empty($this->sqlBuild['table'])) {
             throw new \PDOException('SQL: Table Invalid');
         }
 
@@ -276,32 +326,32 @@ class DbHelper
         $buildType = strtoupper($buildType);
         switch ($buildType) {
             case 'SELECT':
-                if (
-                    substr(self::$sqlBuild['table'], 0, 8) != '`hd_sys_'
-                    && !isset(self::$sqlBuild['where']['shop_id'])
-                ) {
-                    throw new \PDOException('SQL: Condition Invalid');
-                }
 
-                if (empty(self::$sqlBuild['fields'])) {
-                    self::$sqlBuild['fields'] = '*';
+                if (empty($this->sqlBuild['fields'])) {
+                    $this->sqlBuild['fields'] = '*';
                 }
-                list($preSql, $preData) = self::buildWhere();
-                $preSql = 'SELECT ' . self::$sqlBuild['fields'] . ' FROM ' . self::$sqlBuild['table'] . ' WHERE ' . $preSql;
-                if (!empty(self::$sqlBuild['order_by'])) {
-                    $preSql .= ' ORDER BY ' . self::$sqlBuild['order_by'];
+                list($preSql, $preData) = $this->buildWhere();
+                $preSql = 'SELECT ' . $this->sqlBuild['fields'] . ' FROM ' . $this->sqlBuild['table'] . ' %s WHERE ' . $preSql;
+
+                $joinSql = '';
+                if (!empty($this->sqlBuild['join'])) {
+                    foreach ($this->sqlBuild['join'] as $join) {
+                        $joinSql .= 'JOIN ' . $join['table'];
+                        if (!empty($join['on'])) {
+                            $joinSql .= ' ON (' . $join['on'] . ')';
+                        }
+                    }
                 }
-                if (!empty(self::$sqlBuild['limit'])) {
-                    $preSql .= ' LIMIT ' . self::$sqlBuild['limit'];
+                $preSql = sprintf($preSql, $joinSql);
+
+                if (!empty($this->sqlBuild['order_by'])) {
+                    $preSql .= ' ORDER BY ' . $this->sqlBuild['order_by'];
+                }
+                if (!empty($this->sqlBuild['limit'])) {
+                    $preSql .= ' LIMIT ' . $this->sqlBuild['limit'];
                 }
                 break;
             case 'UPDATE':
-                if (
-                    substr(self::$sqlBuild['table'], 0, 8) != '`hd_sys_'
-                    && !isset(self::$sqlBuild['where']['shop_id'])
-                ) {
-                    throw new \PDOException('SQL: Condition Invalid');
-                }
                 if (empty($data)) {
                     throw new \PDOException('SQL: Data Invalid');
                 }
@@ -309,33 +359,28 @@ class DbHelper
                 $setSql = '';
                 $setData = [];
                 foreach ($data as $field => $value) {
+                    $field = str_replace('.', '`.`', $field);
                     $setSql .= '`' . $field . '` = ?, ';
                     $setData[] = $value;
                 }
                 $setSql = trim($setSql, ', ');
 
-                list($preSql, $preData) = self::buildWhere();
+                list($preSql, $preData) = $this->buildWhere();
                 $preData = array_merge($setData, $preData);
-                $preSql = 'UPDATE ' . self::$sqlBuild['table'] . ' SET ' . $setSql . ' WHERE ' . $preSql;
+                $preSql = 'UPDATE ' . $this->sqlBuild['table'] . ' SET ' . $setSql . ' WHERE ' . $preSql;
                 break;
             case 'DELETE':
-                if (
-                    substr(self::$sqlBuild['table'], 0, 8) != '`hd_sys_'
-                    && !isset(self::$sqlBuild['where']['shop_id'])
-                ) {
-                    throw new \PDOException('SQL: Condition Invalid');
-                }
-
-                list($preSql, $preData) = self::buildWhere();
-                $preSql = 'DELETE FROM ' . self::$sqlBuild['table'] . ' WHERE ' . $preSql;
+                list($preSql, $preData) = $this->buildWhere();
+                $preSql = 'DELETE FROM ' . $this->sqlBuild['table'] . ' WHERE ' . $preSql;
                 break;
             case 'INSERT':
-                if (!isset($data['shop_id'])) {
+                if (empty($data['shop_id'])) {
                     throw new \PDOException('SQL: Data Invalid');
                 }
 
-                $preSql = 'INSERT INTO ' . self::$sqlBuild['table'] . ' (';
+                $preSql = 'INSERT INTO ' . $this->sqlBuild['table'] . ' (';
                 foreach ($data as $field => $value) {
+                    $field = str_replace('.', '`.`', $field);
                     $preSql .= '`' . $field . '`, ';
                     $preData[] = $value;
                 }
@@ -351,13 +396,13 @@ class DbHelper
 //        print_r($preData);
 //        print_r(PHP_EOL);
         try {
-            self::$stmt = self::$db->prepare($preSql);
+            $this->stmt =  $this->db->prepare($preSql);
         } catch (\PDOException $e) {
             // 断连重连机制
             if (strtoupper($e->getCode()) == 'HY000') {
-                self::$db = null;
-                self::connection();
-                self::$stmt = self::$db->prepare($preSql);
+                 $this->db = null;
+                $this->initDb();
+                $this->stmt =  $this->db->prepare($preSql);
             } else {
                 throw $e;
             }

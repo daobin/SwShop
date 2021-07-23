@@ -13,6 +13,10 @@ class LanguageHelper
 {
     private static $langMaps;
 
+    private function __construct()
+    {
+    }
+
     public static function initLang()
     {
         $langFiles = glob(ROOT_DIR . 'i18n_lang/*.php', GLOB_ERR);
@@ -25,28 +29,33 @@ class LanguageHelper
                 continue;
             }
 
-            $langName = str_replace('.php', '', basename($langFile));
-            $langName = strtolower($langName);
-            self::$langMaps[$langName] = include $langFile;
+            $langCode = str_replace('.php', '', basename($langFile));
+            $langCode = strtolower($langCode);
+            self::$langMaps[$langCode] = include $langFile;
         }
     }
 
-    public static function get($code){
-        $lang = ConfigHelper::get('app.lang');
-        $lang = strtolower($lang);
-        if(isset(self::$langMaps[$lang][$code])){
-            return self::$langMaps[$lang][$code];
+    public static function get($key, $lang = '')
+    {
+        if (empty($lang) || !in_array($lang, array_keys(self::$langMaps))) {
+            $lang = ConfigHelper::get('app.languages', ['en']);
+            $lang = reset($lang);
         }
 
-        if($lang === 'en'){
-            return $code;
+        $lang = strtolower($lang);
+        if (isset(self::$langMaps[$lang][$key])) {
+            return self::$langMaps[$lang][$key];
+        }
+
+        if ($lang === 'en') {
+            return $key;
         }
 
         $lang = 'en';
-        if(isset(self::$langMaps[$lang][$code])){
-            return self::$langMaps[$lang][$code];
+        if (isset(self::$langMaps[$lang][$key])) {
+            return self::$langMaps[$lang][$key];
         }
 
-        return $code;
+        return $key;
     }
 }

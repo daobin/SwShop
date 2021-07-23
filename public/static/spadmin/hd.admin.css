@@ -3,16 +3,37 @@ a{color: inherit; font-size: inherit !important; cursor: pointer !important;}
 a, image, a:active, image:active{border: none !important;}
 
 .hd-color-white{color: #fff !important;}
-.hd-color-red{color: #f00 !important;}
-.hd-text-right{text-align: right};
+.hd-color-red{color: #FF5722 !important;}
+.hd-text-right{text-align: right;}
+
+.margin-top30{margin-top: 30px !important;}
+
+.padding-top30{padding-top: 30px !important;}
+.padding-top60{padding-top: 60px !important;}
 
 #hd-main .layui-tab{margin: 1px; width: 100%; height: 100%;}
-#hd-main .layui-tab-title{background: #efefef;}
+#hd-main .layui-tab-title{background: #efefef; z-index: 99;}
 #hd-main .layui-tab-title>li:first-child>i.layui-tab-close{display: none;}
 #hd-main .layui-tab-title>li.layui-this{background: #ffffff;}
 #hd-main .hd-main-content{position: absolute; top: 60px; bottom: 0; left: 200px; right: 0; overflow: hidden;}
 #hd-main .layui-tab{width: 100%; height: 100%; margin: 0;}
 #hd-main .layui-tab-content{position: absolute; width: 100%; top: 40px; bottom: 0; padding: 0; overflow: hidden;}
-#hd-main .layui-tab-content .layui-tab-item{width: 100%; height: 100%; padding: 10px 0;}
+#hd-main .layui-tab-content .layui-tab-item{width: 100%; height: 100%;}
 #hd-main .layui-tab-content iframe{width: 100%; height: 100%; border: none;}
+
+#hd-top-line{position: fixed; top: 0; left: 0; z-index: 9; right: 0; padding-top: 10px; background: #fff;}
+
+.layui-icon-edit, .layui-icon-delete{cursor: pointer !important; font-size: 18px;}
+.layui-icon-edit:hover, .layui-icon-delete:hover{font-size: 22px;}
+.layui-icon-edit{color: #009688;}
+.layui-icon-delete{color: #FF5722;}
+
+body .hd-open-edit .layui-layer-title{font-weight: bold; font-size: 16px;}
+
+body .hd-open-ask .layui-layer-title{font-size: 16px;}
+body .hd-open-ask .layui-layer-content{margin: 30px 0;}
+body .hd-open-ask .layui-layer-btn a{height: 30px; line-height: 30px;}
+body .hd-open-ask .layui-layer-btn0{background: #01AAED; color: #fff;}
+body .hd-open-ask .layui-layer-btn1{background: #FFB800; color: #fff;}
+body .hd-open-ask .layui-layer-btn2{background: #c2c2c2; color: #fff;}
 

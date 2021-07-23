@@ -16,11 +16,7 @@
     <script type="text/javascript" src="/static/respond.min.js"></script>
     <![endif]-->
     <script src="/static/layui/layui.js"></script>
-    <script>
-        layui.use(['jquery'], function () {
-            window.$ = layui.jquery;
-        });
-    </script>
+    <script src="/static/spadmin/hd.admin.js<?php echo \App\Helper\ConfigHelper::get('web_info.timestamp'); ?>"></script>
 </head>
 <body>
 <?php if ($show_top_line){ ?>
@@ -30,7 +26,7 @@
             <a class="layui-btn layui-btn-sm layui-btn-normal"><i class="layui-icon layui-icon-refresh"></i></a>
         </div>
     </div>
+    <hr class="layui-bg-gray"/>
 </div>
-<hr class="layui-bg-gray"/>
 <?php
 }

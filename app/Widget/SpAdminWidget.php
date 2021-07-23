@@ -23,7 +23,6 @@ class SpAdminWidget extends Widget
                 [
                     ['name' => '商品类目', 'icon' => 'layui-icon-more-vertical', 'iframe' => 'category'],
                     ['name' => '商品列表', 'icon' => 'layui-icon-list', 'iframe' => 'product'],
-                    ['name' => '商品添加', 'icon' => 'layui-icon-add-1', 'iframe' => 'product/0'],
                 ]
             ],
             ['name' => '促销管理', 'icon' => 'layui-icon-flag', 'sub_navs' =>
@@ -37,6 +36,7 @@ class SpAdminWidget extends Widget
                 [
                     ['name' => '商城信息', 'icon' => 'layui-icon-tips', 'iframe' => 'config-web_info'],
                     ['name' => '邮件配置', 'icon' => 'layui-icon-email', 'iframe' => 'config-mail'],
+                    ['name' => 'OSS 配置', 'icon' => 'layui-icon-file', 'iframe' => 'config-oss'],
                     ['name' => '多语言配置', 'icon' => 'layui-icon-read', 'iframe' => 'language'],
                     ['name' => '多币种配置', 'icon' => 'layui-icon-rmb', 'iframe' => 'currency'],
                     ['name' => '支付方式', 'icon' => 'layui-icon-senior', 'iframe' => 'payment'],

@@ -9,6 +9,8 @@ declare(strict_types=1);
 
 namespace App\Helper;
 
+use App\Biz\ConfigBiz;
+
 class SessionHelper
 {
     const SS_NAME = 'SW_SHOP';
@@ -23,8 +25,13 @@ class SessionHelper
     {
         $this->request = $request;
         $this->response = $response;
-        $this->redis = RedisHelper::openRedis($request->shop_id);
-        $this->expire = (int)ConfigHelper::get('redis.expire', 1800);
+
+        $redisCfgs = (new ConfigBiz())->getConfigListByGroup($request->shop_id, 'redis');
+        $redisCfgs = array_column($redisCfgs, 'config_value', 'config_key');
+        $this->expire = $redisCfgs['REDIS_EXPIRE'] > 0 ? $redisCfgs['REDIS_EXPIRE'] : 1800;
+
+        $index = $request->shop_id % 10;
+        $this->redis = (new RedisHelper())->openRedis($redisCfgs['REDIS_HOST'], $redisCfgs['REDIS_PORT'], $redisCfgs['REDIS_AUTH'], $index);
 
         $this->start();
     }
@@ -35,6 +42,7 @@ class SessionHelper
         if (isset($this->request->cookie[self::SS_NAME])) {
             $this->sid = (string)$this->request->cookie[self::SS_NAME];
         }
+
         if (empty($this->sid)) {
             $this->sid = $this->createSessionId();
         } else if (!($this->redis->exists(self::SS_NAME . '_' . $this->sid))) {

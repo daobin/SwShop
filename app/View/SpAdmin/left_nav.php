@@ -2,7 +2,7 @@
     <?php
     if (!empty($navs)) {
         foreach ($navs as $top_nav) {
-            $nav_html = '<li class="layui-nav-item" lay-unselect>';
+            $nav_html = '<li class="layui-nav-item">';
             $nav_html .= '<a %s>%s%s</a>';
             $nav_html = sprintf(
                 $nav_html,
@@ -13,7 +13,7 @@
             if (!empty($top_nav['sub_navs'])) {
                 $nav_html .= '<dl class="layui-nav-child">';
                 foreach ($top_nav['sub_navs'] as $sub_nav) {
-                    $nav_html .= '<dd lay-unselect><a %s>%s%s</a></dd>';
+                    $nav_html .= '<dd><a %s>%s%s</a></dd>';
                     $nav_html = sprintf(
                         $nav_html,
                         isset($sub_nav['iframe']) ? 'iframe="' . $sub_nav['iframe'] . '"' : '',

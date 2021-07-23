@@ -9,8 +9,8 @@ declare(strict_types=1);
 
 namespace App\Controller\SpAdmin;
 
+use App\Biz\AdminBiz;
 use App\Controller\Controller;
-use App\Helper\DbHelper;
 use App\Helper\LanguageHelper;
 use App\Helper\RouteHelper;
 use App\Helper\SafeHelper;
@@ -41,20 +41,20 @@ class IndexController extends Controller
 
     public function loginProcess()
     {
+        if(!$this->request->isPost){
+            return ['status' => 'fail', 'msg' => LanguageHelper::get('invalid_request')];
+        }
+
         $account = $this->request->post['account'] ?? '';
         $password = $this->request->post['password'] ?? '';
-        if($account == ''){
+        if ($account == '') {
             return ['status' => 'fail', 'msg' => LanguageHelper::get('enter_account')];
         }
-        if($password == ''){
+        if ($password == '') {
             return ['status' => 'fail', 'msg' => LanguageHelper::get('enter_password')];
         }
 
-        $adminInfo = DbHelper::connection()->table('admin')->where(
-            [
-                'shop_id' => $this->request->shop_id,
-                'account' => $account
-            ])->find();
+        $adminInfo = (new AdminBiz())->getAdminByAccount($this->request->shop_id, $account);
         if (empty($adminInfo) || !password_verify($password, $adminInfo['password'])) {
             return ['status' => 'fail', 'msg' => LanguageHelper::get('enter_valid_account_password')];
         }

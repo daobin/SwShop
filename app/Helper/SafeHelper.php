@@ -11,9 +11,6 @@ namespace App\Helper;
 
 class SafeHelper
 {
-    /**
-     * 密钥 Key
-     */
     const KEY = 'Ak@i+s526%!--like8=$';
 
     private $request;
@@ -30,7 +27,7 @@ class SafeHelper
     /**
      * 生成 CSRF 口令
      */
-    public function buildCsrfToken($deviceFrom, $operation)
+    public function buildCsrfToken(string $deviceFrom, string $operation): string
     {
         $field = $deviceFrom . $operation;
         $token = $this->session->get($field, '');
@@ -46,7 +43,7 @@ class SafeHelper
     /**
      * 验证 CSRF 口令
      */
-    public function chkCsrfToken($token)
+    public function chkCsrfToken(string $token): bool
     {
         $token = trim((string)$token);
         $field = empty($token) ? [] : explode('$', $token);
@@ -60,49 +57,56 @@ class SafeHelper
     /**
      * 字符串加密
      */
-    public static function encodeString(string $string): string
+    public static function encodeString(string $str): string
     {
-        $string = trim($string);
+        $str = trim($str);
+        if ($str == '') {
+            return $str;
+        }
+
+        $str = base64_encode(self::KEY . $str . self::KEY);
+        $charArr = str_split($str);
+
+        $str = [];
+        foreach ($charArr as $idx => $char) {
+            $str[$idx % 2][] = $char;
+        }
+        $str = implode('.e.', $str[0]) . '-..-' . implode('.o.', $str[1]);
+
+        return base64_encode($str);
     }
 
     /**
      * 字符串解密
      */
-    public static function decodeString(string $string): string
+    public static function decodeString(string $str): string
     {
+        $str = trim($str);
+        if ($str == '') {
+            return $str;
+        }
 
+        $str = explode('-..-', base64_decode($str));
+        if (count($str) != 2) {
+            return '';
+        }
+
+        $charArr = [];
+        $str[0] = explode('.e.', $str[0]);
+        $str[1] = explode('.o.', $str[1]);
+        foreach ($str[0] as $idx => $char) {
+            $charArr[] = $char;
+            if (!isset($str[1][$idx])) {
+                break;
+            }
+
+            $charArr[] = $str[1][$idx];
+        }
+
+        $str = implode('', $charArr);
+        $str = base64_decode($str);
+
+        return str_replace(self::KEY, '', $str);
     }
 
-    /**
-     * 验证文件内容是否有安全风险
-     */
-    public static function chkFileSecurityIsRisk(string $filename): bool
-    {
-        // 需要检测的文件不存在视为有风险
-        if (!file_exists($filename)) {
-            return true;
-        }
-
-        // 读取长度前 1000 的内容
-        $fd = @fopen($filename, 'rb');
-        if (!$fd) {
-            return true;
-        }
-        $content = fread($fd, 1000);
-        $content = preg_replace('/[\s]+/', '', $content);
-        $content = str_replace(['"', '\'', '.'], '', $content);
-        fclose($fd);
-        if (
-            stripos($content, '<?php') !== false
-            || stripos($content, 'create_function') !== false
-            || stripos($content, 'eval') !== false
-            || stripos($content, 'system') !== false
-            || stripos($content, 'assert') !== false
-            || stripos($content, 'base64_decode') !== false
-        ) {
-            return true;
-        }
-
-        return false;
-    }
 }
