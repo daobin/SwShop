@@ -20,7 +20,7 @@ class AdminBiz
         $this->dbHelper = new DbHelper();
     }
 
-    public function getAdminByAccount($shopId, $account)
+    public function getAdminByAccount(int $shopId, string $account): array
     {
         return $this->dbHelper->table('admin')->where(
             ['shop_id' => $shopId, 'account' => $account])

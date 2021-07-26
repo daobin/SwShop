@@ -11,6 +11,7 @@ return [
     'enter_valid_account_password' => 'Please enter a valid login account or password.',
     'unknown_refresh_try_again' => 'Unknown error, please refresh the page later and try again!',
     'save' => 'Save',
+    'cancel' => 'Cancel',
     'edit' => 'Edit',
     'product_category' => 'Product Category',
 ];

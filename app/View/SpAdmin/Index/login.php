@@ -48,7 +48,7 @@
             margin: 0 auto;
         }
 
-        .margin-top30 {
+        .hd-margin-top30 {
             margin-top: 30px !important;
         }
     </style>
@@ -70,7 +70,7 @@
     <div class="layui-form-item" style="display: none;">
         <!--img id="logo" src="" /-->
     </div>
-    <div class="layui-form-item margin-top30">
+    <div class="layui-form-item hd-margin-top30">
         <div class="layui-form-inline">
             <i class="layui-icon layui-icon-username"></i>
             <input class="layui-input" type="text" maxlength="16"
@@ -84,7 +84,7 @@
                placeholder="<?php echo xss_text('enter_password', true); ?>" name="password"
                lay-verify="password" lay-verType="alert"/>
     </div>
-    <div class="layui-form-item margin-top30">
+    <div class="layui-form-item hd-margin-top30">
         <input type="hidden" name="hash_tk" value="<?php echo $csrf_token; ?>"/>
         <input class="layui-btn" type="submit" lay-submit lay-filter="login"
                value="<?php echo xss_text('login', true); ?>"/>

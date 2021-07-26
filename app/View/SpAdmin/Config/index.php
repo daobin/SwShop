@@ -1,7 +1,7 @@
 <?php
 \App\Helper\TemplateHelper::widget('sp_admin', 'header');
 ?>
-    <div class="layui-fluid padding-top60">
+    <div class="layui-fluid hd-padding-top60">
         <table id="cfg_list" lay-filter="opt"></table>
     </div>
     <script>

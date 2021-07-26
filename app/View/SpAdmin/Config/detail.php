@@ -2,7 +2,7 @@
 \App\Helper\TemplateHelper::widget('sp_admin', 'header', ['show_top_line' => false]);
 ?>
     <div class="layui-fluid">
-        <form class="layui-form margin-top30" method="post" autocomplete="off">
+        <form class="layui-form hd-margin-top30" method="post" autocomplete="off">
             <div class="layui-form-item">
                 <label class="layui-form-label">配置项</label>
                 <div class="layui-input-block">
@@ -21,11 +21,13 @@
                     ?>
                 </div>
             </div>
-            <div class="layui-form-item">
+            <div class="layui-form-item hd-margin-top30">
                 <div class="layui-input-block">
                     <input type="hidden" name="hash_tk" value="<?php echo $csrf_token; ?>"/>
                     <input class="layui-btn" type="submit" lay-submit lay-filter="cfg_edit"
                            value="<?php echo xss_text('save', true); ?>"/>
+                    <input class="layui-btn layui-btn-primary hd-layer-close" type="button"
+                           value="<?php echo xss_text('cancel', true); ?>"/>
                 </div>
             </div>
         </form>

@@ -20,19 +20,36 @@ class ConfigBiz
         $this->dbHelper = new DbHelper();
     }
 
-    public function getConfigListByGroup($shopId, $group)
+    public function getConfigListByGroup(int $shopId, string $group): array
     {
+        $group = trim($group);
+        if ($shopId <= 0 || empty($group)) {
+            return [];
+        }
+
         return $this->dbHelper->table('config')->where(
             ['shop_id' => $shopId, 'config_group' => $group])->select();
     }
 
-    public function getConfigByKey($shopId, $key)
+    public function getConfigByKey(int $shopId, string $key): array
     {
+        $key = trim($key);
+        if ($shopId <= 0 || empty($key)) {
+            return [];
+        }
+
         return $this->dbHelper->table('config')->where(
             ['shop_id' => $shopId, 'config_key' => $key])->find();
     }
 
-    public function updateConfigByKey($shopId, $key, $data){
+    public function updateConfigByKey(int $shopId, string $key, array $data): int
+    {
+        $key = trim($key);
+        if ($shopId <= 0 || empty($key) || empty($data)) {
+            return 0;
+        }
 
+        return $this->dbHelper->table('config')->where(
+            ['shop_id' => $shopId, 'config_key' => $key])->update($data);
     }
 }

@@ -69,6 +69,10 @@ class ConfigHelper
         return $value;
     }
 
+    public static function getLangCodes(){
+        return self::get('app.languages', ['en']);
+    }
+
     public static function getAll()
     {
         return self::$configMaps;

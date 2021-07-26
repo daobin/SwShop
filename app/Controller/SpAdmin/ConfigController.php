@@ -11,7 +11,6 @@ namespace App\Controller\SpAdmin;
 
 use App\Biz\ConfigBiz;
 use App\Controller\Controller;
-use App\Helper\ConfigHelper;
 use App\Helper\LanguageHelper;
 use App\Helper\SafeHelper;
 
@@ -62,9 +61,8 @@ class ConfigController extends Controller
                 'updated_at' => time(),
                 'updated_by' => $this->spAdminInfo['account'] ?? '--'
             ]);
-            print_r($update);
             if ($update > 0) {
-                return ['status' => 'success'];
+                return ['status' => 'success', 'msg' => '保存成功'];
             }
 
             return ['status' => 'fail', 'msg' => LanguageHelper::get('invalid_request')];
@@ -79,8 +77,7 @@ class ConfigController extends Controller
             return LanguageHelper::get('invalid_request');
         }
 
-        $safeHelper = new SafeHelper($this->request, $this->response);
-        $cfgInfo['csrf_token'] = $safeHelper->buildCsrfToken('BG', $cfgKey);
+        $cfgInfo['csrf_token'] = (new SafeHelper($this->request, $this->response))->buildCsrfToken('BG', $cfgKey);
         return $this->render($cfgInfo);
     }
 }

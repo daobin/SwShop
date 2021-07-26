@@ -36,7 +36,7 @@
 
                                 idx = layer.open({
                                     type: 2,
-                                    title: '编辑',
+                                    title: '编辑类目',
                                     skin: 'hd-open-edit',
                                     content: '/spadmin/category/' + obj.data.id
                                 });
@@ -46,7 +46,8 @@
 
                                 idx = layer.open({
                                     type: 2,
-                                    title: '编辑',
+                                    title: '新增子类',
+                                    skin: 'hd-open-edit',
                                     content: '/spadmin/category/0?parent_id=' + obj.data.id
                                 });
                                 layer.full(idx);
@@ -58,11 +59,7 @@
             });
         });
     </script>
-    <div class="layui-fluid padding-top60">
-        ---
-        <?php
-        echo \App\Helper\ConfigHelper::get('abc', '--');
-        ?>
+    <div class="layui-fluid hd-padding-top60">
         <div class="layui-tab layui-tab-brief" lay-filter="cate_list">
             <ul class="layui-tab-title"></ul>
             <div class="layui-tab-content"></div>

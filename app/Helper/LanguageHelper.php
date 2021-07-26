@@ -38,8 +38,8 @@ class LanguageHelper
     public static function get($key, $lang = '')
     {
         if (empty($lang) || !in_array($lang, array_keys(self::$langMaps))) {
-            $lang = ConfigHelper::get('app.languages', ['en']);
-            $lang = reset($lang);
+            $langCodes = ConfigHelper::getLangCodes();
+            $lang = reset($langCodes);
         }
 
         $lang = strtolower($lang);

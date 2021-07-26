@@ -27,7 +27,8 @@ class DbHelper
         $this->initDb();
     }
 
-    private function initDb(){
+    private function initDb()
+    {
         $config = ConfigHelper::get('database.mysql.master');
         $this->tablePrefix = trim($config['table_prefix']);
 
@@ -51,18 +52,38 @@ class DbHelper
         }
     }
 
+    public function beginTransaction(){
+        $this->db->beginTransaction();
+    }
+
+    public function commit(){
+        $this->db->commit();
+    }
+
+    public function rollBack(){
+        $this->db->rollBack();
+    }
+
     public function table(string $table, string $as = '')
     {
+        $this->sqlBuild = [];
+
         if (empty($as)) {
             $this->sqlBuild['table'] = '`' . $this->tablePrefix . trim($table) . '`';
         } else {
             $this->sqlBuild['table'] = '`' . $this->tablePrefix . trim($table) . '` as `' . $as . '`';
         }
+
         return $this;
     }
 
     public function join(string $table, string $as = '', array $on = [])
     {
+        $table = trim($table);
+        if(isset($this->sqlBuild['join'][$table])){
+            return $this;
+        }
+
         $onSql = [];
         if (!empty($on)) {
             foreach ($on as $field => $field2) {
@@ -77,13 +98,13 @@ class DbHelper
         }
 
         if (empty($as)) {
-            $this->sqlBuild['join'][] = [
-                'table' => '`' . $this->tablePrefix . trim($table) . '`',
+            $this->sqlBuild['join'][$table] = [
+                'table' => '`' . $this->tablePrefix . $table . '`',
                 'on' => $onSql
             ];
         } else {
-            $this->sqlBuild['join'][] = [
-                'table' => '`' . $this->tablePrefix . trim($table) . '` as `' . $as . '`',
+            $this->sqlBuild['join'][$table] = [
+                'table' => '`' . $this->tablePrefix . $table . '` as `' . $as . '`',
                 'on' => $onSql
             ];
         }
@@ -165,7 +186,7 @@ class DbHelper
     {
         $this->limit(0, 1);
 
-        $preData =  $this->buildSql('select');
+        $preData = $this->buildSql('select');
         $this->stmt->execute($preData);
         $result = $this->stmt->fetch(\PDO::FETCH_ASSOC);
         return $this->resetSelectResult($result);
@@ -173,23 +194,23 @@ class DbHelper
 
     public function update(array $data)
     {
-        $preData =  $this->buildSql('update', $data);
+        $preData = $this->buildSql('update', $data);
         $this->stmt->execute($preData);
         return $this->stmt->rowCount();
     }
 
     public function delete()
     {
-        $preData =  $this->buildSql('delete');
+        $preData = $this->buildSql('delete');
         $this->stmt->execute($preData);
         return $this->stmt->rowCount();
     }
 
     public function insert(array $data)
     {
-        $preData =  $this->buildSql('insert', $data);
+        $preData = $this->buildSql('insert', $data);
         $this->stmt->execute($preData);
-        return $this->stmt->rowCount() > 0 ? $this->db->lastInsertId() : 0;
+        return $this->stmt->rowCount() > 0 ? (int)$this->db->lastInsertId() : 0;
     }
 
     private function resetSelectResult($result)
@@ -201,7 +222,7 @@ class DbHelper
         if (isset($result[0])) {
             array_walk($result, function (&$item) {
                 if (isset($item['value_type'])) {
-                    switch (strtolower($item['value_type'])){
+                    switch (strtolower($item['value_type'])) {
                         case 'int':
                             if (isset($item['config_value'])) {
                                 $item['config_value'] = intval($item['config_value']);
@@ -226,7 +247,7 @@ class DbHelper
             });
         } else {
             if (isset($result['value_type'])) {
-                switch (strtolower($result['value_type'])){
+                switch (strtolower($result['value_type'])) {
                     case 'int':
                         if (isset($result['config_value'])) {
                             $result['config_value'] = intval($result['config_value']);
@@ -391,18 +412,16 @@ class DbHelper
                 throw new \PDOException('SQL: Build Type Error');
         }
 
-//        print_r($preSql);
-//        print_r(PHP_EOL);
+//        print_r($preSql . PHP_EOL);
 //        print_r($preData);
-//        print_r(PHP_EOL);
         try {
-            $this->stmt =  $this->db->prepare($preSql);
+            $this->stmt = $this->db->prepare($preSql);
         } catch (\PDOException $e) {
             // 断连重连机制
             if (strtoupper($e->getCode()) == 'HY000') {
-                 $this->db = null;
+                $this->db = null;
                 $this->initDb();
-                $this->stmt =  $this->db->prepare($preSql);
+                $this->stmt = $this->db->prepare($preSql);
             } else {
                 throw $e;
             }

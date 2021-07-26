@@ -6,10 +6,10 @@ a, image, a:active, image:active{border: none !important;}
 .hd-color-red{color: #FF5722 !important;}
 .hd-text-right{text-align: right;}
 
-.margin-top30{margin-top: 30px !important;}
-
-.padding-top30{padding-top: 30px !important;}
-.padding-top60{padding-top: 60px !important;}
+.hd-margin-top30{margin-top: 30px !important;}
+.hd-padding-top30{padding-top: 30px !important;}
+.hd-padding-bottom30{padding-bottom: 30px !important;}
+.hd-padding-top60{padding-top: 60px !important;}
 
 #hd-main .layui-tab{margin: 1px; width: 100%; height: 100%;}
 #hd-main .layui-tab-title{background: #efefef; z-index: 99;}
@@ -27,6 +27,9 @@ a, image, a:active, image:active{border: none !important;}
 .layui-icon-edit:hover, .layui-icon-delete:hover{font-size: 22px;}
 .layui-icon-edit{color: #009688;}
 .layui-icon-delete{color: #FF5722;}
+
+.layui-form-label{width: 100px !important;}
+.layui-input-block{margin-left: 130px !important;}
 
 body .hd-open-edit .layui-layer-title{font-weight: bold; font-size: 16px;}
 
