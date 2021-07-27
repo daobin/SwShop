@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Helper\ConfigHelper;
 use App\Helper\LanguageHelper;
 use App\Helper\SessionHelper;
 use App\Helper\TemplateHelper;
@@ -16,6 +17,7 @@ class Controller
      */
     protected $session;
     protected $spAdminInfo;
+    protected $langCodes;
 
     public function __construct($request, $response)
     {
@@ -26,6 +28,7 @@ class Controller
 
         $this->spAdminInfo = $this->session->get('sp_admin_info', '');
         $this->spAdminInfo = $this->spAdminInfo ? json_decode($this->spAdminInfo, true) : [];
+        $this->langCodes = ConfigHelper::getLangCodes();
     }
 
     public function render($data = [], $template = null)

@@ -24,19 +24,19 @@
                     meta_desc = cate_desc_list[lang_code].meta_description;
                 }
 
-                let layId = 'cate_desc_' + lang_idx;
+                let lay_id = 'cate_desc_' + lang_idx;
                 let html = '';
                 if (lang_idx == 0) {
                     html += '<div class="layui-form-item">';
                     html += '<label class="layui-form-label">类目名称 <span class="hd-color-red">*</span></label>';
                     html += '<div class="layui-input-block">';
-                    html += '<input type="text" class="layui-input" name="cate_name[' + lang_code + ']" value="' + cate_name + '" />';
+                    html += '<input type="text" class="layui-input" name="cate_name[' + lang_code + ']" maxlength="300" value="' + cate_name + '" />';
                     html += '</div></div>';
                 } else {
                     html += '<div class="layui-form-item">';
                     html += '<label class="layui-form-label">类目名称</label>';
                     html += '<div class="layui-input-block">';
-                    html += '<input type="text" class="layui-input" name="cate_name[' + lang_code + ']"' +
+                    html += '<input type="text" class="layui-input" name="cate_name[' + lang_code + ']" maxlength="300"' +
                         ' placeholder="不填则默认为[' + lang_codes[0].toLocaleUpperCase() + ']的类目名称" value="' + cate_name + '" />';
                     html += '</div></div>';
                 }
@@ -54,28 +54,27 @@
                 html += '<div class="layui-form-item">';
                 html += '<label class="layui-form-label">Meta 标题</label>';
                 html += '<div class="layui-input-block">';
-                html += '<input type="text" class="layui-input" name="meta_title[' + lang_code + ']"' +
+                html += '<input type="text" class="layui-input" name="meta_title[' + lang_code + ']" maxlength="300"' +
                     ' placeholder="用于 SEO 优化，不填则默认为类目名称" value="' + meta_title + '" />';
                 html += '</div></div>';
                 html += '<div class="layui-form-item">';
                 html += '<label class="layui-form-label">Meta 关键词</label>';
                 html += '<div class="layui-input-block">';
-                html += '<textarea class="layui-textarea" name="meta_keywords[' + lang_code + ']"' +
+                html += '<textarea class="layui-textarea" name="meta_keywords[' + lang_code + ']" maxlength="500"' +
                     ' placeholder="用于 SEO 优化">' + meta_keywords + '</textarea>';
                 html += '</div></div>';
                 html += '<div class="layui-form-item">';
                 html += '<label class="layui-form-label">Meta 描述</label>';
                 html += '<div class="layui-input-block">';
-                html += '<textarea class="layui-textarea" name="meta_desc[' + lang_code + ']"' +
+                html += '<textarea class="layui-textarea" name="meta_desc[' + lang_code + ']" maxlength="1000"' +
                     ' placeholder="用于 SEO 优化">' + meta_desc + '</textarea>';
                 html += '</div></div>';
                 element.tabAdd('cate_desc_list', {
-                    id: layId,
+                    id: lay_id,
                     title: lang_code.toLocaleUpperCase(),
                     content: html
                 });
             }
-
             element.tabChange('cate_desc_list', 'cate_desc_0');
 
             xmSelect.render({

@@ -225,12 +225,17 @@ class DbHelper
                     switch (strtolower($item['value_type'])) {
                         case 'int':
                             if (isset($item['config_value'])) {
-                                $item['config_value'] = intval($item['config_value']);
+                                $item['config_value'] = (int)$item['config_value'];
                             }
                             break;
                         case 'password':
                             if (isset($item['config_value'])) {
                                 $item['config_value'] = SafeHelper::decodeString($item['config_value']);
+                            }
+                            break;
+                        case 'list':
+                            if (isset($item['config_value'])) {
+                                $item['config_value'] = json_decode($item['config_value'], true);
                             }
                             break;
                     }
@@ -250,7 +255,7 @@ class DbHelper
                 switch (strtolower($result['value_type'])) {
                     case 'int':
                         if (isset($result['config_value'])) {
-                            $result['config_value'] = intval($result['config_value']);
+                            $result['config_value'] = (int)$result['config_value'];
                         }
                         break;
                     case 'password':
@@ -258,7 +263,7 @@ class DbHelper
                             $result['config_value'] = SafeHelper::decodeString($result['config_value']);
                         }
                         break;
-                    case 'radio':
+                    case 'list':
                         if (isset($result['config_value'])) {
                             $result['config_value'] = json_decode($result['config_value'], true);
                         }

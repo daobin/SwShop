@@ -10,16 +10,16 @@
 
             layui.use(['tree'], function () {
                 for (let tree_idx in cate_tree_list) {
-                    let layId = 'cate_list_' + tree_idx;
+                    let lay_id = 'cate_list_' + tree_idx;
 
                     element.tabAdd('cate_list', {
-                        id: layId,
+                        id: lay_id,
                         title: lang_codes[tree_idx].toLocaleUpperCase(),
-                        content: '<div id="' + layId + '"></div>'
+                        content: '<div id="' + lay_id + '"></div>'
                     });
 
                     layui.tree.render({
-                        elem: '#' + layId,
+                        elem: '#' + lay_id,
                         data: cate_tree_list[tree_idx],
                         accordion: true,
                         onlyIconControl: true,

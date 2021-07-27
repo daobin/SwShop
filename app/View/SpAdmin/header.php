@@ -22,8 +22,19 @@
 <?php if ($show_top_line){ ?>
 <div class="layui-fluid" id="hd-top-line">
     <div class="layui-row">
-        <div class="layui-col-xs-offset11 layui-col-xs1 hd-text-right">
-            <a class="layui-btn layui-btn-sm layui-btn-normal"><i class="layui-icon layui-icon-refresh"></i></a>
+        <div class="layui-col-xs11">
+            <?php
+            if (empty($add_url)) {
+                echo '&nbsp;';
+            } else {
+                echo '<a class="layui-btn layui-btn-sm hd-opt-add" href="', $add_url, '"><i class="layui-icon layui-icon-addition"></i></a>';
+            }
+            ?>
+        </div>
+        <div class="layui-col-xs1 hd-text-right">
+            <a class="layui-btn layui-btn-sm layui-btn-normal hd-opt-refresh">
+                <i class="layui-icon layui-icon-refresh"></i>
+            </a>
         </div>
     </div>
     <hr class="layui-bg-gray"/>

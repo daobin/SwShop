@@ -51,7 +51,8 @@ class SafeHelper
             return false;
         }
 
-        return $this->session->get(trim((string)reset($field)), '') == $token;
+        $field = trim((string)reset($field));
+        return $this->session->get($field, '') == $token;
     }
 
     /**

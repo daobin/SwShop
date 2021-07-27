@@ -23,31 +23,50 @@
 
         layui.use(['element'], function () {
             let element = layui.element;
-
-            element.on('tabDelete(iframe)', function (data) {
-                iframeNavMaps.splice(data.index, 1);
-            });
+            let iframe_reload = null;
 
             $('a').click(function () {
+                if ($(this).attr('to-iframe') != undefined) {
+                    $('a[iframe=' + $(this).attr('to-iframe') + ']').click();
+                    $(this).find('span').remove();
+                    return;
+                }
+
                 if ($(this).attr('iframe') == undefined) {
                     return;
                 }
 
                 let iframe = $.trim($(this).attr('iframe'));
-                let layId = iframe.replace('/', '_');
-                if (iframeNavMaps.indexOf(layId) > -1) {
-                    element.tabChange('iframe', layId);
+                let lay_id = iframe.replace('/', '_');
+                if (iframeNavMaps.indexOf(lay_id) > -1) {
+                    iframe_reload = true;
+                    element.tabChange('iframe', lay_id);
                 } else {
-                    iframeNavMaps.push(layId);
+                    iframeNavMaps.push(lay_id);
 
                     let iframeHtml = '<iframe src="/spadmin/' + iframe + '.html"></iframe>';
                     element.tabAdd('iframe', {
-                        id: layId,
+                        id: lay_id,
                         title: $(this).html(),
                         content: iframeHtml
                     });
-                    element.tabChange('iframe', layId);
+                    element.tabChange('iframe', lay_id);
                 }
+            });
+
+            element.on('tab(iframe)', function (data) {
+                if(iframe_reload){
+                    if(iframe_reload === true){
+                        $('#hd-main .layui-tab-content iframe').get()[data.index].contentWindow.location.reload(true);
+                    }else{
+                        $('#hd-main .layui-tab-content iframe').get()[data.index].contentWindow.location.href = iframe_reload;
+                    }
+                    iframe_reload = false;
+                }
+            });
+
+            element.on('tabDelete(iframe)', function (data) {
+                iframeNavMaps.splice(data.index, 1);
             });
 
             // 初始化数据表盘
@@ -64,16 +83,19 @@
             </div>
             <ul class="layui-nav layui-layout-left">
                 <li class="layui-nav-item">
-                    <a>今日用户<span class="layui-badge">99</span></a>
+                    <a to-iframe="customer">今日用户<span class="layui-badge">99</span></a>
                 </li>
                 <li class="layui-nav-item">
-                    <a>今日订单<span class="layui-badge">99</span></a>
+                    <a to-iframe="order">今日订单<span class="layui-badge">99</span></a>
                 </li>
                 <li class="layui-nav-item">
-                    <a>待处理订单<span class="layui-badge-dot"></span></a>
+                    <a to-iframe="order">待处理订单<span class="layui-badge-dot"></span></a>
                 </li>
             </ul>
             <ul class="layui-nav layui-layout-right">
+                <li class="layui-nav-item">
+                    <span id="date_time"></span>
+                </li>
                 <li class="layui-nav-item">
                     <a><img src="//t.cn/RCzsdCq" class="layui-nav-img"/><?php echo xss_text($admin_name); ?></a>
                     <dl class="layui-nav-child">
@@ -93,5 +115,10 @@
         </div>
     </div>
 </div>
+<script>
+    window.onload = function () {
+        show_date_time('#date_time');
+    }
+</script>
 </body>
 </html>

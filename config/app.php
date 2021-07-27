@@ -7,5 +7,5 @@ return [
     // 系统时区
     'timezone' => 'UTC',
     //默认语言为第一个
-    'languages' => ['zh', 'en'],
+    'languages' => ['zh', 'en', 'ja'],
 ];

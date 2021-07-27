@@ -36,11 +36,10 @@ RouteHelper::any('/spadmin/config/<cfg_key>', 'SpAdmin.Config.detail', ['cfg_key
 RouteHelper::get('/spadmin/category', 'SpAdmin.Category.index');
 RouteHelper::any('/spadmin/category/<cate_id>', 'SpAdmin.Category.detail', ['cate_id' => '\d+']);
 RouteHelper::get('/spadmin/product', 'SpAdmin.Product.index');
-RouteHelper::get('/spadmin/product/<prod_id>', 'SpAdmin.Product.detail', ['prod_id' => '\d+']);
-RouteHelper::post('/spadmin/product/<prod_id>', 'SpAdmin.Product.saveProduct', ['prod_id' => '\d+']);
+RouteHelper::any('/spadmin/product/<prod_id>', 'SpAdmin.Product.detail', ['prod_id' => '\d+']);
 RouteHelper::get('/spadmin/customer', 'SpAdmin.Customer.index');
 RouteHelper::get('/spadmin/customer/<customer_id>', 'SpAdmin.Customer.detail', ['customer_id' => '\d+']);
 RouteHelper::get('/spadmin/order', 'SpAdmin.Order.index');
-RouteHelper::get('/spadmin/order/<prod_id>', 'SpAdmin.Order.detail', ['prod_id' => '\d+']);
+RouteHelper::get('/spadmin/order/<order_number>', 'SpAdmin.Order.detail', ['order_number' => '[\w\d]+']);
 
 return [];

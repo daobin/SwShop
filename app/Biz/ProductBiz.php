@@ -22,6 +22,29 @@ class ProductBiz
         $this->cateList = [];
     }
 
+    public function getProductById(int $shopId, int $prodId): array
+    {
+        if ($shopId <= 0 || $prodId <= 0) {
+            return [];
+        }
+
+        $prodInfo = $this->dbHelper->table('product')->where(
+            ['shop_id' => $shopId, 'product_id' => $prodId])->find();
+        if (empty($prodInfo)) {
+            return [];
+        }
+
+        $descList = $this->dbHelper->table('product_description')->where(
+            ['shop_id' => $shopId, 'product_id' => $prodId])->select();
+        if (empty($descList)) {
+            $prodInfo['desc_list'] = [];
+        } else {
+            $prodInfo['desc_list'] = array_column($descList, null, 'language_code');
+        }
+
+        return $prodInfo;
+    }
+
     public function getCategoryTree(int $shopId, int $parentId = 0, string $language = 'en', int $filterCateId = 0): array
     {
         if ($shopId <= 0 || empty($language)) {

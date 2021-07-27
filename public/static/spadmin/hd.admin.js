@@ -22,9 +22,15 @@ layui.use(['jquery', 'layer'], function () {
     window.layer = layui.layer;
 
     // 只允许正整数
-    $('.hd-int-only').keyup(function(){
-        let val = $.trim($(this).val());
-        $(this).val(val.replace(/[^\d]+/, ''));
+    $(document).on('keyup', '.hd-int-only', function () {
+        $(this).val($(this).val().replace(/[^\d]+/, ''));
+    });
+
+    // 只允许正数，含小数
+    $(document).on('keyup', '.hd-float-only', function () {
+        let val = $(this).val().replace(/[^\d\.]+/, '');
+        val = val.replace(/\.{2,}/, '.');
+        $(this).val(val);
     });
 
     // 关闭当前 iframe 弹出层
@@ -32,6 +38,46 @@ layui.use(['jquery', 'layer'], function () {
         parent.layer.close(parent.layer.getFrameIndex(window.name));
     });
 });
+
+// 当前时间展示
+function show_date_time(elem) {
+    if (elem == undefined || $.trim(elem) == '') {
+        return;
+    }
+
+    let date = new Date();
+    setInterval(function () {
+        date.setSeconds(date.getSeconds() + 1);
+
+        var date_time = date.getFullYear() + '-';
+        if (date.getMonth() + 1 < 10) {
+            date_time += '0';
+        }
+        date_time += (date.getMonth() + 1) + '-';
+
+        if (date.getDate() < 10) {
+            date_time += '0';
+        }
+        date_time += date.getDate() + ' ';
+
+        if (date.getHours() < 10) {
+            date_time += '0';
+        }
+        date_time += date.getHours() + ':';
+
+        if (date.getMinutes() < 10) {
+            date_time += '0';
+        }
+        date_time += date.getMinutes() + ':';
+
+        if (date.getSeconds() < 10) {
+            date_time += '0';
+        }
+        date_time += date.getSeconds();
+
+        $(elem).text('[ ' + date_time + ' ]');
+    }, 998);
+}
 
 // 表单提交
 function form_submit(url, data) {
@@ -44,20 +90,21 @@ function form_submit(url, data) {
         url: url,
         data: data,
         success: function (res) {
-            console.log(res);
             if (res.msg != undefined && res.msg != '') {
-                layer.alert(res.msg, open_alert_cfg, function(){
+                layer.alert(res.msg, open_alert_cfg, function (idx) {
                     if (res.url != undefined && res.url != '') {
                         window.location.href = res.url;
-                    }else if (res.status == 'success') {
+                    } else if (res.status == 'success') {
                         // 由于保存操作是在子窗口进行，所以在父窗口刷新页面
                         parent.location.reload(true);
+                    }else{
+                        layer.close(idx);
                     }
                 });
-            }else{
+            } else {
                 if (res.url != undefined && res.url != '') {
                     window.location.href = res.url;
-                }else if (res.status == 'success') {
+                } else if (res.status == 'success') {
                     // 由于保存操作是在子窗口进行，所以在父窗口刷新页面
                     parent.location.reload(true);
                 }

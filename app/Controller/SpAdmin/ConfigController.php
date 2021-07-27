@@ -41,43 +41,58 @@ class ConfigController extends Controller
 
     public function detail()
     {
-        $cfgKey = $this->request->get['cfg_key'] ?? '';
-        $cfgKey = strtoupper($cfgKey);
-        $configBiz = new ConfigBiz();
-
         if ($this->request->isPost) {
-            if (empty($cfgKey)) {
-                return ['status' => 'fail', 'msg' => LanguageHelper::get('invalid_request')];
-            }
-
-            $cfgVal = trim($this->request->post['config_value'] ?? '');
-            $valType = trim($this->request->post['value_type'] ?? '');
-            if (strtolower($valType) == 'password') {
-                $cfgVal = SafeHelper::encodeString($cfgVal);
-            }
-
-            $update = $configBiz->updateConfigByKey($this->request->shop_id, $cfgKey, [
-                'config_value' => $cfgVal,
-                'updated_at' => time(),
-                'updated_by' => $this->spAdminInfo['account'] ?? '--'
-            ]);
-            if ($update > 0) {
-                return ['status' => 'success', 'msg' => '保存成功'];
-            }
-
-            return ['status' => 'fail', 'msg' => LanguageHelper::get('invalid_request')];
+            return $this->save();
         }
 
+        $cfgKey = $this->request->get['cfg_key'] ?? '';
+        $cfgKey = strtoupper($cfgKey);
         if (empty($cfgKey)) {
             return LanguageHelper::get('invalid_request');
         }
 
-        $cfgInfo = $configBiz->getConfigByKey($this->request->shop_id, $cfgKey);
+        $cfgInfo = (new ConfigBiz())->getConfigByKey($this->request->shop_id, $cfgKey);
         if (empty($cfgInfo)) {
             return LanguageHelper::get('invalid_request');
         }
 
         $cfgInfo['csrf_token'] = (new SafeHelper($this->request, $this->response))->buildCsrfToken('BG', $cfgKey);
         return $this->render($cfgInfo);
+    }
+
+    private function save()
+    {
+        $cfgKey = $this->request->get['cfg_key'] ?? '';
+        $cfgKey = strtoupper($cfgKey);
+        if (empty($cfgKey)) {
+            return ['status' => 'fail', 'msg' => LanguageHelper::get('invalid_request')];
+        }
+
+        $cfgVal = trim($this->request->post['config_value'] ?? '');
+        $valType = trim($this->request->post['value_type'] ?? '');
+        switch(strtolower($valType)){
+            case 'password':
+                $cfgVal = SafeHelper::encodeString($cfgVal);
+                break;
+            case 'int':
+                $cfgVal = (int)$cfgVal;
+                break;
+            case 'list':
+                $cfgVal = trim($cfgVal, ',');
+                $cfgVal = explode(',', $cfgVal);
+                $cfgVal = json_encode($cfgVal);
+                break;
+        }
+
+        $update = (new ConfigBiz())->updateConfigByKey($this->request->shop_id, $cfgKey, [
+            'config_value' => $cfgVal,
+            'updated_at' => time(),
+            'updated_by' => $this->spAdminInfo['account'] ?? '--'
+        ]);
+        if ($update > 0) {
+            return ['status' => 'success', 'msg' => '保存成功'];
+        }
+
+        return ['status' => 'fail', 'msg' => LanguageHelper::get('invalid_request')];
     }
 }

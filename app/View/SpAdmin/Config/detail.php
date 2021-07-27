@@ -13,10 +13,28 @@
                 <label class="layui-form-label">配置值</label>
                 <div class="layui-input-block">
                     <?php
-                    if (strtolower($value_type) == 'password') {
-                        echo '<textarea class="layui-textarea" name="config_value" placeholder="' . hide_chars($config_value) . '"></textarea>';
-                    } else {
-                        echo '<textarea class="layui-textarea" name="config_value">' . $config_value . '</textarea>';
+                    switch (strtolower($value_type)) {
+                        case 'password':
+                            echo '<textarea class="layui-textarea" name="config_value" placeholder="' . hide_chars($config_value) . '"></textarea>';
+                            break;
+                        case 'list':
+                            $config_value_arr = [];
+                            if(!empty($config_value)){
+                                foreach ($config_value as $val) {
+                                    $config_value_arr[] = [
+                                        'name' => $val,
+                                        'value' => $val,
+                                        'selected' => true
+                                    ];
+                                }
+                            }
+                            $config_value = json_encode($config_value_arr);
+                            unset($config_value_arr);
+
+                            echo '<div id="value_select"></div>';
+                            break;
+                        default:
+                            echo '<textarea class="layui-textarea" name="config_value">' . $config_value . '</textarea>';
                     }
                     ?>
                 </div>
@@ -24,6 +42,7 @@
             <div class="layui-form-item hd-margin-top30">
                 <div class="layui-input-block">
                     <input type="hidden" name="hash_tk" value="<?php echo $csrf_token; ?>"/>
+                    <input type="hidden" name="value_type" value="<?php echo strtolower($value_type); ?>"/>
                     <input class="layui-btn" type="submit" lay-submit lay-filter="cfg_edit"
                            value="<?php echo xss_text('save', true); ?>"/>
                     <input class="layui-btn layui-btn-primary hd-layer-close" type="button"
@@ -32,8 +51,27 @@
             </div>
         </form>
     </div>
+    <script src="/static/layui/xm-select.js"></script>
     <script>
         layui.use(['form'], function () {
+            if ($('#value_select').length == 1) {
+                xmSelect.render({
+                    el: '#value_select',
+                    name: 'config_value',
+                    height: 'auto',
+                    tips: '请选择配置',
+                    data: JSON.parse('<?php echo $config_value;?>'),
+                    filterable: true,
+                    searchTips: '请选择配置，若不存在配置请输入新增',
+                    create: function (val) {
+                        return {
+                            name: val,
+                            value: val
+                        };
+                    }
+                });
+            }
+
             layui.form.on('submit(cfg_edit)', function (formObj) {
                 if ($.trim(formObj.field.config_value) == '') {
                     layer.confirm('配置值是否保存为空？', open_ask_cfg, function (idx) {
