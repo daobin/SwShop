@@ -6,6 +6,8 @@ var open_ask_cfg = {
     skin: 'hd-open-ask'
 };
 var open_alert_cfg = {
+    title: '提示',
+    icon: 0,
     offset: '120px',
     closeBtn: 0
 };
@@ -76,7 +78,7 @@ function show_date_time(elem) {
         date_time += date.getSeconds();
 
         $(elem).text('[ ' + date_time + ' ]');
-    }, 998);
+    }, 999);
 }
 
 // 表单提交
@@ -111,7 +113,7 @@ function form_submit(url, data) {
             }
         },
         error: function () {
-            layer.alert('未知错误，请稍候刷新页面重试！');
+            layer.alert('未知错误，请稍候刷新页面重试！', open_alert_cfg);
         }
     });
 }

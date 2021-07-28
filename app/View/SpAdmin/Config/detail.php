@@ -19,11 +19,11 @@
                             break;
                         case 'list':
                             $config_value_arr = [];
-                            if(!empty($config_value)){
-                                foreach ($config_value as $val) {
+                            if (!empty($config_value)) {
+                                foreach ($config_value as $name => $val) {
                                     $config_value_arr[] = [
-                                        'name' => $val,
-                                        'value' => $val,
+                                        'name' => $name,
+                                        'value' => $name . '=' . $val,
                                         'selected' => true
                                     ];
                                 }
@@ -62,11 +62,19 @@
                     tips: '请选择配置',
                     data: JSON.parse('<?php echo $config_value;?>'),
                     filterable: true,
-                    searchTips: '请选择配置，若不存在配置请输入新增',
+                    searchTips: '请选择配置，若不存在配置请输入新增，名称与值可用等号分隔，如 Name=Value',
                     create: function (val) {
+                        if ($.trim(val) == '') {
+                            return;
+                        }
+
+                        val = val.split('=', 2);
+                        if (val.length != 2) {
+                            val[1] = val[0];
+                        }
                         return {
-                            name: val,
-                            value: val
+                            name: $.trim(val[0]),
+                            value: $.trim(val[0]) + '=' + $.trim(val[1])
                         };
                     }
                 });

@@ -24,8 +24,13 @@ class ConfigController extends Controller
 
             if (!empty($cfgList)) {
                 foreach ($cfgList as &$cfgInfo) {
-                    if (strtolower($cfgInfo['value_type']) == 'password') {
-                        $cfgInfo['config_value'] = hide_chars($cfgInfo['config_value']);
+                    switch(strtolower($cfgInfo['value_type'])){
+                        case 'password':
+                            $cfgInfo['config_value'] = hide_chars($cfgInfo['config_value']);
+                            break;
+                        case 'list':
+                            $cfgInfo['config_value'] = empty($cfgInfo['config_value']) ? '' : array_keys($cfgInfo['config_value']);
+                            break;
                     }
                 }
             }
@@ -78,9 +83,25 @@ class ConfigController extends Controller
                 $cfgVal = (int)$cfgVal;
                 break;
             case 'list':
+                $resetVal = [];
                 $cfgVal = trim($cfgVal, ',');
-                $cfgVal = explode(',', $cfgVal);
-                $cfgVal = json_encode($cfgVal);
+                if(!empty($cfgVal)){
+                    $cfgVal = explode(',', $cfgVal);
+                    foreach($cfgVal as $val){
+                        $val = trim($val);
+                        if(empty($val)){
+                            continue;
+                        }
+
+                        $val = explode('=', $val, 2);
+                        if(count($val) == 2){
+                            $resetVal[$val[0]] = $val[1];
+                        }else{
+                            $resetVal[$val[0]] = $val[0];
+                        }
+                    }
+                }
+                $cfgVal = json_encode($resetVal);
                 break;
         }
 

@@ -30,7 +30,7 @@
                                 layer.close(idx);
 
                                 if (obj.data.id < 0) {
-                                    layer.alert('当前类实际不存在，不允许编辑', {title: '提示', icon: 0, offset: '120px;'});
+                                    layer.alert('当前类实际不存在，不允许编辑', open_alert_cfg);
                                     return;
                                 }
 

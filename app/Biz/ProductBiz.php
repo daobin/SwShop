@@ -45,6 +45,57 @@ class ProductBiz
         return $prodInfo;
     }
 
+    public function saveProduct(array $prodData, array $prodDescData, array $prodSkuData, array $prodImgData, array $prodPriceData): int
+    {
+        if (empty($prodData) || empty($prodDescData) || empty($prodSkuData) || empty($prodImgData) || empty($prodPriceData)) {
+            return 0;
+        }
+
+        $shopId = $prodData['shop_id'] ?? 0;
+        $prodId = $prodData['product_id'] ?? 0;
+        $prodInfo = $this->getProductById($shopId, $prodId);
+
+        $this->dbHelper->beginTransaction();
+        try {
+            if (empty($prodInfo)) {
+                unset($prodInfo['product_id']);
+                $prodId = $this->dbHelper->table('product')->insert($prodData);
+
+                foreach ($prodDescData as $prodDesc) {
+                    $prodDesc['product_id'] = $prodId;
+                    $this->dbHelper->table('product_description')->insert($prodDesc);
+                }
+
+            } else {
+                unset($prodData['created_at'], $prodData['created_by']);
+                $this->dbHelper->table('product')->where(
+                    ['shop_id' => $shopId, 'product_id' => $prodId])->update($prodData);
+
+                foreach ($prodDescData as $langCode => $prodDesc) {
+                    if (isset($prodInfo['desc_list'][$langCode])) {
+                        $prodDescId = $prodInfo['desc_list'][$langCode]['product_description_id'];
+                        unset($prodDesc['created_at'], $prodDesc['created_by']);
+
+                        $this->dbHelper->table('product_description')->where(
+                            ['shop_id' => $shopId, 'product_description_id' => $prodDescId])->update($prodDesc);
+                    } else {
+                        $this->dbHelper->table('product_description')->insert($prodDesc);
+                    }
+                }
+
+            }
+
+            $res = $prodId;
+            $this->dbHelper->commit();
+        } catch (\PDOException $e) {
+            print_r(__CLASS__ . ' :: ' . $e->getMessage());
+            $res = 0;
+            $this->dbHelper->rollBack();
+        }
+
+        return $res;
+    }
+
     public function getCategoryTree(int $shopId, int $parentId = 0, string $language = 'en', int $filterCateId = 0): array
     {
         if ($shopId <= 0 || empty($language)) {
@@ -131,14 +182,16 @@ class ProductBiz
             if (empty($cateInfo)) {
                 unset($cateData['product_category_id']);
                 $cateId = $this->dbHelper->table('product_category')->insert($cateData);
+
                 foreach ($cateDescData as $cateDesc) {
                     $cateDesc['product_category_id'] = $cateId;
                     $this->dbHelper->table('product_category_description')->insert($cateDesc);
                 }
             } else {
-                unset($cateData['product_category_id'], $cateData['created_at'], $cateData['created_by']);
+                unset($cateData['created_at'], $cateData['created_by']);
                 $this->dbHelper->table('product_category')->where(
                     ['shop_id' => $shopId, 'product_category_id' => $cateId])->update($cateData);
+
                 foreach ($cateDescData as $langCode => $cateDesc) {
                     if (isset($cateInfo['desc_list'][$langCode])) {
                         $cateDescId = $cateInfo['desc_list'][$langCode]['product_category_description_id'];

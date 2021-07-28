@@ -94,22 +94,6 @@ class HttpServer
             $request->isAjax = isset($request->header['x-requested-with']) && strtoupper($request->header['x-requested-with']) == 'XMLHTTPREQUEST';
             $charset = ConfigHelper::get('app.charset', 'UTF-8');
 
-            // POST 提交数据的 CSRF 安全防护（基于 Redis）
-            if ($request->isPost) {
-                $safeHelper = new SafeHelper($request, $response);
-                if (!isset($request->post['hash_tk']) || !($safeHelper->chkCsrfToken($request->post['hash_tk']))) {
-                    if ($request->isAjax) {
-                        $response->header('Content-type', 'application/json; charset=' . $charset);
-                        $response->end(json_encode(['status' => 'fail', 'msg' => LanguageHelper::get('invalid_request')]));
-                    } else {
-                        $response->header('Content-type', 'text/html; charset=' . $charset);
-                        $response->end(LanguageHelper::get('invalid_request'));
-                    }
-
-                    return;
-                }
-            }
-
             // 路由设置
             list($module, $controller, $action) = RouteHelper::buildRoute($request);
             $request->module = $module;
@@ -150,6 +134,23 @@ class HttpServer
                         return;
                     }
                     break;
+            }
+
+            // POST 提交数据的 CSRF 安全防护（基于 Redis）
+            // 为避免因登录失效导致 TOKEN 验证不过，故将此判断放在登录验证之后
+            if ($request->isPost) {
+                $safeHelper = new SafeHelper($request, $response);
+                if (!isset($request->post['hash_tk']) || !($safeHelper->chkCsrfToken($request->post['hash_tk']))) {
+                    if ($request->isAjax) {
+                        $response->header('Content-type', 'application/json; charset=' . $charset);
+                        $response->end(json_encode(['status' => 'fail', 'msg' => LanguageHelper::get('invalid_request')]));
+                    } else {
+                        $response->header('Content-type', 'text/html; charset=' . $charset);
+                        $response->end(LanguageHelper::get('invalid_request'));
+                    }
+
+                    return;
+                }
             }
 
             // 调用路由资源

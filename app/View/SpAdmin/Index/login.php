@@ -71,12 +71,10 @@
         <!--img id="logo" src="" /-->
     </div>
     <div class="layui-form-item hd-margin-top30">
-        <div class="layui-form-inline">
-            <i class="layui-icon layui-icon-username"></i>
-            <input class="layui-input" type="text" maxlength="16"
-                   placeholder="<?php echo xss_text('enter_account', true); ?>" name="account"
-                   lay-verify="account" lay-verType="alert"/>
-        </div>
+        <i class="layui-icon layui-icon-username"></i>
+        <input class="layui-input" type="text" maxlength="16"
+               placeholder="<?php echo xss_text('enter_account', true); ?>" name="account"
+               lay-verify="account" lay-verType="alert"/>
     </div>
     <div class="layui-form-item">
         <i class="layui-icon layui-icon-password"></i>

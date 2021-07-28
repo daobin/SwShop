@@ -34,7 +34,7 @@
                         layer.full(layer_idx);
                         break;
                     case 'look':
-                        layer.alert('前台功能尚未完成，敬请等待');
+                        layer.alert('前台功能尚未完成，敬请等待', open_alert_cfg);
                         break;
                 }
             });

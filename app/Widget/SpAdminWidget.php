@@ -33,6 +33,11 @@ class SpAdminWidget extends Widget
                     ['name' => '限时限量', 'icon' => 'layui-icon-time', 'iframe' => 'time-limited'],
                 ]
             ],
+            ['name' => '定时工具', 'icon' => 'layui-icon-at', 'sub_navs' =>
+                [
+                    ['name' => '消息通知', 'icon' => 'layui-icon-notice', 'iframe' => 'cron/notice'],
+                ]
+            ],
             ['name' => '系统设置', 'icon' => 'layui-icon-set', 'sub_navs' =>
                 [
                     ['name' => '商城信息', 'icon' => 'layui-icon-tips', 'iframe' => 'config-web_info'],

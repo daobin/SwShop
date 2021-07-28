@@ -89,10 +89,13 @@ class CategoryController extends Controller
         $parentId = (int)$parentId > 0 ? (int)$parentId : 0;
         $cateStatus = isset($this->request->post['cate_status']) ? 1 : 0;
         $cateSort = empty($this->request->post['cate_sort']) ? 0 : (int)$this->request->post['cate_sort'];
+        $cateSort = $cateSort > 0 ? $cateSort : 0;
         $cateUrl = empty($this->request->post['cate_url']) ? '' : trim($this->request->post['cate_url']);
         $redirectLink = empty($this->request->post['redirect_link']) ? '' : trim($this->request->post['redirect_link']);
         $prodSize = empty($this->request->post['prod_size']) ? 0 : (int)$this->request->post['prod_size'];
+        $prodSize = $prodSize > 0 ? $prodSize : 0;
         $reviewSize = empty($this->request->post['review_size']) ? 0 : (int)$this->request->post['review_size'];
+        $reviewSize = $reviewSize > 0 ? $reviewSize : 0;
 
         $cateUrl = trim($cateUrl, '/');
         if (!empty($redirectLink) && !filter_var($redirectLink, FILTER_VALIDATE_URL)) {
@@ -101,7 +104,7 @@ class CategoryController extends Controller
 
         $defaultLangCode = reset($this->langCodes);
         if (empty($this->request->post['cate_name'][$defaultLangCode])) {
-            return ['status' => 'fail', 'msg' => '默认语言[ZH]的类目名称不能为空'];
+            return ['status' => 'fail', 'msg' => '默认语言[' . strtoupper($defaultLangCode) . ']的类目名称不能为空'];
         }
 
         $cateNameList = $this->request->post['cate_name'];
@@ -168,6 +171,6 @@ class CategoryController extends Controller
             return ['status' => 'success', 'msg' => '保存成功'];
         }
 
-        return ['status' => 'fail', 'msg' => LanguageHelper::get('invalid_request')];
+        return ['status' => 'fail', 'msg' => '保存失败'];
     }
 }

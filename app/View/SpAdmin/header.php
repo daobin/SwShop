@@ -17,6 +17,7 @@
     <![endif]-->
     <script src="/static/layui/layui.js"></script>
     <script src="/static/spadmin/hd.admin.js<?php echo \App\Helper\ConfigHelper::get('web_info.timestamp'); ?>"></script>
+    <script src="/static/spadmin/hd.image.js<?php echo \App\Helper\ConfigHelper::get('web_info.timestamp'); ?>"></script>
 </head>
 <body>
 <?php if ($show_top_line){ ?>
@@ -31,7 +32,7 @@
             }
             ?>
         </div>
-        <div class="layui-col-xs1 hd-text-right">
+        <div class="layui-col-xs1 hd-align-right">
             <a class="layui-btn layui-btn-sm layui-btn-normal hd-opt-refresh">
                 <i class="layui-icon layui-icon-refresh"></i>
             </a>

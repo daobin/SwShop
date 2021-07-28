@@ -5,7 +5,7 @@
         var lang_codes = JSON.parse('<?php echo json_encode($lang_codes);?>');
         var prod_desc_list = JSON.parse('<?php echo json_encode($prod_desc_list);?>');
 
-        layui.use(['form', 'element'], function () {
+        layui.use('element', function () {
             let element = layui.element;
             for (let lang_idx in lang_codes) {
                 let lang_code = lang_codes[lang_idx];
@@ -77,12 +77,6 @@
                 });
             }
             element.tabChange('prod_desc_list', 'prod_desc_0');
-
-            layui.form.on('submit(prod_edit)', function (formObj) {
-                form_submit(window.location.href, formObj.field);
-
-                return false;
-            });
         });
     </script>
     <div class="layui-fluid">
@@ -148,8 +142,8 @@
                             <option value="">请选择单位</option>
                             <?php
                             if ($weight_units) {
-                                foreach ($weight_units as $unit) {
-                                    echo '<option value="', xss_text($unit), '">', xss_text($unit), '</option>';
+                                foreach ($weight_units as $text => $unit) {
+                                    echo '<option value="', xss_text($unit), '">', xss_text($text), '</option>';
                                 }
                             }
                             ?>
@@ -162,15 +156,15 @@
                 <label class="layui-form-label">商品尺寸</label>
                 <div class="layui-input-block">
                     <div class="layui-input-inline">
-                        <input type="text" class="layui-input hd-float-only" name="width" maxlength="12"
+                        <input type="text" class="layui-input hd-float-only" name="length" maxlength="12"
                                placeholder="长，不填则默认为0"
-                               value="<?php echo $prod_info['width'] ?? ''; ?>"/>
+                               value="<?php echo $prod_info['length'] ?? ''; ?>"/>
                     </div>
                     <div class="layui-form-mid">-</div>
                     <div class="layui-input-inline">
-                        <input type="text" class="layui-input hd-float-only" name="length" maxlength="12"
+                        <input type="text" class="layui-input hd-float-only" name="width" maxlength="12"
                                placeholder="宽，不填则默认为0"
-                               value="<?php echo $prod_info['length'] ?? ''; ?>"/>
+                               value="<?php echo $prod_info['width'] ?? ''; ?>"/>
                     </div>
                     <div class="layui-form-mid">-</div>
                     <div class="layui-input-inline">
@@ -184,8 +178,8 @@
                             <option value="">请选择单位</option>
                             <?php
                             if ($size_units) {
-                                foreach ($size_units as $unit) {
-                                    echo '<option value="', xss_text($unit), '">', xss_text($unit), '</option>';
+                                foreach ($size_units as $text => $unit) {
+                                    echo '<option value="', xss_text($unit), '">', xss_text($text), '</option>';
                                 }
                             }
                             ?>
@@ -195,8 +189,71 @@
                 </div>
             </div>
             <div class="layui-form-item">
-                <label class="layui-form-label">添加 SKU</label>
+                <label class="layui-form-label">
+                    添加 SKU
+                    <i class="layui-icon layui-icon-add-circle hd-cursor-pointer hd-color-blue hd-font-size18"
+                       id="btn_add_sku"></i>
+                </label>
                 <div class="layui-input-block">
+                    <table class="layui-table">
+                        <thead>
+                        <tr>
+                            <th class="hd-align-center" width="20%">SKU</th>
+                            <th class="hd-align-center">SKU 详情</th>
+                            <th class="hd-align-center" width="10%">操作</th>
+                        </tr>
+                        </thead>
+                        <tbody id="sku_list">
+                        <tr>
+                            <td>
+                                <input type="text" class="layui-input" name="sku_data[0][sku]"/>
+                            </td>
+                            <td>
+                                <?php
+                                $warehouses = empty($warehouses) ? ['无仓库模式' => ''] : $warehouses;
+                                foreach ($warehouses as $text => $warehouse) {
+                                    ?>
+                                    <div class="layui-form-item">
+                                        <div class="layui-input-inline">
+                                            <select name="sku_data[0][warehouse][]">
+                                                <?php echo '<option value="', xss_text($warehouse), '">', xss_text($text), '</option>'; ?>
+                                            </select>
+                                        </div>
+                                        <div class="layui-form-mid">>></div>
+                                        <div class="layui-input-inline">
+                                            <input type="text" class="layui-input hd-int-only" name="sku_data[0][qty]"
+                                                   maxlength="8"
+                                                   placeholder="库存"/>
+                                        </div>
+                                        <div class="layui-form-mid">-</div>
+                                        <div class="layui-input-inline">
+                                            <input type="text" class="layui-input hd-float-only"
+                                                   name="sku_data[0][price]"
+                                                   maxlength="12"
+                                                   placeholder="销售价"/>
+                                        </div>
+                                        <div class="layui-form-mid">-</div>
+                                        <div class="layui-input-inline">
+                                            <input type="text" class="layui-input hd-float-only"
+                                                   name="sku_data[0][list_price]"
+                                                   maxlength="12"
+                                                   placeholder="市场价"/>
+                                        </div>
+                                    </div>
+                                    <?php
+                                }
+                                ?>
+
+                                <div class="layui-form-item">
+                                    <div class="sku_images"></div>
+                                </div>
+                            </td>
+                            <td class="hd-align-center">
+                                <i class="layui-icon layui-icon-delete btn_del_sku"></i>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
             <div class="layui-form-item">
@@ -244,6 +301,78 @@
             initValue: [<?php echo $prod_info['product_category_id'] ?? 0;?>],
             data: JSON.parse('<?php echo json_encode($cate_tree_list);?>')
         });
+
+        layui.use('form', function () {
+            hdImage.init({
+                elem: '.sku_images',
+                url: '/spadmin/upload'
+            });
+            $('#btn_add_sku').click(function () {
+                $('#sku_list').append($('#tpl_sku_info').html());
+                layui.form.render('select');
+                hdImage.init({
+                    elem: '.sku_images',
+                    url: '/spadmin/upload'
+                });
+            });
+            $(document).on('click', '.btn_del_sku', function(){
+                $(this).parent('td').parent('tr').remove();
+            });
+
+            layui.form.on('submit(prod_edit)', function (formObj) {
+                form_submit(window.location.href, formObj.field);
+                return false;
+            });
+        });
+    </script>
+    <script type="text/html" id="tpl_sku_info">
+        <tr>
+            <td>
+                <input type="text" class="layui-input" name="sku_data[0][sku]"/>
+            </td>
+            <td>
+                <?php
+                foreach ($warehouses as $text => $warehouse) {
+                    ?>
+                    <div class="layui-form-item">
+                        <div class="layui-input-inline">
+                            <select name="sku_data[0][warehouse][]">
+                                <?php echo '<option value="', xss_text($warehouse), '">', xss_text($text), '</option>'; ?>
+                            </select>
+                        </div>
+                        <div class="layui-form-mid">>></div>
+                        <div class="layui-input-inline">
+                            <input type="text" class="layui-input hd-int-only" name="sku_data[0][qty]"
+                                   maxlength="8"
+                                   placeholder="库存"/>
+                        </div>
+                        <div class="layui-form-mid">-</div>
+                        <div class="layui-input-inline">
+                            <input type="text" class="layui-input hd-float-only"
+                                   name="sku_data[0][price]"
+                                   maxlength="12"
+                                   placeholder="销售价"/>
+                        </div>
+                        <div class="layui-form-mid">-</div>
+                        <div class="layui-input-inline">
+                            <input type="text" class="layui-input hd-float-only"
+                                   name="sku_data[0][list_price]"
+                                   maxlength="12"
+                                   placeholder="市场价"/>
+                        </div>
+                    </div>
+                    <?php
+                }
+                ?>
+
+                <div class="layui-form-item hd-align-left">
+                    <div class="sku_images"></div>
+                </div>
+            </td>
+            <td class="hd-align-center">
+                <i class="layui-icon layui-icon-delete btn_del_sku"></i>
+            </td>
+        </tr>
     </script>
 <?php
 \App\Helper\TemplateHelper::widget('sp_admin', 'footer');
