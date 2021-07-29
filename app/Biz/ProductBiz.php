@@ -22,6 +22,45 @@ class ProductBiz
         $this->cateList = [];
     }
 
+    public function getProductList(array $condition, array $orderBy = [], int $page = 1, int $pageSize = 10): array
+    {
+        if (empty($condition['shop_id']) || empty($condition['language_code'])) {
+            return [];
+        }
+
+        $where = ['shop_id' => (int)$condition['shop_id']];
+        $prodList = $this->dbHelper->table('product')->where($where);
+        if (!empty($orderBy)) {
+            $prodList = $prodList->orderBy($orderBy);
+        }
+        $prodList = $prodList->page($page, $pageSize)->select();
+        if (empty($prodList)) {
+            return [];
+        }
+
+        $prodList = array_column($prodList, null, 'product_id');
+        $prodIds = array_keys($prodList);
+
+        $where = [
+            'shop_id' => (int)$condition['shop_id'],
+            'product_id' => ['in', $prodIds],
+            'language_code' => trim($condition['language_code'])
+        ];
+        $descList = $this->dbHelper->table('product_description')->where($where)->select();
+        if (empty($descList)) {
+            return [];
+        }
+
+        foreach ($descList as $idx => $desc) {
+            if (!empty($prodList[$desc['product_id']])) {
+                $descList[$idx] = array_merge($prodList[$desc['product_id']], $desc);
+            }
+        }
+
+        unset($prodList);
+        return $descList;
+    }
+
     public function getProductById(int $shopId, int $prodId): array
     {
         if ($shopId <= 0 || $prodId <= 0) {
@@ -42,18 +81,62 @@ class ProductBiz
             $prodInfo['desc_list'] = array_column($descList, null, 'language_code');
         }
 
+        $skuList = $this->dbHelper->table('product_sku')->where(
+            ['shop_id' => $shopId, 'product_id' => $prodId])
+            ->orderBy(['sort' => 'asc', 'product_sku_id' => 'asc'])->select();
+        if (empty($skuList)) {
+            $prodInfo['sku_list'] = [];
+        } else {
+            $prodInfo['sku_list'] = array_column($skuList, null, 'sku');
+        }
+
         return $prodInfo;
     }
 
-    public function saveProduct(array $prodData, array $prodDescData, array $prodSkuData, array $prodImgData, array $prodPriceData): int
+    public function getProdSkuListBySkuArr(int $shopId, array $skuArr, ?int $notProdId = null)
     {
-        if (empty($prodData) || empty($prodDescData) || empty($prodSkuData) || empty($prodImgData) || empty($prodPriceData)) {
+        if ($shopId <= 0 || empty($skuArr)) {
+            return [];
+        }
+
+        $skuArr = array_values(array_unique($skuArr));
+        $where = ['shop_id' => $shopId, 'sku' => ['in', $skuArr]];
+        if (is_int($notProdId)) {
+            $where['product_id'] = ['<>', $notProdId];
+        }
+
+        $skuList = $this->dbHelper->table('product_sku')->where($where)
+            ->orderBy(['sort' => 'asc', 'product_sku_id' => 'asc'])->select();
+
+        return empty($skuList) ? [] : array_column($skuList, null, 'sku');
+    }
+
+    public function getSkuQtyPriceListBySkuArr(int $shopId, array $skuArr)
+    {
+        if ($shopId <= 0 || empty($skuArr)) {
+            return [];
+        }
+
+        $skuArr = array_values(array_unique($skuArr));
+        $where = ['shop_id' => $shopId, 'sku' => ['in', $skuArr]];
+
+        $skuQtyPriceList = $this->dbHelper->table('product_qty_price')->where($where)->select();
+
+        return empty($skuQtyPriceList) ? [] : array_column($skuQtyPriceList, null, 'sku');
+
+    }
+
+    public function saveProduct(array $prodData, array $prodDescData, array $prodSkuData): int
+    {
+        if (empty($prodData) || empty($prodDescData) || empty($prodSkuData)) {
             return 0;
         }
 
         $shopId = $prodData['shop_id'] ?? 0;
         $prodId = $prodData['product_id'] ?? 0;
         $prodInfo = $this->getProductById($shopId, $prodId);
+
+        $skuArr = array_keys($prodSkuData);
 
         $this->dbHelper->beginTransaction();
         try {
@@ -66,13 +149,37 @@ class ProductBiz
                     $this->dbHelper->table('product_description')->insert($prodDesc);
                 }
 
+                foreach ($skuArr as $sort => $sku) {
+                    $this->dbHelper->table('product_sku')->insert([
+                        'shop_id' => $shopId,
+                        'product_id' => $prodId,
+                        'sku' => $sku,
+                        'sort' => $sort,
+                        'created_at' => $prodData['created_at'],
+                        'created_by' => $prodData['created_by'],
+                        'updated_at' => $prodData['updated_at'],
+                        'updated_by' => $prodData['updated_by']
+                    ]);
+                }
+
+                foreach ($prodSkuData as $data) {
+                    if (empty($data['qty_price_data'])) {
+                        return 0;
+                    }
+
+                    foreach ($data['qty_price_data'] as $qtyPrice) {
+                        $qtyPrice['product_id'] = $prodId;
+                        $this->dbHelper->table('product_qty_price')->insert($qtyPrice);
+                    }
+                }
+
             } else {
                 unset($prodData['created_at'], $prodData['created_by']);
                 $this->dbHelper->table('product')->where(
                     ['shop_id' => $shopId, 'product_id' => $prodId])->update($prodData);
 
                 foreach ($prodDescData as $langCode => $prodDesc) {
-                    if (isset($prodInfo['desc_list'][$langCode])) {
+                    if (empty($prodInfo['desc_list'][$langCode])) {
                         $prodDescId = $prodInfo['desc_list'][$langCode]['product_description_id'];
                         unset($prodDesc['created_at'], $prodDesc['created_by']);
 
@@ -81,6 +188,68 @@ class ProductBiz
                     } else {
                         $this->dbHelper->table('product_description')->insert($prodDesc);
                     }
+                }
+
+                foreach ($skuArr as $sort => $sku) {
+                    if (empty($prodInfo['sku_list'][$sku])) {
+                        $prodSkuId = $prodInfo['sku_list'][$sku]['product_sku_id'];
+                        $this->dbHelper->table('product_sku')->where(
+                            ['shop_id' => $shopId, 'product_sku_id' => $prodSkuId])->update([
+                            'shop_id' => $shopId,
+                            'product_id' => $prodId,
+                            'sku' => $sku,
+                            'sort' => $sort,
+                            'updated_at' => $prodInfo['updated_at'],
+                            'updated_by' => $prodInfo['updated_by']
+                        ]);
+                    } else {
+                        $this->dbHelper->table('product_sku')->insert([
+                            'shop_id' => $shopId,
+                            'product_id' => $prodId,
+                            'sku' => $sku,
+                            'sort' => $sort,
+                            'created_at' => $prodInfo['created_at'],
+                            'created_by' => $prodInfo['created_by'],
+                            'updated_at' => $prodInfo['updated_at'],
+                            'updated_by' => $prodInfo['updated_by']
+                        ]);
+                    }
+                }
+
+                $qtyPriceList = $this->getSkuQtyPriceListBySkuArr($shopId, $skuArr);
+
+                foreach ($prodSkuData as $sku => $data) {
+                    if (empty($data['qty_price_data'])) {
+                        return 0;
+                    }
+
+                    foreach ($data['qty_price_data'] as $qtyPrice) {
+                        $qtyPrice['product_id'] = $prodId;
+
+                        if (empty($qtyPriceList[$sku])) {
+                            $this->dbHelper->table('product_qty_price')->insert($qtyPrice);
+                            continue;
+                        }
+
+                        $warehouse = $qtyPrice['warehouse_code'];
+                        $qtyPriceList[$sku] = array_column($qtyPriceList[$sku], null, 'warehouse_code');
+                        if (empty($qtyPriceList[$sku][$warehouse])) {
+                            $this->dbHelper->table('product_qty_price')->insert($qtyPrice);
+                        } else {
+                            $qtyPriceId = $qtyPriceList[$sku][$warehouse]['product_qty_price_id'];
+                            unset($qtyPrice['created_at'], $qtyPrice['created_by']);
+
+                            $this->dbHelper->table('product_qty_price')->where(
+                                ['shop_id' => $shopId, 'product_qty_price_id' => $qtyPriceId])->update($qtyPrice);
+                        }
+                    }
+                }
+
+                // 需要删除的SKU
+                $delSkuArr = empty($prodInfo['sku_list']) ? [] : array_diff(array_keys($prodInfo['sku_list']), $skuArr);
+                if (!empty($delSkuArr)) {
+                    $this->dbHelper->table('product_sku')->where(
+                        ['shop_id' => $shopId, 'sku' => ['in', $delSkuArr]])->delete();
                 }
 
             }

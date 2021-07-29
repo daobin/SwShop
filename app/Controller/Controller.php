@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Biz\ConfigBiz;
 use App\Helper\ConfigHelper;
 use App\Helper\LanguageHelper;
 use App\Helper\SessionHelper;
@@ -34,6 +35,11 @@ class Controller
     public function render($data = [], $template = null)
     {
         $template ??= implode('/', [$this->request->module, $this->request->controller, $this->request->action]);
+
+        // 静态资源时间戳
+        $timestamp = (new ConfigBiz())->getConfigByKey($this->request->shop_id, 'TIMESTAMP');
+        $data['timestamp'] = $timestamp['config_value'] ?? '?'.date('YmdH');
+
         return TemplateHelper::view($template, $data);
     }
 

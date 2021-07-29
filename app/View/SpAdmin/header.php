@@ -9,15 +9,15 @@
 
     <link rel="stylesheet" href="/static/layui/css/layui.css"/>
     <link rel="stylesheet"
-          href="/static/spadmin/hd.admin.css<?php echo \App\Helper\ConfigHelper::get('web_info.timestamp'); ?>"/>
+          href="/static/spadmin/hd.admin.css<?php echo $timestamp ?? ''; ?>"/>
 
     <!--[if lt IE 9]>
     <script type="text/javascript" src="/static/html5shiv.min.js"></script>
     <script type="text/javascript" src="/static/respond.min.js"></script>
     <![endif]-->
     <script src="/static/layui/layui.js"></script>
-    <script src="/static/spadmin/hd.admin.js<?php echo \App\Helper\ConfigHelper::get('web_info.timestamp'); ?>"></script>
-    <script src="/static/spadmin/hd.image.js<?php echo \App\Helper\ConfigHelper::get('web_info.timestamp'); ?>"></script>
+    <script src="/static/spadmin/hd.admin.js<?php echo $timestamp ?? ''; ?>"></script>
+    <script src="/static/spadmin/hd.file.js<?php echo $timestamp ?? ''; ?>"></script>
 </head>
 <body>
 <?php if ($show_top_line){ ?>

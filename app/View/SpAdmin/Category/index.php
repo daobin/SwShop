@@ -1,5 +1,5 @@
 <?php
-\App\Helper\TemplateHelper::widget('sp_admin', 'header');
+\App\Helper\TemplateHelper::widget('sp_admin', 'header', ['timestamp' => $timestamp ?? '']);
 ?>
     <script>
         var lang_codes = JSON.parse('<?php echo json_encode($lang_codes);?>');

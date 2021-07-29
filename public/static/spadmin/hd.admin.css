@@ -30,8 +30,8 @@ a, image, a:active, image:active{border: none !important;}
 #hd-top-line{position: fixed; top: 0; left: 0; z-index: 9; right: 0; padding-top: 10px; background: #fff;}
 
 .layui-table-cell{height: auto !important;}
-.layui-icon-edit, .layui-icon-delete{cursor: pointer !important; font-size: 18px;}
-.layui-icon-edit:hover, .layui-icon-delete:hover{font-size: 22px;}
+.layui-icon-edit, .layui-icon-delete, .layui-icon-release{cursor: pointer !important; font-size: 18px;}
+.layui-icon-edit:hover, .layui-icon-delete:hover, .layui-icon-release:hover{font-size: 22px;}
 .layui-icon-edit{color: #009688;}
 .layui-icon-delete{color: #FF5722;}
 

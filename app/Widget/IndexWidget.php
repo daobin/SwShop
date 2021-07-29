@@ -5,13 +5,15 @@ namespace App\Widget;
 
 class IndexWidget extends Widget
 {
-    public function header()
+    public function header($params = [])
     {
-        $data = ['title' => 'Product 类目'];
+        $data = [
+            'timestamp' => $params['timestamp'] ?? '?' . date('YmdH'),
+        ];
         return $this->render('header', $data);
     }
 
-    public function footer()
+    public function footer($params = [])
     {
         return $this->render('footer');
     }

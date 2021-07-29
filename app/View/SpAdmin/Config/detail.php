@@ -1,5 +1,5 @@
 <?php
-\App\Helper\TemplateHelper::widget('sp_admin', 'header', ['show_top_line' => false]);
+\App\Helper\TemplateHelper::widget('sp_admin', 'header', ['show_top_line' => false, 'timestamp' => $timestamp ?? '']);
 ?>
     <div class="layui-fluid">
         <form class="layui-form hd-margin-top30" method="post" autocomplete="off">
@@ -13,28 +13,44 @@
                 <label class="layui-form-label">配置值</label>
                 <div class="layui-input-block">
                     <?php
-                    switch (strtolower($value_type)) {
-                        case 'password':
-                            echo '<textarea class="layui-textarea" name="config_value" placeholder="' . hide_chars($config_value) . '"></textarea>';
-                            break;
-                        case 'list':
-                            $config_value_arr = [];
-                            if (!empty($config_value)) {
-                                foreach ($config_value as $name => $val) {
-                                    $config_value_arr[] = [
-                                        'name' => $name,
-                                        'value' => $name . '=' . $val,
-                                        'selected' => true
-                                    ];
-                                }
+                    if (strtolower($config_group) == 'css') {
+                        echo '<div class="layui-collapse" lay-accordion>';
+                        if (!empty($config_value)) {
+                            foreach ($config_value as $name => $val) {
+                                echo '<div class="layui-colla-item">';
+                                echo '<h2 class="layui-colla-title">前台模板【', $name, '】</h2>';
+                                echo '<div class="layui-colla-content layui-show">';
+                                echo '</div></div>';
                             }
-                            $config_value = json_encode($config_value_arr);
-                            unset($config_value_arr);
+                        }
+                        echo '</div>';
+                        // 避免 JS 解析错误
+                        $config_value = '{}';
+                        echo '<input type="hidden" name="config_value" value="{}"/>';
+                    } else {
+                        switch (strtolower($value_type)) {
+                            case 'password':
+                                echo '<textarea class="layui-textarea" name="config_value" placeholder="' . hide_chars($config_value) . '"></textarea>';
+                                break;
+                            case 'list':
+                                $config_value_arr = [];
+                                if (!empty($config_value)) {
+                                    foreach ($config_value as $name => $val) {
+                                        $config_value_arr[] = [
+                                            'name' => $name,
+                                            'value' => $name . '=' . $val,
+                                            'selected' => true
+                                        ];
+                                    }
+                                }
+                                $config_value = json_encode($config_value_arr);
+                                unset($config_value_arr);
 
-                            echo '<div id="value_select"></div>';
-                            break;
-                        default:
-                            echo '<textarea class="layui-textarea" name="config_value">' . $config_value . '</textarea>';
+                                echo '<div id="value_select"></div>';
+                                break;
+                            default:
+                                echo '<textarea class="layui-textarea" name="config_value">' . $config_value . '</textarea>';
+                        }
                     }
                     ?>
                 </div>
@@ -42,6 +58,7 @@
             <div class="layui-form-item hd-margin-top30">
                 <div class="layui-input-block">
                     <input type="hidden" name="hash_tk" value="<?php echo $csrf_token; ?>"/>
+                    <input type="hidden" name="config_group" value="<?php echo strtolower($config_group); ?>"/>
                     <input type="hidden" name="value_type" value="<?php echo strtolower($value_type); ?>"/>
                     <input class="layui-btn" type="submit" lay-submit lay-filter="cfg_edit"
                            value="<?php echo xss_text('save', true); ?>"/>

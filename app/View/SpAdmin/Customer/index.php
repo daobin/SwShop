@@ -1,5 +1,5 @@
 <?php
-\App\Helper\TemplateHelper::widget('sp_admin', 'header');
+\App\Helper\TemplateHelper::widget('sp_admin', 'header', ['timestamp' => $timestamp ?? '']);
 ?>
     <div class="layui-fluid hd-padding-top60">
         <table id="customer_list" lay-filter="opt"></table>

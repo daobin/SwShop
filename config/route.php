@@ -31,6 +31,8 @@ RouteHelper::get('/spadmin/dashboard', 'SpAdmin.Index.dashboard');
 RouteHelper::get('/spadmin/login', 'SpAdmin.Index.login');
 RouteHelper::post('/spadmin/login', 'SpAdmin.Index.loginProcess');
 RouteHelper::get('/spadmin/logout', 'SpAdmin.Index.logout');
+RouteHelper::get('/spadmin/upload', 'SpAdmin.Upload.index');
+RouteHelper::post('/spadmin/upload', 'SpAdmin.Upload.upload');
 RouteHelper::get('/spadmin/config-<cfg_grp>', 'SpAdmin.Config.index', ['cfg_grp' => '\w+']);
 RouteHelper::any('/spadmin/config/<cfg_key>', 'SpAdmin.Config.detail', ['cfg_key' => '\w+']);
 RouteHelper::get('/spadmin/category', 'SpAdmin.Category.index');

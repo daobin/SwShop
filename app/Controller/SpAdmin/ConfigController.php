@@ -24,7 +24,7 @@ class ConfigController extends Controller
 
             if (!empty($cfgList)) {
                 foreach ($cfgList as &$cfgInfo) {
-                    switch(strtolower($cfgInfo['value_type'])){
+                    switch (strtolower($cfgInfo['value_type'])) {
                         case 'password':
                             $cfgInfo['config_value'] = hide_chars($cfgInfo['config_value']);
                             break;
@@ -73,9 +73,32 @@ class ConfigController extends Controller
             return ['status' => 'fail', 'msg' => LanguageHelper::get('invalid_request')];
         }
 
+        $cfgBiz = new ConfigBiz();
+
+        $cfgGrp = trim($this->request->post['config_group'] ?? '');
         $cfgVal = trim($this->request->post['config_value'] ?? '');
         $valType = trim($this->request->post['value_type'] ?? '');
-        switch(strtolower($valType)){
+
+        if (strtolower($cfgGrp) == 'css') {
+            // 将样式内容保存至样式文件
+
+            // 更新时间戳
+            $cfgBiz->updateConfigByKey($this->request->shop_id, $cfgKey, [
+                'updated_at' => time(),
+                'updated_by' => $this->spAdminInfo['account'] ?? '--'
+            ]);
+
+            // 同时更新静态资源时间戳
+            $cfgBiz->updateConfigByKey($this->request->shop_id, 'TIMESTAMP', [
+                'config_value' => '?' . date('YmdHis'),
+                'updated_at' => time(),
+                'updated_by' => $this->spAdminInfo['account'] ?? '--'
+            ]);
+
+            return ['status' => 'success', 'msg' => '保存成功'];
+        }
+
+        switch (strtolower($valType)) {
             case 'password':
                 $cfgVal = SafeHelper::encodeString($cfgVal);
                 break;
@@ -85,18 +108,18 @@ class ConfigController extends Controller
             case 'list':
                 $resetVal = [];
                 $cfgVal = trim($cfgVal, ',');
-                if(!empty($cfgVal)){
+                if (!empty($cfgVal)) {
                     $cfgVal = explode(',', $cfgVal);
-                    foreach($cfgVal as $val){
+                    foreach ($cfgVal as $val) {
                         $val = trim($val);
-                        if(empty($val)){
+                        if (empty($val)) {
                             continue;
                         }
 
                         $val = explode('=', $val, 2);
-                        if(count($val) == 2){
+                        if (count($val) == 2) {
                             $resetVal[$val[0]] = $val[1];
-                        }else{
+                        } else {
                             $resetVal[$val[0]] = $val[0];
                         }
                     }
@@ -105,7 +128,7 @@ class ConfigController extends Controller
                 break;
         }
 
-        $update = (new ConfigBiz())->updateConfigByKey($this->request->shop_id, $cfgKey, [
+        $update = $cfgBiz->updateConfigByKey($this->request->shop_id, $cfgKey, [
             'config_value' => $cfgVal,
             'updated_at' => time(),
             'updated_by' => $this->spAdminInfo['account'] ?? '--'

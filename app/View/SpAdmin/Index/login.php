@@ -58,7 +58,7 @@
     <script type="text/javascript" src="/static/respond.min.js"></script>
     <![endif]-->
     <script src="/static/layui/layui.js"></script>
-    <script src="/static/spadmin/hd.admin.js<?php echo \App\Helper\ConfigHelper::get('web_info.timestamp'); ?>"></script>
+    <script src="/static/spadmin/hd.admin.js<?php echo $timestamp ?? ''; ?>"></script>
     <script>
         if (self != top) {
             top.location.href = self.location.href;

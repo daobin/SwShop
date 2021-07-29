@@ -1,5 +1,5 @@
 <?php
-\App\Helper\TemplateHelper::widget('sp_admin', 'header', ['add_url' => '/spadmin/product/0']);
+\App\Helper\TemplateHelper::widget('sp_admin', 'header', ['add_url' => '/spadmin/product/0', 'timestamp' => $timestamp ?? '']);
 ?>
     <div class="layui-fluid hd-padding-top60">
         <table id="prod_list" lay-filter="opt"></table>
@@ -12,14 +12,24 @@
                 cols: [
                     [
                         {field: 'product_id', hide: true},
-                        {field: 'sku', title: 'SKU', align: 'center'},
-                        {field: 'product_status_text', title: '商品状态', align: 'center'},
                         {field: 'product_name', title: '商品名称', align: 'center'},
-                        {field: 'product_category', title: '所属类目', align: 'center'},
+                        {title: '商品状态', align: 'center', templet: function(d){
+                            switch(d.product_status){
+                                case 1:
+                                    return '上架中 <i class="layui-icon layui-icon-ok"></i>';
+                                case 2:
+                                    return '下架中 <i class="layui-icon layui-icon-close"></i>';
+                                default:
+                                    return '待处理 <i class="layui-icon layui-icon-loading layui-anim layui-anim-rotate layui-anim-loop"></i>';
+                            }
+                        }},
+                        {field: 'category_text', title: '所属类目', align: 'center'},
                         {field: 'last_operation', title: '最后操作', align: 'center'},
                         {fixed: 'right', width: '100', align: 'center', toolbar: '#operate'}
                     ]
-                ]
+                ],
+                height: 'full-90',
+                page: true
             });
 
             layui.table.on('tool(opt)', function (obj) {

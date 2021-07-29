@@ -9,14 +9,14 @@
 
     <link rel="stylesheet" href="/static/layui/css/layui.css"/>
     <link rel="stylesheet"
-          href="/static/spadmin/hd.admin.css<?php echo \App\Helper\ConfigHelper::get('web_info.timestamp'); ?>"/>
+          href="/static/spadmin/hd.admin.css<?php echo $timestamp ?? ''; ?>"/>
 
     <!--[if lt IE 9]>
     <script type="text/javascript" src="/static/html5shiv.min.js"></script>
     <script type="text/javascript" src="/static/respond.min.js"></script>
     <![endif]-->
     <script src="/static/layui/layui.js"></script>
-    <script src="/static/spadmin/hd.admin.js<?php echo \App\Helper\ConfigHelper::get('web_info.timestamp'); ?>"></script>
+    <script src="/static/spadmin/hd.admin.js<?php echo $timestamp ?? ''; ?>"></script>
     <script>
         // 页内 Iframe 导航映射
         var iframeNavMaps = [];
@@ -94,9 +94,6 @@
             </ul>
             <ul class="layui-nav layui-layout-right">
                 <li class="layui-nav-item">
-                    <span id="date_time"></span>
-                </li>
-                <li class="layui-nav-item">
                     <a><img src="//t.cn/RCzsdCq" class="layui-nav-img"/><?php echo xss_text($admin_name); ?></a>
                     <dl class="layui-nav-child">
                         <dd><a href="/spadmin/logout.html" class="hd-color-red">安全退出</a></dd>
@@ -115,10 +112,5 @@
         </div>
     </div>
 </div>
-<script>
-    window.onload = function () {
-        show_date_time('#date_time');
-    }
-</script>
 </body>
 </html>

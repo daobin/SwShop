@@ -1,5 +1,5 @@
 <?php
-\App\Helper\TemplateHelper::widget('sp_admin', 'header', ['show_top_line' => false]);
+\App\Helper\TemplateHelper::widget('sp_admin', 'header', ['show_top_line' => false, 'timestamp' => $timestamp ?? '']);
 ?>
     <script src="/static/layui/xm-select.js"></script>
     <script>

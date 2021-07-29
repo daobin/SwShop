@@ -9,22 +9,27 @@ declare(strict_types=1);
 
 namespace App\Helper;
 
+use App\Biz\ConfigBiz;
 use OSS\Core\OssException;
 use OSS\OssClient;
 
 class OssHelper
 {
-    public static function putObjectForCss($filename, $content)
-    {
-        $object = 'swshop/static/' . $filename;
-        $ossCfgs = ConfigHelper::get('oss');
+    private $ossClient;
+    private $ossBucket;
 
-        try {
-            $ossClient = new OssClient($ossCfgs['oss_access_key_id'], $ossCfgs['oss_access_key_secret'], $ossCfgs['oss_endpoint']);
-            $ossClient->putObject($ossCfgs['oss_bucket'], $object, $content);
-        } catch (OssException $e) {
-            throw new OssException('OSS Put Invalid: ' . $e->getMessage());
-        }
+    public function __construct($shopId)
+    {
+        $ossCfgs = (new ConfigBiz())->getConfigListByGroup($shopId, 'oss');
+        $ossCfgs = array_column($ossCfgs, 'config_value', 'config_key');
+
+        $this->ossBucket = $ossCfgs['OSS_BUCKET'];
+
+        try{
+            $this->ossClient = new OssClient($ossCfgs['OSS_ACCESS_KEY_ID'], $ossCfgs['OSS_ACCESS_KEY_SECRET'], $ossCfgs['OSS_ENDPOINT'])
+        }catch (OssException $e){
+            throw new OssException('OSS Client Invalid: ' . $e->getMessage());
+        };
     }
 
     public static function putObjectForProductImage($sku, $sort, $imgeFile)
@@ -32,11 +37,9 @@ class OssHelper
         try {
             // 原始图片保存在本地，但不对外提供访问
             // 生成缩图上传至 OSS，用以对外提供访问
-            $object = 'swshop/cache_image/' . $filename;
-            $ossCfgs = ConfigHelper::get('oss');
+            $object = 'swshop/prod_image/' . $filename;
 
-            $ossClient = new OssClient($ossCfgs['oss_access_key_id'], $ossCfgs['oss_access_key_secret'], $ossCfgs['oss_endpoint']);
-            $ossClient->putObject($ossCfgs['oss_bucket'], $object, file_get_contents($imgeFile));
+            $this->ossClient->putObject($this->ossBucket, $object, file_get_contents($imgeFile));
         } catch (OssException $e) {
             throw new OssException('OSS Put Invalid: ' . $e->getMessage());
         }

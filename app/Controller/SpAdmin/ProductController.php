@@ -20,7 +20,14 @@ class ProductController extends Controller
     public function index()
     {
         if ($this->request->isAjax) {
-            $prodList = [];
+            $condition = [
+                'shop_id' => $this->request->shop_id,
+                'language_code' => reset($this->langCodes)
+            ];
+            $orderBy = [];
+            $page = $this->request->get['page'] ?? 1;
+            $pageSize = $this->request->get['limit'] ?? 10;
+            $prodList = (new ProductBiz())->getProductList($condition, $orderBy, (int)$page, (int)$pageSize);
 
             return [
                 'code' => 0,
@@ -74,6 +81,7 @@ class ProductController extends Controller
             return ['status' => 'fail', 'msg' => LanguageHelper::get('invalid_request')];
         }
 
+        // 商品基础信息
         $cateId = empty($this->request->post['category_id']) ? 0 : (int)$this->request->post['category_id'];
         $prodSort = empty($this->request->post['prod_sort']) ? 0 : (int)$this->request->post['prod_sort'];
         $prodSort = $prodSort > 0 ? $prodSort : 0;
@@ -101,17 +109,8 @@ class ProductController extends Controller
             return ['status' => 'fail', 'msg' => '请选择尺寸单位'];
         }
 
-        $defaultLangCode = reset($this->langCodes);
-        if (empty($this->request->post['prod_name'][$defaultLangCode])) {
-            return ['status' => 'fail', 'msg' => '默认语言[' . strtoupper($defaultLangCode) . ']的商品名称不能为空'];
-        }
-
-        $prodNameList = $this->request->post['prod_name'];
-        $prodDescList = $this->request->post['prod_desc'];
-        $prodDescMList = $this->request->post['prod_desc_m'];
-        $metaTitleList = $this->request->post['meta_title'];
-        $metaKeywordsList = $this->request->post['meta_keywords'];
-        $metaDescList = $this->request->post['meta_desc'];
+        $time = time();
+        $operator = $this->spAdminInfo['account'] ?? '--';
 
         $prodData = [
             'shop_id' => $this->request->shop_id,
@@ -125,11 +124,90 @@ class ProductController extends Controller
             'length' => $length,
             'width' => $width,
             'height' => $height,
-            'created_at' => time(),
-            'created_by' => $this->spAdminInfo['account'] ?? '--',
-            'updated_at' => time(),
-            'updated_by' => $this->spAdminInfo['account'] ?? '--'
+            'created_at' => $time,
+            'created_by' => $operator,
+            'updated_at' => $time,
+            'updated_by' => $operator
         ];
+
+        // 商品SKU信息
+        $skuData = [];
+        if (!empty($this->request->post['sku_data'])) {
+            foreach ($this->request->post['sku_data'] as $datum) {
+                $sku = trim($datum['sku'] ?? '');
+                $sku = strtoupper($sku);
+                if (empty($sku)) {
+                    continue;
+                }
+
+                // 库存与价格
+                $qtyPriceData = [];
+                if (!empty($datum['warehouse']) && is_array($datum['warehouse']) && !empty(reset($datum['warehouse']))) {
+                    foreach ($datum['warehouse'] as $warehouse) {
+                        $qty = empty($datum['qty'][$warehouse]) ? 0 : (float)$datum['qty'][$warehouse];
+                        $price = empty($datum['price'][$warehouse]) ? 0 : (float)$datum['price'][$warehouse];
+                        $listPrice = empty($datum['list_price'][$warehouse]) ? 0 : (float)$datum['list_price'][$warehouse];
+
+                        if ($price > $listPrice && $listPrice > 0) {
+                            return ['status' => 'fail', 'msg' => 'SKU [' . $sku . '] 销售价不能大于市场价'];
+                        }
+
+                        $qtyPriceData[] = [
+                            'shop_id' => $this->request->shop_id,
+                            'product_id' => $prodId,
+                            'sku' => $sku,
+                            'warehouse_code' => $warehouse,
+                            'qty' => $qty,
+                            'price' => $price,
+                            'list_price' => $listPrice,
+                            'created_at' => $time,
+                            'created_by' => $operator,
+                            'updated_at' => $time,
+                            'updated_by' => $operator
+                        ];
+                    }
+                } else {
+                    return ['status' => 'fail', 'msg' => 'SKU [' . $sku . '] 库存&价格无效'];
+                }
+
+                // 商品图片
+                $imgData = [];
+//                if (!empty($datum['image']) && is_array($datum['image']) && !empty(reset($datum['image']))) {
+//
+//                } else {
+//                    return ['status' => 'fail', 'msg' => 'SKU [' . $sku . '] 图片无效'];
+//                }
+
+                $skuData[$sku] = [
+                    'qty_price_data' => $qtyPriceData,
+                    'img_data' => $imgData
+                ];
+            }
+        }
+
+        if (empty($skuData)) {
+            return ['status' => 'fail', 'msg' => '请添加SKU'];
+        }
+
+        // 判断是否已存在SKU
+        $prodBiz = new ProductBiz();
+        $existSkuList = $prodBiz->getProdSkuListBySkuArr($this->request->shop_id, array_keys($skuData), $prodId);
+        if (!empty($existSkuList)) {
+            return ['status' => 'fail', 'msg' => '已存在SKU [' . implode(', ', array_keys($existSkuList)) . ']'];
+        }
+
+        // 商品描述信息
+        $defaultLangCode = reset($this->langCodes);
+        if (empty($this->request->post['prod_name'][$defaultLangCode])) {
+            return ['status' => 'fail', 'msg' => '默认语言 [' . strtoupper($defaultLangCode) . '] 的商品名称不能为空'];
+        }
+
+        $prodNameList = $this->request->post['prod_name'];
+        $prodDescList = $this->request->post['prod_desc'];
+        $prodDescMList = $this->request->post['prod_desc_m'];
+        $metaTitleList = $this->request->post['meta_title'];
+        $metaKeywordsList = $this->request->post['meta_keywords'];
+        $metaDescList = $this->request->post['meta_desc'];
 
         $prodDescData = [];
         foreach ($prodNameList as $langCode => $prodName) {
@@ -168,7 +246,7 @@ class ProductController extends Controller
             ];
         }
 
-        if ((new ProductBiz())->saveProduct($prodData, $prodDescData) > 0) {
+        if ($prodBiz->saveProduct($prodData, $prodDescData, $skuData) > 0) {
             return ['status' => 'success', 'msg' => '保存成功'];
         }
 

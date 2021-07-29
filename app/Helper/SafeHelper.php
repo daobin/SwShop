@@ -35,6 +35,11 @@ class SafeHelper
             return $token;
         }
 
+        $token = $this->session->get($field, '');
+        if($token){
+            return $token;
+        }
+
         $token = $field . '$' . password_hash(time() . $this->request->server['request_uri'], PASSWORD_DEFAULT);
         $this->session->set($field, $token);
         return $token;

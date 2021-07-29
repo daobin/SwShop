@@ -296,12 +296,25 @@ class DbHelper
                 if (is_array($value)) {
                     $opt = trim(reset($value));
                     $value = end($value);
-                    $where[] = '`' . $field . '` ' . $opt . ' ?';
+                    switch(strtolower($opt)){
+                        case 'in':
+                            $inSql = '`' . $field . '` in (%s)';
+                            $where[] = sprintf($inSql, implode(', ', array_fill(0, count($value), '?')));
+                            break;
+                        default:
+                            $where[] = '`' . $field . '` ' . $opt . ' ?';
+                    }
                 } else {
                     $where[] = '`' . $field . '` = ?';
                 }
 
-                $preData[] = $value;
+                if(is_array($value)){
+                    foreach($value as $val){
+                        $preData[] = $val;
+                    }
+                }else{
+                    $preData[] = $value;
+                }
             }
             $preSql = implode(' AND ', $where);
         }
