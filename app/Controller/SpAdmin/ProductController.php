@@ -21,7 +21,7 @@ class ProductController extends Controller
     {
         if ($this->request->isAjax) {
             $condition = [
-                'shop_id' => $this->request->shop_id,
+                'shop_id' => $this->shopId,
                 'language_code' => reset($this->langCodes)
             ];
             $orderBy = [];
@@ -45,29 +45,30 @@ class ProductController extends Controller
             return $this->save();
         }
 
-        $prodId = $this->request->get['prod_id'] ?? 0;
+        $prodId = $this->get('prod_id', 0);
         $prodId = (int)$prodId;
 
         $prodBiz = new ProductBiz();
-        $prodInfo = $prodBiz->getProductById($this->request->shop_id, $prodId);
+        $prodInfo = $prodBiz->getProductById($this->shopId, $prodId);
         $prodDescList = $prodInfo['desc_list'] ?? [];
-        unset($prodInfo['desc_list']);
+        $qtyPriceList = $prodBiz->getSkuQtyPriceListBySkuArr($this->shopId, array_keys($prodInfo['sku_list'] ?? []));
 
         $cfgBiz = new ConfigBiz();
-        $weightUnits = $cfgBiz->getConfigByKey($this->request->shop_id, 'WEIGHT_UNIT');
+        $weightUnits = $cfgBiz->getConfigByKey($this->shopId, 'WEIGHT_UNIT');
         $weightUnits = $weightUnits['config_value'] ?? [];
-        $sizeUnits = $cfgBiz->getConfigByKey($this->request->shop_id, 'SIZE_UNIT');
+        $sizeUnits = $cfgBiz->getConfigByKey($this->shopId, 'SIZE_UNIT');
         $sizeUnits = $sizeUnits['config_value'] ?? [];
-        $warehouses = $cfgBiz->getConfigByKey($this->request->shop_id, 'WAREHOUSE');
+        $warehouses = $cfgBiz->getConfigByKey($this->shopId, 'WAREHOUSE');
         $warehouses = $warehouses['config_value'] ?? [];
 
         return $this->render([
             'prod_info' => $prodInfo,
             'prod_desc_list' => $prodDescList,
+            'qty_price_list' => $qtyPriceList,
             'weight_units' => $weightUnits,
             'size_units' => $sizeUnits,
             'warehouses' => $warehouses,
-            'cate_tree_list' => $prodBiz->getCategoryTree($this->request->shop_id, 0, reset($this->langCodes)),
+            'cate_tree_list' => $prodBiz->getCategoryTree($this->shopId, 0, reset($this->langCodes)),
             'lang_codes' => $this->langCodes,
             'csrf_token' => (new SafeHelper($this->request, $this->response))->buildCsrfToken('BG', 'prod_' . $prodId)
         ]);
@@ -110,10 +111,8 @@ class ProductController extends Controller
         }
 
         $time = time();
-        $operator = $this->spAdminInfo['account'] ?? '--';
-
         $prodData = [
-            'shop_id' => $this->request->shop_id,
+            'shop_id' => $this->shopId,
             'product_id' => $prodId,
             'product_category_id' => $cateId,
             'product_status' => $prodStatus,
@@ -124,10 +123,11 @@ class ProductController extends Controller
             'length' => $length,
             'width' => $width,
             'height' => $height,
+            'size_unit' => $sizeUnit,
             'created_at' => $time,
-            'created_by' => $operator,
+            'created_by' => $this->operator,
             'updated_at' => $time,
-            'updated_by' => $operator
+            'updated_by' => $this->operator
         ];
 
         // 商品SKU信息
@@ -153,7 +153,7 @@ class ProductController extends Controller
                         }
 
                         $qtyPriceData[] = [
-                            'shop_id' => $this->request->shop_id,
+                            'shop_id' => $this->shopId,
                             'product_id' => $prodId,
                             'sku' => $sku,
                             'warehouse_code' => $warehouse,
@@ -161,9 +161,9 @@ class ProductController extends Controller
                             'price' => $price,
                             'list_price' => $listPrice,
                             'created_at' => $time,
-                            'created_by' => $operator,
+                            'created_by' => $this->operator,
                             'updated_at' => $time,
-                            'updated_by' => $operator
+                            'updated_by' => $this->operator
                         ];
                     }
                 } else {
@@ -191,7 +191,7 @@ class ProductController extends Controller
 
         // 判断是否已存在SKU
         $prodBiz = new ProductBiz();
-        $existSkuList = $prodBiz->getProdSkuListBySkuArr($this->request->shop_id, array_keys($skuData), $prodId);
+        $existSkuList = $prodBiz->getProdSkuListBySkuArr($this->shopId, array_keys($skuData), $prodId);
         if (!empty($existSkuList)) {
             return ['status' => 'fail', 'msg' => '已存在SKU [' . implode(', ', array_keys($existSkuList)) . ']'];
         }
@@ -230,7 +230,7 @@ class ProductController extends Controller
             $metaTitle = empty($metaTitle) ? $prodName : $metaTitle;
 
             $prodDescData[$langCode] = [
-                'shop_id' => $this->request->shop_id,
+                'shop_id' => $this->shopId,
                 'product_id' => $prodId,
                 'language_code' => $langCode,
                 'product_name' => $prodName,
@@ -240,9 +240,9 @@ class ProductController extends Controller
                 'meta_keywords' => $metaKeywords,
                 'meta_description' => $metaDesc,
                 'created_at' => time(),
-                'created_by' => $this->spAdminInfo['account'] ?? '--',
+                'created_by' => $this->operator,
                 'updated_at' => time(),
-                'updated_by' => $this->spAdminInfo['account'] ?? '--'
+                'updated_by' => $this->operator
             ];
         }
 

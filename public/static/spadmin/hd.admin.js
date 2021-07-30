@@ -1,15 +1,15 @@
 // 全局变量
-var open_ask_cfg = {
-    title: '询问',
-    icon: 3,
-    offset: '120px',
-    skin: 'hd-open-ask'
-};
 var open_alert_cfg = {
     title: '提示',
     icon: 0,
     offset: '120px',
     closeBtn: 0
+};
+var open_ask_cfg = {
+    title: '询问',
+    icon: 3,
+    offset: '120px',
+    skin: 'hd-open-ask'
 };
 
 

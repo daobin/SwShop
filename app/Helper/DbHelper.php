@@ -365,7 +365,6 @@ class DbHelper
         $buildType = strtoupper($buildType);
         switch ($buildType) {
             case 'SELECT':
-
                 if (empty($this->sqlBuild['fields'])) {
                     $this->sqlBuild['fields'] = '*';
                 }

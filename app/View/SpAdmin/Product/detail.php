@@ -143,7 +143,11 @@
                             <?php
                             if ($weight_units) {
                                 foreach ($weight_units as $text => $unit) {
-                                    echo '<option value="', xss_text($unit), '">', xss_text($text), '</option>';
+                                    $selected = '';
+                                    if(isset($prod_info['weight_unit']) && $unit == $prod_info['weight_unit']){
+                                        $selected = ' selected ';
+                                    }
+                                    echo '<option value="', xss_text($unit), '"', $selected, '>', xss_text($text), '</option>';
                                 }
                             }
                             ?>
@@ -179,7 +183,11 @@
                             <?php
                             if ($size_units) {
                                 foreach ($size_units as $text => $unit) {
-                                    echo '<option value="', xss_text($unit), '">', xss_text($text), '</option>';
+                                    $selected = '';
+                                    if(isset($prod_info['size_unit']) && $unit == $prod_info['size_unit']){
+                                        $selected = ' selected ';
+                                    }
+                                    echo '<option value="', xss_text($unit), '"', $selected, '>', xss_text($text), '</option>';
                                 }
                             }
                             ?>
@@ -203,7 +211,7 @@
                             <th class="hd-align-center" width="10%">操作</th>
                         </tr>
                         </thead>
-                        <tbody id="sku_list"></tbody>
+                        <tbody id="sku_list"><?php include 'box_sku_info.php';?></tbody>
                     </table>
                 </div>
             </div>

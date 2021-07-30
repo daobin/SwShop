@@ -27,7 +27,7 @@ class CategoryController extends Controller
                     'id' => 0 - $idx - 1,
                     'title' => LanguageHelper::get('product_category', $langCode),
                     'spread' => true,
-                    'children' => $prodBiz->getCategoryTree($this->request->shop_id, 0, $langCode)
+                    'children' => $prodBiz->getCategoryTree($this->shopId, 0, $langCode)
                 ]
             ];
         }
@@ -41,7 +41,7 @@ class CategoryController extends Controller
             return $this->save();
         }
 
-        $cateId = $this->request->get['cate_id'] ?? 0;
+        $cateId = $this->get('cate_id', 0);
         $cateId = (int)$cateId;
         if ($cateId < 0) {
             return LanguageHelper::get('invalid_request');
@@ -52,18 +52,18 @@ class CategoryController extends Controller
             [
                 'category_name' => '顶级类目',
                 'product_category_id' => 0,
-                'children' => $prodBiz->getCategoryTree($this->request->shop_id, 0, reset($this->langCodes), $cateId)
+                'children' => $prodBiz->getCategoryTree($this->shopId, 0, reset($this->langCodes), $cateId)
             ]
         ];
 
-        $cateInfo = $prodBiz->getCategoryById($this->request->shop_id, $cateId);
+        $cateInfo = $prodBiz->getCategoryById($this->shopId, $cateId);
         $cateDescList = $cateInfo['desc_list'] ?? [];
         unset($cateInfo['desc_list']);
 
         if (!empty($cateInfo)) {
             $parentId = $cateInfo['parent_id'];
         } else {
-            $parentId = $this->request->get['parent_id'] ?? -1;
+            $parentId = $this->get('parent_id', -1);
             $parentId = (int)$parentId > 0 ? (int)$parentId : 0;
         }
 
@@ -79,13 +79,13 @@ class CategoryController extends Controller
 
     private function save()
     {
-        $cateId = $this->request->get['cate_id'] ?? 0;
+        $cateId = $this->get('cate_id', 0);
         $cateId = (int)$cateId;
         if ($cateId < 0) {
             return ['status' => 'fail', 'msg' => LanguageHelper::get('invalid_request')];
         }
 
-        $parentId = $this->request->post['parent_id'] ?? -1;
+        $parentId = $this->post('parent_id', -1);
         $parentId = (int)$parentId > 0 ? (int)$parentId : 0;
         $cateStatus = isset($this->request->post['cate_status']) ? 1 : 0;
         $cateSort = empty($this->request->post['cate_sort']) ? 0 : (int)$this->request->post['cate_sort'];
@@ -115,7 +115,7 @@ class CategoryController extends Controller
         $metaDescList = $this->request->post['meta_desc'];
 
         $cateData = [
-            'shop_id' => $this->request->shop_id,
+            'shop_id' => $this->shopId,
             'product_category_id' => $cateId,
             'parent_id' => $parentId,
             'category_url' => $cateUrl,
@@ -125,9 +125,9 @@ class CategoryController extends Controller
             'product_show_size' => $prodSize,
             'review_show_size' => $reviewSize,
             'created_at' => time(),
-            'created_by' => $this->spAdminInfo['account'] ?? '--',
+            'created_by' => $this->operator,
             'updated_at' => time(),
-            'updated_by' => $this->spAdminInfo['account'] ?? '--'
+            'updated_by' => $this->operator
         ];
 
         $cateDescData = [];
@@ -151,7 +151,7 @@ class CategoryController extends Controller
             $metaTitle = empty($metaTitle) ? $cateName : $metaTitle;
 
             $cateDescData[$langCode] = [
-                'shop_id' => $this->request->shop_id,
+                'shop_id' => $this->shopId,
                 'product_category_id' => $cateId,
                 'language_code' => $langCode,
                 'category_name' => $cateName,
@@ -161,9 +161,9 @@ class CategoryController extends Controller
                 'meta_keywords' => $metaKeywords,
                 'meta_description' => $metaDesc,
                 'created_at' => time(),
-                'created_by' => $this->spAdminInfo['account'] ?? '--',
+                'created_by' => $this->operator,
                 'updated_at' => time(),
-                'updated_by' => $this->spAdminInfo['account'] ?? '--'
+                'updated_by' => $this->operator
             ];
         }
 

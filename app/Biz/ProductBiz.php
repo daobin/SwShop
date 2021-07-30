@@ -15,6 +15,7 @@ class ProductBiz
 {
     private $dbHelper;
     private $cateList;
+    private $cateLevelData;
 
     public function __construct()
     {
@@ -28,7 +29,10 @@ class ProductBiz
             return [];
         }
 
-        $where = ['shop_id' => (int)$condition['shop_id']];
+        $shopId = (int)$condition['shop_id'];
+        $langCode = trim($condition['language_code']);
+
+        $where = ['shop_id' => $shopId];
         $prodList = $this->dbHelper->table('product')->where($where);
         if (!empty($orderBy)) {
             $prodList = $prodList->orderBy($orderBy);
@@ -42,9 +46,9 @@ class ProductBiz
         $prodIds = array_keys($prodList);
 
         $where = [
-            'shop_id' => (int)$condition['shop_id'],
+            'shop_id' => $shopId,
             'product_id' => ['in', $prodIds],
-            'language_code' => trim($condition['language_code'])
+            'language_code' => $langCode
         ];
         $descList = $this->dbHelper->table('product_description')->where($where)->select();
         if (empty($descList)) {
@@ -53,6 +57,15 @@ class ProductBiz
 
         foreach ($descList as $idx => $desc) {
             if (!empty($prodList[$desc['product_id']])) {
+                $cateLevel = $this->getCateLevelByChildId($shopId, $prodList[$desc['product_id']]['product_category_id'], $langCode);
+                if (empty($cateLevel)) {
+                    $desc['cate_level'] = '';
+                } else {
+                    $cateLevel = array_column($cateLevel, 'category_name');
+                    $cateLevel = array_reverse($cateLevel);
+                    $desc['cate_level'] = implode(' >> ', $cateLevel);
+                }
+
                 $descList[$idx] = array_merge($prodList[$desc['product_id']], $desc);
             }
         }
@@ -120,9 +133,18 @@ class ProductBiz
         $skuArr = array_values(array_unique($skuArr));
         $where = ['shop_id' => $shopId, 'sku' => ['in', $skuArr]];
 
-        $skuQtyPriceList = $this->dbHelper->table('product_qty_price')->where($where)->select();
+        $rows = $this->dbHelper->table('product_qty_price')->where($where)->select();
+        if (empty($rows)) {
+            return [];
+        }
 
-        return empty($skuQtyPriceList) ? [] : array_column($skuQtyPriceList, null, 'sku');
+        $skuQtyPriceList = [];
+        foreach ($rows as $row) {
+            $skuQtyPriceList[$row['sku']][$row['warehouse_code']] = $row;
+        }
+        unset($rows, $row);
+
+        return $skuQtyPriceList;
 
     }
 
@@ -141,7 +163,7 @@ class ProductBiz
         $this->dbHelper->beginTransaction();
         try {
             if (empty($prodInfo)) {
-                unset($prodInfo['product_id']);
+                unset($prodData['product_id']);
                 $prodId = $this->dbHelper->table('product')->insert($prodData);
 
                 foreach ($prodDescData as $prodDesc) {
@@ -180,29 +202,18 @@ class ProductBiz
 
                 foreach ($prodDescData as $langCode => $prodDesc) {
                     if (empty($prodInfo['desc_list'][$langCode])) {
+                        $this->dbHelper->table('product_description')->insert($prodDesc);
+                    } else {
                         $prodDescId = $prodInfo['desc_list'][$langCode]['product_description_id'];
                         unset($prodDesc['created_at'], $prodDesc['created_by']);
 
                         $this->dbHelper->table('product_description')->where(
                             ['shop_id' => $shopId, 'product_description_id' => $prodDescId])->update($prodDesc);
-                    } else {
-                        $this->dbHelper->table('product_description')->insert($prodDesc);
                     }
                 }
 
                 foreach ($skuArr as $sort => $sku) {
                     if (empty($prodInfo['sku_list'][$sku])) {
-                        $prodSkuId = $prodInfo['sku_list'][$sku]['product_sku_id'];
-                        $this->dbHelper->table('product_sku')->where(
-                            ['shop_id' => $shopId, 'product_sku_id' => $prodSkuId])->update([
-                            'shop_id' => $shopId,
-                            'product_id' => $prodId,
-                            'sku' => $sku,
-                            'sort' => $sort,
-                            'updated_at' => $prodInfo['updated_at'],
-                            'updated_by' => $prodInfo['updated_by']
-                        ]);
-                    } else {
                         $this->dbHelper->table('product_sku')->insert([
                             'shop_id' => $shopId,
                             'product_id' => $prodId,
@@ -210,6 +221,17 @@ class ProductBiz
                             'sort' => $sort,
                             'created_at' => $prodInfo['created_at'],
                             'created_by' => $prodInfo['created_by'],
+                            'updated_at' => $prodInfo['updated_at'],
+                            'updated_by' => $prodInfo['updated_by']
+                        ]);
+                    } else {
+                        $prodSkuId = $prodInfo['sku_list'][$sku]['product_sku_id'];
+                        $this->dbHelper->table('product_sku')->where(
+                            ['shop_id' => $shopId, 'product_sku_id' => $prodSkuId])->update([
+                            'shop_id' => $shopId,
+                            'product_id' => $prodId,
+                            'sku' => $sku,
+                            'sort' => $sort,
                             'updated_at' => $prodInfo['updated_at'],
                             'updated_by' => $prodInfo['updated_by']
                         ]);
@@ -251,7 +273,6 @@ class ProductBiz
                     $this->dbHelper->table('product_sku')->where(
                         ['shop_id' => $shopId, 'sku' => ['in', $delSkuArr]])->delete();
                 }
-
             }
 
             $res = $prodId;
@@ -265,26 +286,64 @@ class ProductBiz
         return $res;
     }
 
-    public function getCategoryTree(int $shopId, int $parentId = 0, string $language = 'en', int $filterCateId = 0): array
+    private function getCateList(int $shopId, string $language = 'en')
     {
         if ($shopId <= 0 || empty($language)) {
-            return [];
+            return;
         }
 
         if (empty($this->cateList[$language])) {
             $this->cateList[$language] = $this->dbHelper->table('product_category', 'pc')
                 ->join('product_category_description', 'pc_desc',
                     ['pc.shop_id' => 'pc_desc.shop_id', 'pc.product_category_id' => 'pc_desc.product_category_id'])
-                ->where(['pc.shop_id' => (int)$shopId, 'pc_desc.language_code' => $language])
+                ->where(['pc.shop_id' => $shopId, 'pc_desc.language_code' => $language])
                 ->orderBy(['pc.sort' => 'asc', 'pc.product_category_id' => 'asc'])->select();
         }
 
+        if (!empty($this->cateList[$language])) {
+            $this->cateList[$language] = array_column($this->cateList[$language], null, 'product_category_id');
+        }
+        return;
+    }
+
+    public function getCateLevelByChildId(int $shopId, int $childId, string $language = 'en', bool $init = true): array
+    {
+        if ($init || empty($this->cateLevelData)) {
+            $this->cateLevelData = [];
+        }
+
+        if ($shopId <= 0 || $childId <= 0 || empty($language)) {
+            return [];
+        }
+
+        $this->getCateList($shopId, $language);
+        if (empty($this->cateList[$language])) {
+            return [];
+        }
+
+        if (isset($this->cateList[$language][$childId])) {
+            $this->cateLevelData[] = $this->cateList[$language][$childId];
+            if ($this->cateList[$language][$childId]['parent_id'] > 0) {
+                $this->getCateLevelByChildId($shopId, $this->cateList[$language][$childId]['parent_id'], $language, false);
+            }
+        }
+
+        return $this->cateLevelData;
+    }
+
+    public function getCategoryTree(int $shopId, int $parentId = 0, string $language = 'en', int $filterCateId = 0): array
+    {
+        if ($shopId <= 0 || empty($language)) {
+            return [];
+        }
+
+        $this->getCateList($shopId, $language);
         if (empty($this->cateList[$language])) {
             return [];
         }
 
         $cateTree = [];
-        foreach ($this->cateList[$language] as $idx => $cateInfo) {
+        foreach ($this->cateList[$language] as $cateInfo) {
             if ($cateInfo['parent_id'] !== $parentId) {
                 continue;
             }

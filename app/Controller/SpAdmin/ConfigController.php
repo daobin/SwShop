@@ -20,7 +20,7 @@ class ConfigController extends Controller
     {
         if ($this->request->isAjax) {
             $grp = $this->request->get['cfg_grp'] ?? 'web_info';
-            $cfgList = (new ConfigBiz())->getConfigListByGroup($this->request->shop_id, $grp);
+            $cfgList = (new ConfigBiz())->getConfigListByGroup($this->shopId, $grp);
 
             if (!empty($cfgList)) {
                 foreach ($cfgList as &$cfgInfo) {
@@ -56,7 +56,7 @@ class ConfigController extends Controller
             return LanguageHelper::get('invalid_request');
         }
 
-        $cfgInfo = (new ConfigBiz())->getConfigByKey($this->request->shop_id, $cfgKey);
+        $cfgInfo = (new ConfigBiz())->getConfigByKey($this->shopId, $cfgKey);
         if (empty($cfgInfo)) {
             return LanguageHelper::get('invalid_request');
         }
@@ -83,16 +83,16 @@ class ConfigController extends Controller
             // 将样式内容保存至样式文件
 
             // 更新时间戳
-            $cfgBiz->updateConfigByKey($this->request->shop_id, $cfgKey, [
+            $cfgBiz->updateConfigByKey($this->shopId, $cfgKey, [
                 'updated_at' => time(),
-                'updated_by' => $this->spAdminInfo['account'] ?? '--'
+                'updated_by' => $this->operator
             ]);
 
             // 同时更新静态资源时间戳
-            $cfgBiz->updateConfigByKey($this->request->shop_id, 'TIMESTAMP', [
+            $cfgBiz->updateConfigByKey($this->shopId, 'TIMESTAMP', [
                 'config_value' => '?' . date('YmdHis'),
                 'updated_at' => time(),
-                'updated_by' => $this->spAdminInfo['account'] ?? '--'
+                'updated_by' => $this->operator
             ]);
 
             return ['status' => 'success', 'msg' => '保存成功'];
@@ -128,10 +128,10 @@ class ConfigController extends Controller
                 break;
         }
 
-        $update = $cfgBiz->updateConfigByKey($this->request->shop_id, $cfgKey, [
+        $update = $cfgBiz->updateConfigByKey($this->shopId, $cfgKey, [
             'config_value' => $cfgVal,
             'updated_at' => time(),
-            'updated_by' => $this->spAdminInfo['account'] ?? '--'
+            'updated_by' => $this->operator
         ]);
         if ($update > 0) {
             return ['status' => 'success', 'msg' => '保存成功'];

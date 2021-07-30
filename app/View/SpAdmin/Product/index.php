@@ -23,13 +23,14 @@
                                     return '待处理 <i class="layui-icon layui-icon-loading layui-anim layui-anim-rotate layui-anim-loop"></i>';
                             }
                         }},
-                        {field: 'category_text', title: '所属类目', align: 'center'},
+                        {field: 'cate_level', title: '所属类目', align: 'center'},
                         {field: 'last_operation', title: '最后操作', align: 'center'},
                         {fixed: 'right', width: '100', align: 'center', toolbar: '#operate'}
                     ]
                 ],
                 height: 'full-90',
-                page: true
+                page: true,
+                limit: 20
             });
 
             layui.table.on('tool(opt)', function (obj) {

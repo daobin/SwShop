@@ -20,7 +20,7 @@ class IndexController extends Controller
     public function index()
     {
         $data = [
-            'admin_name' => $this->spAdminInfo['account'] ?? '--'
+            'admin_name' => $this->operator
         ];
         return $this->render($data);
     }
@@ -28,7 +28,7 @@ class IndexController extends Controller
     public function dashboard()
     {
         $data = [
-            'admin_name' => $this->spAdminInfo['account'] ?? '--'
+            'admin_name' => $this->operator
         ];
         return $this->render($data);
     }
@@ -45,8 +45,8 @@ class IndexController extends Controller
             return ['status' => 'fail', 'msg' => LanguageHelper::get('invalid_request')];
         }
 
-        $account = $this->request->post['account'] ?? '';
-        $password = $this->request->post['password'] ?? '';
+        $account = $this->post('account');
+        $password = $this->post('password');
         if ($account == '') {
             return ['status' => 'fail', 'msg' => LanguageHelper::get('enter_account')];
         }
@@ -54,7 +54,7 @@ class IndexController extends Controller
             return ['status' => 'fail', 'msg' => LanguageHelper::get('enter_password')];
         }
 
-        $adminInfo = (new AdminBiz())->getAdminByAccount($this->request->shop_id, $account);
+        $adminInfo = (new AdminBiz())->getAdminByAccount($this->shopId, $account);
         if (empty($adminInfo) || !password_verify($password, $adminInfo['password'])) {
             return ['status' => 'fail', 'msg' => LanguageHelper::get('enter_valid_account_password')];
         }
