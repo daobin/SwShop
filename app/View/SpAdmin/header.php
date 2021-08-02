@@ -17,7 +17,7 @@
     <![endif]-->
     <script src="/static/layui/layui.js"></script>
     <script src="/static/spadmin/hd.admin.js<?php echo $timestamp ?? ''; ?>"></script>
-    <script src="/static/spadmin/hd.file.js<?php echo $timestamp ?? ''; ?>"></script>
+    <script src="/static/spadmin/hd.image.js<?php echo $timestamp ?? ''; ?>"></script>
 </head>
 <body>
 <?php if ($show_top_line){ ?>

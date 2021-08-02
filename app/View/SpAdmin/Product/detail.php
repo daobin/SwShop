@@ -262,14 +262,14 @@
         });
 
         layui.use('form', function () {
-            hdFile.init({
+            hdImg.init({
                 elem: '.sku_images',
                 url: '/spadmin/upload'
             });
             $('#btn_add_sku').click(function () {
                 $('#sku_list').append($('#tpl_sku_info').html().replaceAll('-IDX-', $('#sku_list tr').get().length));
                 layui.form.render('select');
-                hdFile.init({
+                hdImg.init({
                     elem: '.sku_images',
                     url: '/spadmin/upload'
                 });

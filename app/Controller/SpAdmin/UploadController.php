@@ -12,7 +12,29 @@ namespace App\Controller\SpAdmin;
 class UploadController
 {
     public function index(){
+        $imageList = [
+            [
+                'src' => 'https://www.glarrymusic.com/thumb_image/product/s/spug/spug17000205/spug17000205_400_400.jpg?20200201221117',
+                'name' => 'SKU001.jpg'
+            ],
+            [
+                'src' => 'https://www.glarrymusic.com/thumb_image/product/s/spug/spug17000205/spug17000205_400_400.jpg?20200201221117',
+                'name' => 'SKU001.jpg'
+            ],
+            [
+                'src' => 'https://www.glarrymusic.com/thumb_image/product/s/spug/spug17000205/spug17000205_400_400.jpg?20200201221117',
+                'name' => 'SKU001.jpg'
+            ],
+            [
+                'src' => 'https://www.glarrymusic.com/thumb_image/product/s/spug/spug17000205/spug17000205_400_400.jpg?20200201221117',
+                'name' => 'SKU001.jpg'
+            ],
+        ];
 
+        return [
+            'data' => $imageList,
+            'pages' => 3
+        ];
     }
 
     public function upload(){

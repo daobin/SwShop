@@ -1,0 +1,8 @@
+#hd-btn-top-row{position: fixed; right: 20px; top: 10px;}
+#hd-btn-close-image{background: #888;}
+#hd-box-list-image{position: absolute; top: 0px; bottom: 0px; left: 200px; right: 0px;}
+#hd-box-list-image .layui-row>div{margin-bottom: 30px;}
+#hd-box-list-image .layui-row .hd-box-image{width: 80%; margin: 0 auto; border: 1px solid #b2b2b2;}
+#hd-box-list-image .layui-row .hd-box-image.active{border: 1px solid #1E9FFF; color: #1E9FFF;}
+#hd-box-list-image .layui-row .hd-box-image>img{display: block; width: 80%; margin: 0 auto;}
+#hd-box-list-image .layui-row .hd-box-image>div{width: 100%; height: 60px; line-height: 80px; text-align: center;}
