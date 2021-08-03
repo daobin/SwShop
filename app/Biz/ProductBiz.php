@@ -148,6 +148,30 @@ class ProductBiz
 
     }
 
+    public function getSkuImageListBySkuArr(int $shopId, array $skuArr)
+    {
+        if ($shopId <= 0 || empty($skuArr)) {
+            return [];
+        }
+
+        $skuArr = array_values(array_unique($skuArr));
+        $where = ['shop_id' => $shopId, 'sku' => ['in', $skuArr]];
+
+        $rows = $this->dbHelper->table('product_image')->where($where)->select();
+        if (empty($rows)) {
+            return [];
+        }
+
+        $skuImageList = [];
+        foreach ($rows as $row) {
+            $skuImageList[$row['sku']][$row['sort']] = $row;
+        }
+        unset($rows, $row);
+
+        return $skuImageList;
+
+    }
+
     public function saveProduct(array $prodData, array $prodDescData, array $prodSkuData): int
     {
         if (empty($prodData) || empty($prodDescData) || empty($prodSkuData)) {
@@ -185,13 +209,17 @@ class ProductBiz
                 }
 
                 foreach ($prodSkuData as $data) {
-                    if (empty($data['qty_price_data'])) {
+                    if (empty($data['qty_price_data']) || empty($data['img_data'])) {
                         return 0;
                     }
 
                     foreach ($data['qty_price_data'] as $qtyPrice) {
                         $qtyPrice['product_id'] = $prodId;
                         $this->dbHelper->table('product_qty_price')->insert($qtyPrice);
+                    }
+
+                    foreach ($data['img_data'] as $img) {
+                        $this->dbHelper->table('product_image')->insert($img);
                     }
                 }
 
@@ -238,6 +266,7 @@ class ProductBiz
                     }
                 }
 
+                $imgList = $this->getSkuImageListBySkuArr($shopId, $skuArr);
                 $qtyPriceList = $this->getSkuQtyPriceListBySkuArr($shopId, $skuArr);
 
                 foreach ($prodSkuData as $sku => $data) {
@@ -263,6 +292,31 @@ class ProductBiz
 
                             $this->dbHelper->table('product_qty_price')->where(
                                 ['shop_id' => $shopId, 'product_qty_price_id' => $qtyPriceId])->update($qtyPrice);
+                        }
+                    }
+
+                    foreach ($data['img_data'] as $img) {
+                        $sort = $img['sort'];
+                        if (empty($imgList[$sku][$sort])) {
+                            $this->dbHelper->table('product_image')->insert($img);
+                        } else {
+                            $prodImgId = $imgList[$sku][$sort]['product_image_id'];
+                            unset($img['created_at'], $img['created_by'], $imgList[$sku][$sort]);
+
+                            $this->dbHelper->table('product_image')->where(
+                                ['shop_id' => $shopId, 'product_image_id' => $prodImgId])->update($img);
+                        }
+                    }
+
+                    // 删除多余的商品图片
+                    if (!empty($imgList)) {
+                        foreach ($imgList as $sku => $img) {
+                            if(empty($img)){
+                                continue;
+                            }
+
+                            $this->dbHelper->table('product_image')->where(
+                                ['shop_id' => $shopId, 'sku' => $sku, 'sort' => ['in', array_keys($img)]])->delete();
                         }
                     }
                 }

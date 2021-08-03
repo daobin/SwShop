@@ -264,14 +264,15 @@
         layui.use('form', function () {
             hdImg.init({
                 elem: '.sku_images',
-                url: '/spadmin/upload'
+                url: '/spadmin/upload-prod-image'
             });
             $('#btn_add_sku').click(function () {
                 $('#sku_list').append($('#tpl_sku_info').html().replaceAll('-IDX-', $('#sku_list tr').get().length));
                 layui.form.render('select');
+
                 hdImg.init({
                     elem: '.sku_images',
-                    url: '/spadmin/upload'
+                    url: '/spadmin/upload-prod-image'
                 });
             });
             $(document).on('click', '.btn_del_sku', function () {

@@ -50,8 +50,10 @@ class ProductController extends Controller
 
         $prodBiz = new ProductBiz();
         $prodInfo = $prodBiz->getProductById($this->shopId, $prodId);
+        $skuArr = empty($prodInfo['sku_list']) ? [] : array_keys($prodInfo['sku_list']);
         $prodDescList = $prodInfo['desc_list'] ?? [];
-        $qtyPriceList = $prodBiz->getSkuQtyPriceListBySkuArr($this->shopId, array_keys($prodInfo['sku_list'] ?? []));
+        $qtyPriceList = $prodBiz->getSkuQtyPriceListBySkuArr($this->shopId, $skuArr);
+        $imageList = $prodBiz->getSkuImageListBySkuArr($this->shopId, $skuArr);
 
         $cfgBiz = new ConfigBiz();
         $weightUnits = $cfgBiz->getConfigByKey($this->shopId, 'WEIGHT_UNIT');
@@ -65,6 +67,7 @@ class ProductController extends Controller
             'prod_info' => $prodInfo,
             'prod_desc_list' => $prodDescList,
             'qty_price_list' => $qtyPriceList,
+            'image_list' => $imageList,
             'weight_units' => $weightUnits,
             'size_units' => $sizeUnits,
             'warehouses' => $warehouses,
@@ -172,11 +175,23 @@ class ProductController extends Controller
 
                 // 商品图片
                 $imgData = [];
-//                if (!empty($datum['image']) && is_array($datum['image']) && !empty(reset($datum['image']))) {
-//
-//                } else {
-//                    return ['status' => 'fail', 'msg' => 'SKU [' . $sku . '] 图片无效'];
-//                }
+                if (!empty($datum['image']) && is_array($datum['image']) && !empty(reset($datum['image']))) {
+                    foreach ($datum['image'] as $sort => $image) {
+                        $imgData[] = [
+                            'shop_id' => $this->shopId,
+                            'sku' => $sku,
+                            'image_path' => dirname($image),
+                            'image_name' => basename($image),
+                            'sort' => $sort,
+                            'created_at' => $time,
+                            'created_by' => $this->operator,
+                            'updated_at' => $time,
+                            'updated_by' => $this->operator
+                        ];
+                    }
+                } else {
+                    return ['status' => 'fail', 'msg' => 'SKU [' . $sku . '] 图片无效'];
+                }
 
                 $skuData[$sku] = [
                     'qty_price_data' => $qtyPriceData,

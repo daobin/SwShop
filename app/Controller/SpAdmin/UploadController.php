@@ -9,35 +9,28 @@ declare(strict_types=1);
 
 namespace App\Controller\SpAdmin;
 
-class UploadController
-{
-    public function index(){
-        $imageList = [
-            [
-                'src' => 'https://www.glarrymusic.com/thumb_image/product/s/spug/spug17000205/spug17000205_400_400.jpg?20200201221117',
-                'name' => 'SKU001.jpg'
-            ],
-            [
-                'src' => 'https://www.glarrymusic.com/thumb_image/product/s/spug/spug17000205/spug17000205_400_400.jpg?20200201221117',
-                'name' => 'SKU001.jpg'
-            ],
-            [
-                'src' => 'https://www.glarrymusic.com/thumb_image/product/s/spug/spug17000205/spug17000205_400_400.jpg?20200201221117',
-                'name' => 'SKU001.jpg'
-            ],
-            [
-                'src' => 'https://www.glarrymusic.com/thumb_image/product/s/spug/spug17000205/spug17000205_400_400.jpg?20200201221117',
-                'name' => 'SKU001.jpg'
-            ],
-        ];
+use App\Controller\Controller;
+use App\Helper\OssHelper;
 
+class UploadController extends Controller
+{
+    public function prodImage()
+    {
         return [
-            'data' => $imageList,
-            'pages' => 3
+            'data' => (new OssHelper($this->shopId))->getObjectForProductImage($this->getProdImgPrefix()),
+            'pages' => 1
         ];
     }
 
-    public function upload(){
+    public function uploadProdImage()
+    {
 
+    }
+
+    private function getProdImgPrefix()
+    {
+        $prefix = $this->get('folder');
+
+        return $this->shopId . '/prod_img/' . trim($prefix, '/');
     }
 }

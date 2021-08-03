@@ -1,7 +1,7 @@
 <script type="text/html" id="tpl_sku_info">
     <tr>
         <td>
-            <input type="text" class="layui-input" name="sku_data[-IDX-][sku]"/>
+            <input type="text" class="layui-input hd-input-sku" name="sku_data[-IDX-][sku]"/>
         </td>
         <td>
             <?php

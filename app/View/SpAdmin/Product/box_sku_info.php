@@ -1,10 +1,11 @@
 <?php
 if (!empty($qty_price_list)) {
+    $sku_idx = 0;
     foreach ($qty_price_list as $sku => $qty_price_data) {
         ?>
         <tr>
             <td>
-                <input type="text" class="layui-input" name="sku_data[<?php echo $sku; ?>][sku]"
+                <input type="text" class="layui-input hd-input-sku" name="sku_data[<?php echo $sku; ?>][sku]"
                        value="<?php echo $sku; ?>"/>
             </td>
             <td>
@@ -45,7 +46,34 @@ if (!empty($qty_price_list)) {
                 }
                 ?>
                 <div class="layui-form-item">
-                    <div class="sku_images"></div>
+                    <div class="sku_images">
+                        <div class="layui-fluid">
+                            <div class="layui-row">
+                                <div class="layui-col-xs9" id="list_img_<?php echo $sku_idx; ?>">&nbsp;
+                                    <?php
+                                    if (!empty($image_list[$sku])) {
+                                        foreach ($image_list[$sku] as $img) {
+                                            ?>
+                                            <div style="position: relative; display: inline-block; margin: 10px; border: 1px solid #ccc;">
+                                                <input type="hidden" name="sku_data[<?php echo $sku; ?>][image][]"
+                                                       value="<?php echo $img['image_path'] . '/' . $img['image_name']; ?>"/>
+                                                <img src="<?php echo $img['image_path'] . '/' . $img['image_name']; ?>"/>
+                                                <i class="layui-icon layui-icon-close-fill hd-btn-del-image"
+                                                   style="position: absolute; top: 0; right: 0; font-size: 20px; color: #FF5722; cursor: pointer;"></i>
+                                            </div>
+                                            <?php
+                                        }
+                                    }
+                                    ?>
+                                </div>
+                                <div class="layui-col-xs3" style="text-align: right;">
+                                    <a class="layui-btn layui-btn-warm hd-btn-open-image">
+                                        <i class="layui-icon layui-icon-upload-drag"></i> 上传商品图片
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </td>
             <td class="hd-align-center">
@@ -53,5 +81,6 @@ if (!empty($qty_price_list)) {
             </td>
         </tr>
         <?php
+        $sku_idx++;
     }
 }
