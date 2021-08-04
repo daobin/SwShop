@@ -1,5 +1,5 @@
 // 基于 LayUI 框架的图片管理工具
-layui.use(['jquery', 'layer', 'flow', 'upload'], function () {
+layui.use(['jquery', 'layer', 'element', 'flow', 'upload'], function () {
     let $ = layui.jquery;
     let layer = layui.layer;
     let upload = layui.upload;
@@ -26,9 +26,7 @@ layui.use(['jquery', 'layer', 'flow', 'upload'], function () {
             '<a class="layui-btn layui-btn-warm hd-btn-open-image"><i class="layui-icon layui-icon-upload-drag"></i>上传商品图片</a></div>' +
             '</div></div>';
 
-        imgObj.openContent = '<ul class="layui-nav layui-nav-tree layui-nav-side" style="top: 50px; border-radius: 0;">' +
-            '<li class="layui-nav-item"><a>默认目录</a></li>' +
-            '</ul>' +
+        imgObj.openContent = '<ul class="layui-nav layui-nav-tree layui-nav-side layui-bg-cyan" id="hd-nav-folder" style="top: 50px; border-radius: 0;"></ul>' +
             '<div class="layui-row" id="hd-btn-top-row">' +
             '<button class="layui-btn layui-btn-sm" id="hd-btn-add-folder"><i class="layui-icon layui-icon-file"></i> 新建图片目录</button>' +
             '<button class="layui-btn layui-btn-sm layui-btn-warm" id="hd-btn-upload-image"><i class="layui-icon layui-icon-upload"></i> 上传本地图片</button>' +
@@ -46,9 +44,6 @@ layui.use(['jquery', 'layer', 'flow', 'upload'], function () {
                     imgObj.showFolderImage(folder);
                     layer.close(idx);
                 });
-
-            }).on('click', '#hd-btn-upload-image', function () {
-                console.log('add upload image');
 
             }).on('click', '#hd-btn-select-image input', function (e) {
                 e.stopPropagation();
@@ -120,6 +115,14 @@ layui.use(['jquery', 'layer', 'flow', 'upload'], function () {
 
             }).on('click', '.hd-btn-del-image', function () {
                 $(this).parent('div').remove();
+            }).on('click', '#hd-nav-folder .layui-nav-item a', function () {
+                let folder = $(this).attr('folder');
+                if (folder == undefined || folder == '' || imgObj.folder == folder) {
+                    return;
+                }
+
+                imgObj.folderImages = [];
+                imgObj.showFolderImage(folder);
             });
 
             // 打开上传图片管理工具弹窗
@@ -133,29 +136,91 @@ layui.use(['jquery', 'layer', 'flow', 'upload'], function () {
                 imgObj.layerIdx = layer.open(openCfg);
                 layer.full(imgObj.layerIdx);
 
+                let imgFolder = sessionStorage.getItem('image_folder');
+                imgFolder = imgFolder ? JSON.parse(imgFolder) : {};
+                for (let idx in imgFolder) {
+                    imgFolder[idx].isNav = false;
+                }
+                sessionStorage.setItem('image_folder', JSON.stringify(imgFolder));
+
                 imgObj.showFolderImage();
+
+                upload.render({
+                    elem: '#hd-btn-upload-image',
+                    multiple: true,
+                    number: 10,
+                    size: 2040,
+                    drag: false,
+                    acceptMime: 'image/jpg, image/jpeg, image/png',
+                    url: imgObj.url,
+                    data: {
+                        prefix: imgObj.folder,
+                        hash_tk: $.trim($('input[name=hash_tk]').val())
+                    },
+                    done: function (res) {
+                        console.log(res);
+                        if (res.msg != undefined && res.msg != '') {
+                            layer.alert(res.msg, imgObj.openAlertCfg);
+                        }
+
+                        if (res.status == 'success') {
+
+                        }
+                    },
+                    error: function () {
+                        layer.alert('未知错误，请稍候刷新页面重试！', imgObj.openAlertCfg);
+                    }
+                });
             });
         };
 
         imgObj.folder = 'def';
+        imgObj.folderImages = [];
         imgObj.showFolderImage = function (folder) {
             folder = folder == undefined ? '' : folder;
-            folder = folder.replace(/[^a-z\d\-]+/, '');
+            folder = folder.toLocaleLowerCase();
+            folder = folder.replace(/[^a-z\d_]+/, '');
             folder = folder == '' ? 'def' : folder;
-
-            let folderImgList = sessionStorage.getItem('folder_image');
-            folderImgList = folderImgList ? JSON.parse(folderImgList) : {};
-
-            folder = folder.replace(/[^a-z\d\-]+/, '');
             imgObj.folder = folder;
 
-            if (folderImgList.hasOwnProperty(folder)) {
-                return;
+            let imgFolder = sessionStorage.getItem('image_folder');
+            imgFolder = imgFolder ? JSON.parse(imgFolder) : {};
+            if (folder == 'def' && !imgFolder.hasOwnProperty(folder)) {
+                imgFolder[folder] = {
+                    isNav: false
+                };
             }
 
-            folderImgList[folder] = {};
-            sessionStorage.setItem('folder_image', JSON.stringify(folderImgList));
-            imgObj.getImage();
+            if (!imgFolder.hasOwnProperty(folder)) {
+                imgFolder[folder] = {
+                    isNav: false
+                };
+            }
+
+            for (let idx in imgFolder) {
+                if (imgFolder[idx].isNav) {
+                    continue;
+                }
+
+                imgFolder[idx].isNav = true;
+                if (idx == 'def') {
+                    $('#hd-nav-folder').append('<li class="layui-nav-item"><a folder="def">默认目录</a></li>');
+                } else {
+                    $('#hd-nav-folder').append('<li class="layui-nav-item"><a folder="' + idx + '">' + idx + '</a></li>');
+                }
+            }
+
+            if ($('#hd-nav-folder .layui-nav-item.layui-this').length == 0) {
+                $('#hd-nav-folder .layui-nav-item:eq(0)').addClass('layui-this');
+            }
+
+            layui.element.init('nav');
+            sessionStorage.setItem('image_folder', JSON.stringify(imgFolder));
+
+            if(imgObj.folderImages.length == 0){
+                $('#hd-load-image').html('');
+                imgObj.getImage();
+            }
         };
 
         imgObj.getImage = function () {
@@ -163,10 +228,9 @@ layui.use(['jquery', 'layer', 'flow', 'upload'], function () {
                 elem: '#hd-load-image',
                 isAuto: false,
                 done: function (page, next) {
-                    let its = [];
                     $.get(imgObj.url + '?folder=' + imgObj.folder + '&page=' + page, function (res) {
                         layui.each(res.data, function (idx, item) {
-                            its.push('<div class="layui-col-xs2"><div class="hd-box-image">' +
+                            imgObj.folderImages.push('<div class="layui-col-xs2"><div class="hd-box-image">' +
                                 '<img src="' + item.src + '" />' +
                                 '<div>' + item.name + '</div>' +
                                 '<i class="layui-icon layui-icon-ok-circle"></i>' +
@@ -174,23 +238,10 @@ layui.use(['jquery', 'layer', 'flow', 'upload'], function () {
                         });
 
                         res.pages = res.pages == undefined ? 1 : res.pages;
-                        next(its.join(''), page < res.pages);
+                        next(imgObj.folderImages.join(''), page < res.pages);
                     });
                 }
             });
-        };
-
-        imgObj.uploadImage = function () {
-            // upload.render({
-            //     elem: '#' + btn_id,
-            //     url: imgObj.url,
-            //     done: function (res) {
-            //
-            //     },
-            //     error: function () {
-            //
-            //     }
-            // });
         };
 
         imgObj.init = function (params) {

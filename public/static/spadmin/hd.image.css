@@ -1,4 +1,5 @@
 #hd-btn-top-row{position: fixed; right: 20px; top: 10px;}
+#hd-btn-upload-image{display: inline-block; margin-right: 10px;}
 #hd-btn-close-image{background: #888;}
 #hd-box-list-image{position: absolute; top: 0px; bottom: 0px; left: 200px; right: 0px;}
 #hd-box-list-image .layui-row>div{margin-bottom: 30px;}

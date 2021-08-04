@@ -7,6 +7,7 @@ namespace Composer\Autoload;
 class ComposerStaticInitac96ecb4cab02b367f677877656be9b5
 {
     public static $files = array (
+        '7b11c4dc42b3b3023073cb14e519683c' => __DIR__ . '/..' . '/ralouphie/getallheaders/src/getallheaders.php',
         'aef9a6d74b7815e7718eddae777e26d3' => __DIR__ . '/../..' . '/app/function.php',
     );
 
@@ -14,11 +15,20 @@ class ComposerStaticInitac96ecb4cab02b367f677877656be9b5
         'P' => 
         array (
             'Psr\\Log\\' => 8,
+            'Psr\\Http\\Message\\' => 17,
             'Psr\\Container\\' => 14,
         ),
         'O' => 
         array (
             'OSS\\' => 4,
+        ),
+        'I' => 
+        array (
+            'Intervention\\Image\\' => 19,
+        ),
+        'G' => 
+        array (
+            'GuzzleHttp\\Psr7\\' => 16,
         ),
         'A' => 
         array (
@@ -31,6 +41,11 @@ class ComposerStaticInitac96ecb4cab02b367f677877656be9b5
         array (
             0 => __DIR__ . '/..' . '/psr/log/Psr/Log',
         ),
+        'Psr\\Http\\Message\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/psr/http-message/src',
+            1 => __DIR__ . '/..' . '/psr/http-factory/src',
+        ),
         'Psr\\Container\\' => 
         array (
             0 => __DIR__ . '/..' . '/psr/container/src',
@@ -38,6 +53,14 @@ class ComposerStaticInitac96ecb4cab02b367f677877656be9b5
         'OSS\\' => 
         array (
             0 => __DIR__ . '/..' . '/aliyuncs/oss-sdk-php/src/OSS',
+        ),
+        'Intervention\\Image\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/intervention/image/src/Intervention/Image',
+        ),
+        'GuzzleHttp\\Psr7\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/guzzlehttp/psr7/src',
         ),
         'App\\' => 
         array (

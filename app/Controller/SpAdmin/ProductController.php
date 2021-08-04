@@ -13,6 +13,7 @@ use App\Biz\ConfigBiz;
 use App\Biz\ProductBiz;
 use App\Controller\Controller;
 use App\Helper\LanguageHelper;
+use App\Helper\OssHelper;
 use App\Helper\SafeHelper;
 
 class ProductController extends Controller
@@ -68,6 +69,7 @@ class ProductController extends Controller
             'prod_desc_list' => $prodDescList,
             'qty_price_list' => $qtyPriceList,
             'image_list' => $imageList,
+            'oss_access_host' => (new OssHelper($this->shopId))->accessHost,
             'weight_units' => $weightUnits,
             'size_units' => $sizeUnits,
             'warehouses' => $warehouses,
@@ -102,6 +104,7 @@ class ProductController extends Controller
         $height = empty($this->request->post['height']) ? 0 : (float)$this->request->post['height'];
         $height = $height > 0 ? $height : 0;
         $sizeUnit = empty($this->request->post['size_unit']) ? '' : trim($this->request->post['size_unit']);
+        $ossAccessHost = (new OssHelper($this->shopId))->accessHost;
 
         if ($cateId <= 0) {
             return ['status' => 'fail', 'msg' => '请选择商品分类'];
@@ -177,11 +180,13 @@ class ProductController extends Controller
                 $imgData = [];
                 if (!empty($datum['image']) && is_array($datum['image']) && !empty(reset($datum['image']))) {
                     foreach ($datum['image'] as $sort => $image) {
+                        $imageName = preg_replace('/_\d+_/', '_d_', basename($image));
+
                         $imgData[] = [
                             'shop_id' => $this->shopId,
                             'sku' => $sku,
-                            'image_path' => dirname($image),
-                            'image_name' => basename($image),
+                            'image_path' => str_replace($ossAccessHost, '', dirname($image)),
+                            'image_name' => $imageName,
                             'sort' => $sort,
                             'created_at' => $time,
                             'created_by' => $this->operator,

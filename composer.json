@@ -20,7 +20,8 @@
     "php": "7.4.*",
     "psr/log": "^1.1",
     "psr/container": "^2.0",
-    "aliyuncs/oss-sdk-php": "^2.4"
+    "aliyuncs/oss-sdk-php": "^2.4",
+    "intervention/image": "^2.6"
   },
   "autoload": {
     "psr-4": {

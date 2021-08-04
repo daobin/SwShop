@@ -38,7 +38,7 @@
                     case 'edit':
                         let layer_idx = layer.open({
                             type: 2,
-                            title: '编辑',
+                            title: '编辑商品',
                             skin: 'hd-open-edit',
                             content: '/spadmin/product/' + obj.data.product_id
                         });

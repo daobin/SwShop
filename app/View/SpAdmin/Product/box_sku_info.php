@@ -53,11 +53,12 @@ if (!empty($qty_price_list)) {
                                     <?php
                                     if (!empty($image_list[$sku])) {
                                         foreach ($image_list[$sku] as $img) {
+                                            $imgSrc = str_replace('_d_', '_100_', $img['image_name']);
                                             ?>
                                             <div style="position: relative; display: inline-block; margin: 10px; border: 1px solid #ccc;">
                                                 <input type="hidden" name="sku_data[<?php echo $sku; ?>][image][]"
                                                        value="<?php echo $img['image_path'] . '/' . $img['image_name']; ?>"/>
-                                                <img src="<?php echo $img['image_path'] . '/' . $img['image_name']; ?>"/>
+                                                <img src="<?php echo $oss_access_host . $img['image_path'] . '/' . $imgSrc; ?>"/>
                                                 <i class="layui-icon layui-icon-close-fill hd-btn-del-image"
                                                    style="position: absolute; top: 0; right: 0; font-size: 20px; color: #FF5722; cursor: pointer;"></i>
                                             </div>
