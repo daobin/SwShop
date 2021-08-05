@@ -33,7 +33,7 @@ class UploadController extends Controller
             foreach ($imageList as $imageInfo) {
                 $data[] = [
                     'name' => $imageInfo['origin_name'],
-                    'src' => $ossAccessHost . str_replace('_d_', '_' . $imgSize . '_', $imageInfo['oss_object'])
+                    'src' => $ossAccessHost . str_replace('_d_d', '_' . $imgSize . '_' . $imgSize, $imageInfo['oss_object']) . '?' . $imageInfo['updated_at']
                 ];
             }
         }
@@ -61,8 +61,7 @@ class UploadController extends Controller
             return ['status' => 'fail', 'msg' => '上传图片 [' . $fileInfo['name'] . '] 过大'];
         }
 
-        $time = time();
-        $imageName = md5($fileInfo['name']) . '_d_' . $time;
+        $imageName = md5($fileInfo['name']) . '_d_d';
         switch (strtolower($fileInfo['type'])) {
             case 'image/jpeg':
             case 'image/jpg':
@@ -96,6 +95,12 @@ class UploadController extends Controller
             return ['status' => 'fail', 'msg' => '上传图片 [' . $fileInfo['name'] . '] 迁移失败'];
         }
 
+        $imgSrc = (new OssHelper($this->shopId))->putObjectForProductImage($imageFile, $localPath);
+        if (empty($imgSrc)) {
+            return ['status' => 'fail', 'msg' => '上传图片 [' . $fileInfo['name'] . '] 上传失败'];
+        }
+
+        $time = time();
         $data = [
             'shop_id' => $this->shopId,
             'origin_name' => $fileInfo['name'],
@@ -109,11 +114,6 @@ class UploadController extends Controller
         ];
         if (!(new UploadBiz())->saveUploadInfo($data)) {
             return ['status' => 'fail', 'msg' => '上传图片 [' . $fileInfo['name'] . '] 保存失败'];
-        }
-
-        $imgSrc = (new OssHelper($this->shopId))->putObjectForProductImage($imageFile, $localPath);
-        if (empty($imgSrc)) {
-            return ['status' => 'fail', 'msg' => '上传图片 [' . $fileInfo['name'] . '] 上传失败'];
         }
 
         return [

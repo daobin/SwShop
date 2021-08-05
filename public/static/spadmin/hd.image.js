@@ -23,7 +23,7 @@ layui.use(['jquery', 'layer', 'element', 'flow', 'upload'], function () {
         imgObj.initContent = '<div class="layui-fluid"><div class="layui-row">' +
             '<div class="layui-col-xs9" id="-LIST-IMG-ID-">-IMG-TPL-</div>' +
             '<div class="layui-col-xs3" style="text-align: right;">' +
-            '<a class="layui-btn layui-btn-warm hd-btn-open-image"><i class="layui-icon layui-icon-upload-drag"></i>上传商品图片</a></div>' +
+            '<a class="layui-btn layui-btn-warm hd-btn-open-image"><i class="layui-icon layui-icon-share"></i> 选择商品图片</a></div>' +
             '</div></div>';
 
         imgObj.openContent = '<ul class="layui-nav layui-nav-tree layui-nav-side layui-bg-cyan" id="hd-nav-folder" style="top: 50px; border-radius: 0;"></ul>' +
@@ -123,6 +123,7 @@ layui.use(['jquery', 'layer', 'element', 'flow', 'upload'], function () {
 
                 imgObj.folderImages = [];
                 imgObj.showFolderImage(folder);
+                imgObj.upload();
             });
 
             // 打开上传图片管理工具弹窗
@@ -143,34 +144,57 @@ layui.use(['jquery', 'layer', 'element', 'flow', 'upload'], function () {
                 }
                 sessionStorage.setItem('image_folder', JSON.stringify(imgFolder));
 
+                imgObj.folderImages = [];
                 imgObj.showFolderImage();
 
-                upload.render({
-                    elem: '#hd-btn-upload-image',
-                    multiple: true,
-                    number: 10,
-                    size: 2040,
-                    drag: false,
-                    acceptMime: 'image/jpg, image/jpeg, image/png',
-                    url: imgObj.url,
+                imgObj.uploader = null;
+                imgObj.upload();
+            });
+        };
+
+        imgObj.uploader = null;
+        imgObj.upload = function () {
+            console.log(imgObj.folder);
+            console.log(imgObj.uploader);
+            if(imgObj.uploader){
+                imgObj.uploader.reload({
                     data: {
-                        prefix: imgObj.folder,
+                        folder: imgObj.folder,
                         hash_tk: $.trim($('input[name=hash_tk]').val())
-                    },
-                    done: function (res) {
-                        console.log(res);
-                        if (res.msg != undefined && res.msg != '') {
-                            layer.alert(res.msg, imgObj.openAlertCfg);
-                        }
-
-                        if (res.status == 'success') {
-
-                        }
-                    },
-                    error: function () {
-                        layer.alert('未知错误，请稍候刷新页面重试！', imgObj.openAlertCfg);
                     }
                 });
+                return;
+            }
+
+            imgObj.uploader = upload.render({
+                elem: '#hd-btn-upload-image',
+                multiple: true,
+                number: 10,
+                size: 2040,
+                drag: false,
+                acceptMime: 'image/jpg, image/jpeg, image/png',
+                url: imgObj.url,
+                data: {
+                    folder: imgObj.folder,
+                    hash_tk: $.trim($('input[name=hash_tk]').val())
+                },
+                done: function (res) {
+                    if (res.msg != undefined && res.msg != '') {
+                        layer.alert(res.msg, imgObj.openAlertCfg);
+                    }
+
+                    if (res.status == 'success') {
+                        imgObj.folderImages.push(imgObj.boxImgTpl.replace('-IMG-SRC-', res.src).replace('-IMG-NAME-', res.name));
+                        if($('#hd-load-image .layui-flow-more').length == 0){
+                            $('#hd-load-image').append(imgObj.boxImgTpl.replace('-IMG-SRC-', res.src).replace('-IMG-NAME-', res.name));
+                        }else{
+                            $('#hd-load-image .layui-flow-more').before(imgObj.boxImgTpl.replace('-IMG-SRC-', res.src).replace('-IMG-NAME-', res.name));
+                        }
+                    }
+                },
+                error: function () {
+                    layer.alert('未知错误，请稍候刷新页面重试！', imgObj.openAlertCfg);
+                }
             });
         };
 
@@ -223,6 +247,10 @@ layui.use(['jquery', 'layer', 'element', 'flow', 'upload'], function () {
             }
         };
 
+        imgObj.boxImgTpl = '<div class="layui-col-xs2">' +
+            '<div class="hd-box-image"><img src="-IMG-SRC-" /><div class="layui-elip">-IMG-NAME-</div>' +
+            '<i class="layui-icon layui-icon-ok-circle"></i>' +
+            '</div></div>';
         imgObj.getImage = function () {
             layui.flow.load({
                 elem: '#hd-load-image',
@@ -230,11 +258,7 @@ layui.use(['jquery', 'layer', 'element', 'flow', 'upload'], function () {
                 done: function (page, next) {
                     $.get(imgObj.url + '?folder=' + imgObj.folder + '&page=' + page, function (res) {
                         layui.each(res.data, function (idx, item) {
-                            imgObj.folderImages.push('<div class="layui-col-xs2"><div class="hd-box-image">' +
-                                '<img src="' + item.src + '" />' +
-                                '<div>' + item.name + '</div>' +
-                                '<i class="layui-icon layui-icon-ok-circle"></i>' +
-                                '</div></div>')
+                            imgObj.folderImages.push(imgObj.boxImgTpl.replace('-IMG-SRC-', item.src).replace('-IMG-NAME-', item.name));
                         });
 
                         res.pages = res.pages == undefined ? 1 : res.pages;

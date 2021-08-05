@@ -180,7 +180,7 @@ class ProductController extends Controller
                 $imgData = [];
                 if (!empty($datum['image']) && is_array($datum['image']) && !empty(reset($datum['image']))) {
                     foreach ($datum['image'] as $sort => $image) {
-                        $imageName = preg_replace('/_\d+_/', '_d_', basename($image));
+                        $imageName = preg_replace('/_\d+_\d+/', '_d_d', basename($image));
 
                         $imgData[] = [
                             'shop_id' => $this->shopId,

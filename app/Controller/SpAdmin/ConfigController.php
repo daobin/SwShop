@@ -128,6 +128,10 @@ class ConfigController extends Controller
                 break;
         }
 
+        if($cfgKey == 'TIMESTAMP'){
+            $cfgVal = '?'.trim($cfgVal, '?');
+        }
+
         $update = $cfgBiz->updateConfigByKey($this->shopId, $cfgKey, [
             'config_value' => $cfgVal,
             'updated_at' => time(),

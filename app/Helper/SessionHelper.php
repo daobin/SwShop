@@ -13,7 +13,7 @@ use App\Biz\ConfigBiz;
 
 class SessionHelper
 {
-    const SS_NAME = 'SW_SHOP';
+    const SS_NAME = 'SW_SP';
 
     private $request;
     private $response;

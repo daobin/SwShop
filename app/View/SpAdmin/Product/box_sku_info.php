@@ -53,7 +53,7 @@ if (!empty($qty_price_list)) {
                                     <?php
                                     if (!empty($image_list[$sku])) {
                                         foreach ($image_list[$sku] as $img) {
-                                            $imgSrc = str_replace('_d_', '_100_', $img['image_name']);
+                                            $imgSrc = str_replace('_d_d', '_100_100', $img['image_name']).'?'.$img['updated_at'];
                                             ?>
                                             <div style="position: relative; display: inline-block; margin: 10px; border: 1px solid #ccc;">
                                                 <input type="hidden" name="sku_data[<?php echo $sku; ?>][image][]"
@@ -69,7 +69,7 @@ if (!empty($qty_price_list)) {
                                 </div>
                                 <div class="layui-col-xs3" style="text-align: right;">
                                     <a class="layui-btn layui-btn-warm hd-btn-open-image">
-                                        <i class="layui-icon layui-icon-upload-drag"></i> 上传商品图片
+                                        <i class="layui-icon layui-icon-share"></i> 选择商品图片
                                     </a>
                                 </div>
                             </div>

@@ -30,7 +30,7 @@ class OssHelper
 
     public function putObjectForProductImage(string $imageFile, string $localPath): string
     {
-        if(!is_file($imageFile)){
+        if (!is_file($imageFile)) {
             return '';
         }
 
@@ -54,7 +54,7 @@ class OssHelper
 
                 if (is_file($thumbFile)) {
                     $thumbFileArr[] = $thumbFile;
-                    $thumbObject = str_replace('_d_', '_' . $imgSize . '_', $object);
+                    $thumbObject = str_replace('_d_d', '_' . $imgSize . '_' . $imgSize, $object);
 
                     $ossClient = new OssClient($this->ossCfgs['OSS_ACCESS_KEY_ID'], $this->ossCfgs['OSS_ACCESS_KEY_SECRET'], $this->ossCfgs['OSS_ENDPOINT']);
                     $ossClient->putObject($this->ossCfgs['OSS_BUCKET'], $thumbObject, file_get_contents($thumbFile));
@@ -70,12 +70,13 @@ class OssHelper
         }
 
         // 删除临时文件
-//        foreach ($thumbFileArr as $thumbFile) {
-//            if (is_file($thumbFile)) {
-//                unlink($thumbFile);
-//            }
-//        }
+        foreach ($thumbFileArr as $thumbFile) {
+            if (is_file($thumbFile)) {
+                unlink($thumbFile);
+            }
+        }
 
-        return $this->accessHost . str_replace('_d_', '_' . reset($imgSizeArr) . '_', $object);
+        $imgSize = reset($imgSizeArr);
+        return $this->accessHost . str_replace('_d_d', '_' . $imgSize . '_' . $imgSize, $object) . '?' . time();
     }
 }
