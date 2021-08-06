@@ -88,19 +88,15 @@
                     $prod_status = $prod_info['product_status'] ?? 0;
                     switch ((int)$prod_status) {
                         case 1:
-                            echo '<input type="radio" name="prod_status" disabled value="0" title="待处理"/>';
                             echo '<input type="radio" name="prod_status" checked value="1" title="上架中"/>';
                             echo '<input type="radio" name="prod_status" value="2" title="下架中"/>';
                             break;
                         case 2:
-                            echo '<input type="radio" name="prod_status" disabled value="0" title="待处理"/>';
                             echo '<input type="radio" name="prod_status" value="1" title="上架中"/>';
                             echo '<input type="radio" name="prod_status" checked value="2" title="下架中"/>';
                             break;
                         default:
                             echo '<input type="radio" name="prod_status" checked value="0" title="待处理"/>';
-                            echo '<input type="radio" name="prod_status" disabled value="1" title="上架中"/>';
-                            echo '<input type="radio" name="prod_status" disabled value="2" title="下架中"/>';
                             break;
                     }
                     ?>
@@ -144,7 +140,7 @@
                             if ($weight_units) {
                                 foreach ($weight_units as $text => $unit) {
                                     $selected = '';
-                                    if(isset($prod_info['weight_unit']) && $unit == $prod_info['weight_unit']){
+                                    if (isset($prod_info['weight_unit']) && $unit == $prod_info['weight_unit']) {
                                         $selected = ' selected ';
                                     }
                                     echo '<option value="', xss_text($unit), '"', $selected, '>', xss_text($text), '</option>';
@@ -184,7 +180,7 @@
                             if ($size_units) {
                                 foreach ($size_units as $text => $unit) {
                                     $selected = '';
-                                    if(isset($prod_info['size_unit']) && $unit == $prod_info['size_unit']){
+                                    if (isset($prod_info['size_unit']) && $unit == $prod_info['size_unit']) {
                                         $selected = ' selected ';
                                     }
                                     echo '<option value="', xss_text($unit), '"', $selected, '>', xss_text($text), '</option>';
@@ -211,7 +207,7 @@
                             <th class="hd-align-center" width="10%">操作</th>
                         </tr>
                         </thead>
-                        <tbody id="sku_list"><?php include 'box_sku_info.php';?></tbody>
+                        <tbody id="sku_list"><?php include 'box_sku_info.php'; ?></tbody>
                     </table>
                 </div>
             </div>
@@ -264,8 +260,10 @@
         layui.use('form', function () {
             hdImg.init({
                 elem: '.sku_images',
-                url: '/spadmin/upload-prod-image'
+                url: '/spadmin/upload-prod-image',
+                initFolders: JSON.parse('<?php echo json_encode($upload_folders);?>')
             });
+
             $('#btn_add_sku').click(function () {
                 $('#sku_list').append($('#tpl_sku_info').html().replaceAll('-IDX-', $('#sku_list tr').get().length));
                 layui.form.render('select');

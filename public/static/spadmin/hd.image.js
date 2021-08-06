@@ -32,6 +32,7 @@ layui.use(['jquery', 'layer', 'element', 'flow', 'upload'], function () {
             '<button class="layui-btn layui-btn-sm layui-btn-warm" id="hd-btn-upload-image"><i class="layui-icon layui-icon-upload"></i> 上传本地图片</button>' +
             '<button class="layui-btn layui-btn-sm layui-btn-normal" id="hd-btn-select-image">' +
             '<i class="layui-icon layui-icon-ok"></i> 确认选择图片 <input type="checkbox" style="display: inline-block; width: 20px; height: 20px; position: relative; top: 5px; cursor: pointer" /> </button>' +
+            // '<button class="layui-btn layui-btn-sm layui-btn-danger" id="hd-btn-del-image"><i class="layui-icon layui-icon-delete"></i> 删除选择图片</button>' +
             '<button class="layui-btn layui-btn-sm" id="hd-btn-close-image"><i class="layui-icon layui-icon-close"></i> 关闭图片管理</button></div>' +
             '<div id="hd-box-list-image"><div class="layui-fluid" style="padding: 10px;"><div class="layui-row" id="hd-load-image"></div></div></div>';
 
@@ -45,6 +46,13 @@ layui.use(['jquery', 'layer', 'element', 'flow', 'upload'], function () {
                     layer.close(idx);
                 });
 
+            }).on('click', '#hd-btn-del-image', function () {
+                if ($('.hd-box-image.active img').length == 0) {
+                    layer.alert('请选择图片', imgObj.openAlertCfg);
+                    return;
+                }
+                // 目前删除图片功能为非必要，按钮功能暂不实现
+                // TODO
             }).on('click', '#hd-btn-select-image input', function (e) {
                 e.stopPropagation();
 
@@ -154,8 +162,6 @@ layui.use(['jquery', 'layer', 'element', 'flow', 'upload'], function () {
 
         imgObj.uploader = null;
         imgObj.upload = function () {
-            console.log(imgObj.folder);
-            console.log(imgObj.uploader);
             if(imgObj.uploader){
                 imgObj.uploader.reload({
                     data: {
@@ -184,6 +190,12 @@ layui.use(['jquery', 'layer', 'element', 'flow', 'upload'], function () {
                     }
 
                     if (res.status == 'success') {
+                        $('.hd-box-image>div').each(function(){
+                            if($.trim($(this).text()) == $.trim(res.name)){
+                                $(this).parent('div').parent('div').remove();
+                            }
+                        });
+
                         imgObj.folderImages.push(imgObj.boxImgTpl.replace('-IMG-SRC-', res.src).replace('-IMG-NAME-', res.name));
                         if($('#hd-load-image .layui-flow-more').length == 0){
                             $('#hd-load-image').append(imgObj.boxImgTpl.replace('-IMG-SRC-', res.src).replace('-IMG-NAME-', res.name));
@@ -268,6 +280,7 @@ layui.use(['jquery', 'layer', 'element', 'flow', 'upload'], function () {
             });
         };
 
+        imgObj.initFolders = [];
         imgObj.init = function (params) {
             imgObj.imgBoxIdx = 0;
             imgObj.imgSelected = [];
@@ -286,7 +299,16 @@ layui.use(['jquery', 'layer', 'element', 'flow', 'upload'], function () {
             }
 
             if ($('#hd-image-css').get().length == 0) {
-                $('head').append('<link rel="stylesheet" id="hd-image-css" href="/static/spadmin/hd.image.css?20210802" />');
+                $('head').append('<link rel="stylesheet" id="hd-image-css" href="/static/spadmin/hd.image.css?20210806" />');
+            }
+
+            // 初始化目录导航
+            if(!$.isEmptyObject(imgObj.initFolders)){
+                let imgFolder = {};
+                for (let idx in imgObj.initFolders) {
+                    imgFolder[imgObj.initFolders[idx]] = {isNav: false};
+                }
+                sessionStorage.setItem('image_folder', JSON.stringify(imgFolder));
             }
 
             $(imgObj.elem).each(function (idx) {

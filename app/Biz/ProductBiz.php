@@ -33,6 +33,15 @@ class ProductBiz
         $langCode = trim($condition['language_code']);
 
         $where = ['shop_id' => $shopId];
+        foreach ($condition as $key => $value) {
+            switch ($key) {
+                case 'product_category_id':
+                case 'product_status':
+                    $where[$key] = (int)$value;
+                    break;
+            }
+        }
+
         $prodList = $this->dbHelper->table('product')->where($where);
         if (!empty($orderBy)) {
             $prodList = $prodList->orderBy($orderBy);
@@ -183,6 +192,9 @@ class ProductBiz
         $prodInfo = $this->getProductById($shopId, $prodId);
 
         $skuArr = array_keys($prodSkuData);
+        if (empty($prodData['product_status'])) {
+            $prodData['product_status'] = 1;
+        }
 
         $this->dbHelper->beginTransaction();
         try {
@@ -311,7 +323,7 @@ class ProductBiz
                     // 删除多余的商品图片
                     if (!empty($imgList)) {
                         foreach ($imgList as $sku => $img) {
-                            if(empty($img)){
+                            if (empty($img)) {
                                 continue;
                             }
 

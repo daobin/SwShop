@@ -11,7 +11,9 @@ namespace App\Controller\SpAdmin;
 
 use App\Biz\ConfigBiz;
 use App\Biz\ProductBiz;
+use App\Biz\UploadBiz;
 use App\Controller\Controller;
+use App\Helper\ConfigHelper;
 use App\Helper\LanguageHelper;
 use App\Helper\OssHelper;
 use App\Helper\SafeHelper;
@@ -20,15 +22,28 @@ class ProductController extends Controller
 {
     public function index()
     {
+        $prodBiz = new ProductBiz();
+
         if ($this->request->isAjax) {
             $condition = [
                 'shop_id' => $this->shopId,
                 'language_code' => reset($this->langCodes)
             ];
+
+            $cateId = $this->get('category_id');;
+            if(is_numeric($cateId)){
+                $condition['product_category_id'] = $cateId;
+            }
+
+            $prodStatus = $this->get('prod_status');
+            if(is_numeric($prodStatus)){
+                $condition['product_status'] = $prodStatus;
+            }
+
             $orderBy = [];
             $page = $this->request->get['page'] ?? 1;
             $pageSize = $this->request->get['limit'] ?? 10;
-            $prodList = (new ProductBiz())->getProductList($condition, $orderBy, (int)$page, (int)$pageSize);
+            $prodList = $prodBiz->getProductList($condition, $orderBy, (int)$page, (int)$pageSize);
 
             return [
                 'code' => 0,
@@ -37,7 +52,10 @@ class ProductController extends Controller
             ];
         }
 
-        return $this->render();
+        return $this->render([
+            'cate_tree_list' => $prodBiz->getCategoryTree($this->shopId, 0, reset($this->langCodes)),
+            'product_status_arr' => ConfigHelper::get('product.product_status')
+        ]);
     }
 
     public function detail()
@@ -74,6 +92,7 @@ class ProductController extends Controller
             'size_units' => $sizeUnits,
             'warehouses' => $warehouses,
             'cate_tree_list' => $prodBiz->getCategoryTree($this->shopId, 0, reset($this->langCodes)),
+            'upload_folders' => (new UploadBiz())->getFolderArr($this->shopId),
             'lang_codes' => $this->langCodes,
             'csrf_token' => (new SafeHelper($this->request, $this->response))->buildCsrfToken('BG', 'prod_' . $prodId)
         ]);
@@ -92,7 +111,7 @@ class ProductController extends Controller
         $prodSort = empty($this->request->post['prod_sort']) ? 0 : (int)$this->request->post['prod_sort'];
         $prodSort = $prodSort > 0 ? $prodSort : 0;
         $prodStatus = empty($this->request->post['prod_status']) ? 0 : (int)$this->request->post['prod_status'];
-        $prodStatus = in_array($prodStatus, [0, 1, 2]) ? $prodStatus : 0;
+        $prodStatus = in_array($prodStatus, array_keys(ConfigHelper::get('product.product_status'))) ? $prodStatus : 0;
         $prodUrl = empty($this->request->post['prod_url']) ? '' : trim($this->request->post['prod_url']);
         $weight = empty($this->request->post['weight']) ? 0 : (float)$this->request->post['weight'];
         $weight = $weight > 0 ? $weight : 0;

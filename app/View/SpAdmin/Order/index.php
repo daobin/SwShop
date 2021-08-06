@@ -21,7 +21,10 @@
                         {field: 'last_operation', title: '最后操作', align: 'center'},
                         {fixed: 'right', width: '100', align: 'center', toolbar: '#operate'}
                     ]
-                ]
+                ],
+                height: 'full-82',
+                page: true,
+                limit: 20
             });
 
             layui.table.on('tool(opt)', function (obj) {

@@ -2,33 +2,90 @@
 \App\Helper\TemplateHelper::widget('sp_admin', 'header', ['add_url' => '/spadmin/product/0', 'timestamp' => $timestamp ?? '']);
 ?>
     <div class="layui-fluid hd-padding-top60">
+        <form class="layui-form hd-padding-top10" autocomplete="off">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <div id="cate_select"></div>
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <select name="prod_status">
+                            <option value="">请选择商品状态</option>
+                            <?php
+                            if (!empty($product_status_arr)) {
+                                foreach ($product_status_arr as $value => $text) {
+                                    echo '<option value="', (int)$value, '">', $text, '</option>';
+                                }
+                            }
+                            ?>
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                    <input class="layui-btn layui-btn-normal" type="submit" lay-submit lay-filter="prod_search" value="搜索"/>
+                    </div>
+                </div>
+            </div>
+        </form>
         <table id="prod_list" lay-filter="opt"></table>
     </div>
+    <script src="/static/layui/xm-select.js"></script>
     <script>
-        layui.use(['table'], function () {
-            layui.table.render({
+        xmSelect.render({
+            el: '#cate_select',
+            filterable: true,
+            name: 'category_id',
+            height: 'auto',
+            tips: '请选择商品分类',
+            radio: true,
+            clickClose: true,
+            model: {
+                icon: 'hidden'
+            },
+            prop: {
+                name: 'category_name',
+                value: 'product_category_id'
+            },
+            tree: {
+                show: true,
+                strict: false,
+                expandedKeys: true,
+                showLine: false
+            },
+            initValue: [<?php echo $prod_info['product_category_id'] ?? 0;?>],
+            data: JSON.parse('<?php echo json_encode($cate_tree_list);?>')
+        });
+    </script>
+    <script>
+        layui.use(['table', 'form'], function () {
+            let tableIns = layui.table.render({
                 elem: '#prod_list',
                 url: window.location.href,
                 cols: [
                     [
                         {field: 'product_id', hide: true},
                         {field: 'product_name', title: '商品名称', align: 'center'},
-                        {title: '商品状态', align: 'center', templet: function(d){
-                            switch(d.product_status){
+                        {
+                            title: '商品状态', align: 'center', templet: function (d) {
+                            switch (d.product_status) {
                                 case 1:
-                                    return '上架中 <i class="layui-icon layui-icon-ok"></i>';
+                                    return '上架中 <i class="layui-icon layui-icon-ok layui-font-blue"></i>';
                                 case 2:
-                                    return '下架中 <i class="layui-icon layui-icon-close"></i>';
+                                    return '下架中 <i class="layui-icon layui-icon-close layui-font-red"></i>';
                                 default:
                                     return '待处理 <i class="layui-icon layui-icon-loading layui-anim layui-anim-rotate layui-anim-loop"></i>';
                             }
-                        }},
+                        }
+                        },
                         {field: 'cate_level', title: '所属类目', align: 'center'},
                         {field: 'last_operation', title: '最后操作', align: 'center'},
                         {fixed: 'right', width: '100', align: 'center', toolbar: '#operate'}
                     ]
                 ],
-                height: 'full-90',
+                height: 'full-150',
                 page: true,
                 limit: 20
             });
@@ -48,6 +105,14 @@
                         layer.alert('前台功能尚未完成，敬请等待', open_alert_cfg);
                         break;
                 }
+            });
+
+            layui.form.on('submit(prod_search)', function (formObj) {
+                tableIns.reload({
+                    where: formObj.field,
+                    page: {curr: 1}
+                });
+                return false;
             });
         });
     </script>

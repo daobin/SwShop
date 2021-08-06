@@ -20,6 +20,22 @@ class UploadBiz
         $this->dbHelper = new DbHelper();
     }
 
+    public function getFolderArr(int $shopId): array
+    {
+        if($shopId <= 0){
+            return [];
+        }
+
+        $folderArr = $this->dbHelper->table('upload_file')->where(['shop_id' => $shopId])
+            ->fields(['folder'])->groupBy(['folder'])->select();
+        if(empty($folderArr)){
+            return [];
+        }
+
+        $folderArr = array_column($folderArr, 'folder');
+        return $folderArr;
+    }
+
     public function getUploadInfoByName(int $shopId, string $originName): array
     {
         if ($shopId < 0 || empty($originName)) {

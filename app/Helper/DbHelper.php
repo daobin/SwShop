@@ -52,15 +52,18 @@ class DbHelper
         }
     }
 
-    public function beginTransaction(){
+    public function beginTransaction()
+    {
         $this->db->beginTransaction();
     }
 
-    public function commit(){
+    public function commit()
+    {
         $this->db->commit();
     }
 
-    public function rollBack(){
+    public function rollBack()
+    {
         $this->db->rollBack();
     }
 
@@ -80,7 +83,7 @@ class DbHelper
     public function join(string $table, string $as = '', array $on = [])
     {
         $table = trim($table);
-        if(isset($this->sqlBuild['join'][$table])){
+        if (isset($this->sqlBuild['join'][$table])) {
             return $this;
         }
 
@@ -143,6 +146,22 @@ class DbHelper
 
         $this->sqlBuild['where_or'] ??= [];
         $this->sqlBuild['where_or'] = array_merge($this->sqlBuild['where_or'], $where);
+        return $this;
+    }
+
+    public function groupBy(array $groupBy)
+    {
+        if (empty($groupBy)) {
+            return $this;
+        }
+
+        $this->sqlBuild['group_by'] = [];
+        foreach ($groupBy as $field) {
+            $field = str_replace('.', '`.`', $field);
+            $this->sqlBuild['group_by'][] = '`' . $field . '`';
+        }
+        $this->sqlBuild['group_by'] = implode(', ', $this->sqlBuild['group_by']);
+
         return $this;
     }
 
@@ -296,7 +315,7 @@ class DbHelper
                 if (is_array($value)) {
                     $opt = trim(reset($value));
                     $value = end($value);
-                    switch(strtolower($opt)){
+                    switch (strtolower($opt)) {
                         case 'in':
                             $inSql = '`' . $field . '` in (%s)';
                             $where[] = sprintf($inSql, implode(', ', array_fill(0, count($value), '?')));
@@ -308,11 +327,11 @@ class DbHelper
                     $where[] = '`' . $field . '` = ?';
                 }
 
-                if(is_array($value)){
-                    foreach($value as $val){
+                if (is_array($value)) {
+                    foreach ($value as $val) {
                         $preData[] = $val;
                     }
-                }else{
+                } else {
                     $preData[] = $value;
                 }
             }
@@ -382,6 +401,9 @@ class DbHelper
                 }
                 $preSql = sprintf($preSql, $joinSql);
 
+                if (!empty($this->sqlBuild['group_by'])) {
+                    $preSql .= ' GROUP BY ' . $this->sqlBuild['group_by'];
+                }
                 if (!empty($this->sqlBuild['order_by'])) {
                     $preSql .= ' ORDER BY ' . $this->sqlBuild['order_by'];
                 }
