@@ -16,6 +16,7 @@ layui.use(['jquery', 'layer', 'element', 'flow', 'upload'], function () {
         };
         imgObj.imgBoxIdx = 0;
         imgObj.imgSelected = [];
+        imgObj.imgSelectCallback = null;
         imgObj.layerIdx = null;
 
         imgObj.imgTpl = '<img style="width: 60px; height: auto; display: inline-block;" src="-IMG-SRC-" />';
@@ -42,7 +43,11 @@ layui.use(['jquery', 'layer', 'element', 'flow', 'upload'], function () {
                 promptCfg.title = '请输入图片目录 <span class="layui-word-aux">只允许小写字母、数字、-</span>';
                 promptCfg.formType = 0;
                 layer.prompt(promptCfg, function (folder, idx) {
+                    imgObj.folderImages = [];
                     imgObj.showFolderImage(folder);
+                    imgObj.upload();
+                    $('#hd-nav-folder .layui-nav-item').removeClass('layui-this');
+                    $('#hd-nav-folder .layui-nav-item:last-child').addClass('layui-this');
                     layer.close(idx);
                 });
 
@@ -72,31 +77,26 @@ layui.use(['jquery', 'layer', 'element', 'flow', 'upload'], function () {
                 let imgHtml = '<div style="position: relative; display: inline-block; margin: 10px; border: 1px solid #ccc;">' +
                     '-INPUT-HIDDEN-<img src="-IMG-SRC-" /><i class="layui-icon layui-icon-close-fill hd-btn-del-image" ' +
                     ' style="position: absolute; top: 0; right: 0; font-size: 20px; color: #FF5722; cursor: pointer;"></i></div>';
-                if (imgObj.imgSelected.length == 0) {
-                    $('.hd-box-image.active img').each(function () {
-                        let imgSrc = $.trim($(this).attr('src'));
-                        if ($('#list_img_' + imgObj.imgBoxIdx + ' img[src="' + imgSrc + '"]').length == 0) {
-                            let inputName = $('input.hd-input-sku').eq(imgObj.imgBoxIdx).attr('name')
-                                .replace('[sku]', '[image][' + $('#list_img_' + imgObj.imgBoxIdx).find('img').length + ']');
 
-                            $('#list_img_' + imgObj.imgBoxIdx).append(
-                                imgHtml.replace('-IMG-SRC-', imgSrc)
-                                    .replace('-INPUT-HIDDEN-', '<input type="hidden" name="' + inputName + '" value="' + imgSrc + '" />')
-                            );
-                        }
-                    });
-                } else {
-                    for (let idx in imgObj.imgSelected) {
-                        if ($('#list_img_' + imgObj.imgBoxIdx + ' img[src="' + imgObj.imgSelected[idx] + '"]').length == 0) {
-                            let inputName = $('input.hd-input-sku').eq(imgObj.imgBoxIdx).attr('name')
-                                .replace('[sku]', '[image][' + $('#list_img_' + imgObj.imgBoxIdx).find('img').length + ']');
-
-                            $('#list_img_' + imgObj.imgBoxIdx).append(
-                                imgHtml.replace('-IMG-SRC-', imgObj.imgSelected[idx])
-                                    .replace('-INPUT-HIDDEN-', '<input type="hidden" name="' + inputName + '" value="' + imgObj.imgSelected[idx] + '" />')
-                            );
-                        }
+                for (let idx in imgObj.imgSelected) {
+                    if($('#list_img_' + imgObj.imgBoxIdx + ' img').length >= 10){
+                        layer.alert('每项最多可添加10张图片', imgObj.openAlertCfg);
+                        break;
                     }
+
+                    if ($('#list_img_' + imgObj.imgBoxIdx + ' img[src="' + imgObj.imgSelected[idx] + '"]').length == 0) {
+                        let inputName = $('input.hd-input-sku').eq(imgObj.imgBoxIdx).attr('name')
+                            .replace('[sku]', '[image][' + $('#list_img_' + imgObj.imgBoxIdx).find('img').length + ']');
+
+                        $('#list_img_' + imgObj.imgBoxIdx).append(
+                            imgHtml.replace('-IMG-SRC-', imgObj.imgSelected[idx])
+                                .replace('-INPUT-HIDDEN-', '<input type="hidden" name="' + inputName + '" value="' + imgObj.imgSelected[idx] + '" />')
+                        );
+                    }
+                }
+
+                if(imgObj.imgSelectCallback != null){
+                    imgObj.imgSelectCallback();
                 }
 
                 if (imgObj.layerIdx != null) {
@@ -161,6 +161,7 @@ layui.use(['jquery', 'layer', 'element', 'flow', 'upload'], function () {
         };
 
         imgObj.uploader = null;
+        imgObj.uploaderSize = 2040;
         imgObj.upload = function () {
             if(imgObj.uploader){
                 imgObj.uploader.reload({
@@ -176,7 +177,7 @@ layui.use(['jquery', 'layer', 'element', 'flow', 'upload'], function () {
                 elem: '#hd-btn-upload-image',
                 multiple: true,
                 number: 10,
-                size: 2040,
+                size: imgObj.uploaderSize,
                 drag: false,
                 acceptMime: 'image/jpg, image/jpeg, image/png',
                 url: imgObj.url,
@@ -221,12 +222,6 @@ layui.use(['jquery', 'layer', 'element', 'flow', 'upload'], function () {
 
             let imgFolder = sessionStorage.getItem('image_folder');
             imgFolder = imgFolder ? JSON.parse(imgFolder) : {};
-            if (folder == 'def' && !imgFolder.hasOwnProperty(folder)) {
-                imgFolder[folder] = {
-                    isNav: false
-                };
-            }
-
             if (!imgFolder.hasOwnProperty(folder)) {
                 imgFolder[folder] = {
                     isNav: false

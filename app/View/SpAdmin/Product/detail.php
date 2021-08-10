@@ -260,7 +260,7 @@
         layui.use('form', function () {
             hdImg.init({
                 elem: '.sku_images',
-                url: '/spadmin/upload-prod-image',
+                url: '/spadmin/upload-image',
                 initFolders: JSON.parse('<?php echo json_encode($upload_folders);?>')
             });
 
@@ -270,7 +270,7 @@
 
                 hdImg.init({
                     elem: '.sku_images',
-                    url: '/spadmin/upload-prod-image'
+                    url: '/spadmin/upload-image'
                 });
             });
             $(document).on('click', '.btn_del_sku', function () {

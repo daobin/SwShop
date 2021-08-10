@@ -28,6 +28,28 @@ class OssHelper
         $this->accessHost = 'https://' . $this->ossCfgs['OSS_BUCKET'] . '.' . trim($this->accessHost, '/') . '/';
     }
 
+    public function putObjectForImage(string $imageFile, string $localPath): string
+    {
+        if (!is_file($imageFile)) {
+            return '';
+        }
+
+        try {
+            // 原始图片保存在本地，但不对外提供访问
+            // 原始图片上传至 OSS，用以对外提供访问
+            $object = str_ireplace($localPath, '', $imageFile);
+            $object = trim($object, '/');
+
+            $ossClient = new OssClient($this->ossCfgs['OSS_ACCESS_KEY_ID'], $this->ossCfgs['OSS_ACCESS_KEY_SECRET'], $this->ossCfgs['OSS_ENDPOINT']);
+            $ossClient->putObject($this->ossCfgs['OSS_BUCKET'], $object, file_get_contents($imageFile));
+
+        } catch (OssException $e) {
+            print_r('OSS Put Image Invalid: ' . $e->getMessage());
+        }
+
+        return $this->accessHost . $object . '?' . time();
+    }
+
     public function putObjectForProductImage(string $imageFile, string $localPath): string
     {
         if (!is_file($imageFile)) {

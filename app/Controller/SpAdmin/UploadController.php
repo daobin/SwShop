@@ -16,12 +16,12 @@ use App\Helper\OssHelper;
 
 class UploadController extends Controller
 {
-    public function prodImage()
+    public function image()
     {
         $page = (int)$this->get('page', 1);
         $page = $page > 1 ? $page : 1;
         $pageSize = 60;
-        $folder = $this->getProdImgPrefix('get', true);
+        $folder = $this->getImgPrefix('get', true);
 
         $data = [];
         $imageList = (new UploadBiz())->getUploadListByFolder($this->shopId, $folder, $page, $pageSize);
@@ -44,7 +44,7 @@ class UploadController extends Controller
         ];
     }
 
-    public function uploadProdImage()
+    public function uploadImage()
     {
         $fileInfo = $this->request->files['file'] ?? [];
         if (empty($fileInfo)) {
@@ -84,7 +84,7 @@ class UploadController extends Controller
 
         $fileClass = 'image';
         $localPath = ROOT_DIR . 'upload/' . $fileClass . '/';
-        $prefix = $this->getProdImgPrefix('post');
+        $prefix = $this->getImgPrefix('post');
         $imageFile = $localPath . $prefix . '/';
         if (!is_dir($imageFile) && !mkdir($imageFile, 0700, true)) {
             return ['status' => 'fail', 'msg' => '上传图片 [' . $fileInfo['name'] . '] 路径无效'];
@@ -95,7 +95,11 @@ class UploadController extends Controller
             return ['status' => 'fail', 'msg' => '上传图片 [' . $fileInfo['name'] . '] 迁移失败'];
         }
 
-        $imgSrc = (new OssHelper($this->shopId))->putObjectForProductImage($imageFile, $localPath);
+        if(strpos($prefix, '/prod_img/') !== false){
+            $imgSrc = (new OssHelper($this->shopId))->putObjectForProductImage($imageFile, $localPath);
+        }else{
+            $imgSrc = (new OssHelper($this->shopId))->putObjectForImage($imageFile, $localPath);
+        }
         if (empty($imgSrc)) {
             return ['status' => 'fail', 'msg' => '上传图片 [' . $fileInfo['name'] . '] 上传失败'];
         }
@@ -106,7 +110,7 @@ class UploadController extends Controller
             'origin_name' => $fileInfo['name'],
             'oss_object' => $prefix . '/' . $imageName,
             'file_class' => $fileClass,
-            'folder' => $this->getProdImgPrefix('post', true),
+            'folder' => $this->getImgPrefix('post', true),
             'created_at' => $time,
             'created_by' => $this->operator,
             'updated_at' => $time,
@@ -123,21 +127,25 @@ class UploadController extends Controller
         ];
     }
 
-    private function getProdImgPrefix(string $method = 'get', bool $getFolder = false): string
+    private function getImgPrefix(string $method = 'get', bool $getFolder = false): string
     {
-        $prefix = $this->get('folder');
+        $prefix = $this->get('folder', 'trim,strtolower');
         if ($method == 'post') {
             $prefix = $this->post('folder');
         }
 
-        $prefix = preg_replace('/[^a-z\d_]+/', '', trim($prefix));
+        $prefix = preg_replace('/[^a-z\d_]+/', '', $prefix);
         $prefix = trim($prefix, '/');
         $prefix = empty($prefix) ? 'def' : $prefix;
         if ($getFolder) {
             return $prefix;
         }
 
-        $prefix = 'sp_' . $this->shopId . '/prod_img/' . $prefix;
+        if (substr($prefix, 0, 3) == 'sku') {
+            $prefix = 'prod_img/' . $prefix;
+        }
+
+        $prefix = 'sp_' . $this->shopId . '/' . $prefix;
         return trim($prefix, '/');
     }
 }

@@ -25,7 +25,8 @@
                 </div>
                 <div class="layui-inline">
                     <div class="layui-input-inline">
-                    <input class="layui-btn layui-btn-normal" type="submit" lay-submit lay-filter="prod_search" value="搜索"/>
+                        <input class="layui-btn layui-btn-normal" type="submit" lay-submit lay-filter="prod_search"
+                               value="搜索"/>
                     </div>
                 </div>
             </div>
@@ -72,11 +73,11 @@
                             title: '商品状态', align: 'center', templet: function (d) {
                             switch (d.product_status) {
                                 case 1:
-                                    return '上架中 <i class="layui-icon layui-icon-ok layui-font-blue"></i>';
+                                    return '上架中';
                                 case 2:
-                                    return '下架中 <i class="layui-icon layui-icon-close layui-font-red"></i>';
+                                    return '<div class="layui-bg-red">下架中</div>';
                                 default:
-                                    return '待处理 <i class="layui-icon layui-icon-loading layui-anim layui-anim-rotate layui-anim-loop"></i>';
+                                    return '<div class="layui-bg-orange">待处理</div>';
                             }
                         }
                         },
@@ -95,7 +96,7 @@
                     case 'edit':
                         let layer_idx = layer.open({
                             type: 2,
-                            title: '编辑商品',
+                            title: '编辑',
                             skin: 'hd-open-edit',
                             content: '/spadmin/product/' + obj.data.product_id
                         });

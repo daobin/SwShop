@@ -36,7 +36,7 @@
 
                                 idx = layer.open({
                                     type: 2,
-                                    title: '编辑类目',
+                                    title: '编辑',
                                     skin: 'hd-open-edit',
                                     content: '/spadmin/category/' + obj.data.id
                                 });

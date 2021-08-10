@@ -26,13 +26,15 @@ class UploadBiz
             return [];
         }
 
-        $folderArr = $this->dbHelper->table('upload_file')->where(['shop_id' => $shopId])
+        $folderArr = $this->dbHelper->table('upload_file')->where(['shop_id' => $shopId, 'folder' => ['<>', 'def']])
             ->fields(['folder'])->groupBy(['folder'])->select();
         if(empty($folderArr)){
             return [];
         }
 
         $folderArr = array_column($folderArr, 'folder');
+        array_unshift($folderArr, 'def');
+
         return $folderArr;
     }
 
