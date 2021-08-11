@@ -31,9 +31,13 @@ class UploadController extends Controller
 
             $ossAccessHost = (new OssHelper($this->shopId))->accessHost;
             foreach ($imageList as $imageInfo) {
+                if (strpos($imageInfo['oss_object'], '/prod_img/') !== false) {
+                    $imageInfo['oss_object'] = str_replace('_d_d', '_' . $imgSize . '_' . $imgSize, $imageInfo['oss_object']);
+                }
+
                 $data[] = [
                     'name' => $imageInfo['origin_name'],
-                    'src' => $ossAccessHost . str_replace('_d_d', '_' . $imgSize . '_' . $imgSize, $imageInfo['oss_object']) . '?' . $imageInfo['updated_at']
+                    'src' => $ossAccessHost . $imageInfo['oss_object'] . '?' . $imageInfo['updated_at']
                 ];
             }
         }
@@ -95,9 +99,9 @@ class UploadController extends Controller
             return ['status' => 'fail', 'msg' => '上传图片 [' . $fileInfo['name'] . '] 迁移失败'];
         }
 
-        if(strpos($prefix, '/prod_img/') !== false){
+        if (strpos($prefix, '/prod_img/') !== false) {
             $imgSrc = (new OssHelper($this->shopId))->putObjectForProductImage($imageFile, $localPath);
-        }else{
+        } else {
             $imgSrc = (new OssHelper($this->shopId))->putObjectForImage($imageFile, $localPath);
         }
         if (empty($imgSrc)) {

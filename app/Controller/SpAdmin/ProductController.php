@@ -128,6 +128,10 @@ class ProductController extends Controller
         if ($cateId <= 0) {
             return ['status' => 'fail', 'msg' => '请选择商品分类'];
         }
+        $prodUrl = trim($prodUrl, '/');
+        if (!empty($prodUrl) && filter_var($prodUrl, FILTER_VALIDATE_URL)) {
+            return ['status' => 'fail', 'msg' => '商品 URL 无效'];
+        }
         if ($weight > 0 && empty($weightUnit)) {
             return ['status' => 'fail', 'msg' => '请选择重量单位'];
         }

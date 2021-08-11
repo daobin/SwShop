@@ -44,7 +44,7 @@ class BannerBiz
         $bannerInfo['image_list'] = $this->dbHelper->table('banner_image')->where(
             ['shop_id' => $shopId, 'banner_id' => $bannerId])
             ->orderBy(['sort' => 'asc'])->select();
-        if(!empty($bannerInfo['image_list'])){
+        if (!empty($bannerInfo['image_list'])) {
             $bannerInfo['image_list'] = array_column($bannerInfo['image_list'], null, 'sort');
         }
 
@@ -59,8 +59,7 @@ class BannerBiz
 
         $shopId = (int)$data['shop_id'];
         $bannerId = (int)$data['banner_id'];
-        $bannerInfo = $this->dbHelper->table('banner')->where(
-            ['shop_id' => $shopId, 'banner_id' => $bannerId])->find();
+        $bannerInfo = $this->getBannerById($shopId, $bannerId);
         if (empty($bannerInfo)) {
             return 0;
         }
@@ -73,9 +72,23 @@ class BannerBiz
             $this->dbHelper->table('banner')->where(['shop_id' => $shopId, 'banner_id' => $bannerId])->update($data);
 
             if (!empty($imgList)) {
+                foreach ($imgList as $sort => $image) {
+                    if (isset($bannerInfo['image_list'][$sort])) {
+                        unset($image['created_at'], $image['created_by']);
+                        $this->dbHelper->table('banner_image')->where(
+                            ['shop_id' => $shopId, 'banner_image_id' => $bannerInfo['image_list'][$sort]['banner_image_id']])->update($image);
 
-            } else if (!empty($bannerInfo['image_list'])) {
-                $this->dbHelper->table('banner_image')->where(['shop_id' => $shopId, 'banner_id' => $bannerId])->delete();
+                        unset($bannerInfo['image_list'][$sort]);
+                    } else {
+                        $this->dbHelper->table('banner_image')->insert($image);
+                    }
+                }
+            }
+
+            if (!empty($bannerInfo['image_list'])) {
+                foreach ($bannerInfo['image_list'] as $image) {
+                    $this->dbHelper->table('banner_image')->where(['shop_id' => $shopId, 'banner_image_id' => $image['banner_image_id']])->delete();
+                }
             }
 
             $this->dbHelper->commit();

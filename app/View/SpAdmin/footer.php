@@ -3,7 +3,8 @@
         $('#hd-top-line a.hd-opt-add').click(function () {
             let layer_idx = layer.open({
                 type: 2,
-                title: '新增',
+                title: '',
+                closeBtn: 0,
                 skin: 'hd-open-edit',
                 content: $.trim($(this).attr('href'))
             });

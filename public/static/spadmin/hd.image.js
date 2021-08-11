@@ -69,40 +69,9 @@ layui.use(['jquery', 'layer', 'element', 'flow', 'upload'], function () {
                 imgObj.imgSelected = [];
 
             }).on('click', '#hd-btn-select-image', function () {
-                if ($('.hd-box-image.active img').length == 0) {
-                    layer.alert('请选择图片', imgObj.openAlertCfg);
-                    return;
-                }
-
-                let imgHtml = '<div style="position: relative; display: inline-block; margin: 10px; border: 1px solid #ccc;">' +
-                    '-INPUT-HIDDEN-<img src="-IMG-SRC-" /><i class="layui-icon layui-icon-close-fill hd-btn-del-image" ' +
-                    ' style="position: absolute; top: 0; right: 0; font-size: 20px; color: #FF5722; cursor: pointer;"></i></div>';
-
-                for (let idx in imgObj.imgSelected) {
-                    if($('#list_img_' + imgObj.imgBoxIdx + ' img').length >= 10){
-                        layer.alert('每项最多可添加10张图片', imgObj.openAlertCfg);
-                        break;
-                    }
-
-                    if ($('#list_img_' + imgObj.imgBoxIdx + ' img[src="' + imgObj.imgSelected[idx] + '"]').length == 0) {
-                        let inputName = $('input.hd-input-sku').eq(imgObj.imgBoxIdx).attr('name')
-                            .replace('[sku]', '[image][' + $('#list_img_' + imgObj.imgBoxIdx).find('img').length + ']');
-
-                        $('#list_img_' + imgObj.imgBoxIdx).append(
-                            imgHtml.replace('-IMG-SRC-', imgObj.imgSelected[idx])
-                                .replace('-INPUT-HIDDEN-', '<input type="hidden" name="' + inputName + '" value="' + imgObj.imgSelected[idx] + '" />')
-                        );
-                    }
-                }
-
-                if(imgObj.imgSelectCallback != null){
+                if (imgObj.imgSelectCallback != null) {
                     imgObj.imgSelectCallback();
                 }
-
-                if (imgObj.layerIdx != null) {
-                    layer.close(imgObj.layerIdx);
-                }
-
             }).on('click', '#hd-btn-close-image', function () {
                 if (imgObj.layerIdx != null) {
                     layer.close(imgObj.layerIdx);
@@ -137,6 +106,7 @@ layui.use(['jquery', 'layer', 'element', 'flow', 'upload'], function () {
             // 打开上传图片管理工具弹窗
             $('.hd-btn-open-image').on('click', function () {
                 imgObj.imgBoxIdx = $('.hd-btn-open-image').index($(this));
+                imgObj.imgSelected = [];
 
                 let openCfg = $.extend({}, imgObj.openAlertCfg);
                 openCfg.title = ['上传图片管理', 'font-size: 18px; background: #333; color: #fff;'];
@@ -163,7 +133,7 @@ layui.use(['jquery', 'layer', 'element', 'flow', 'upload'], function () {
         imgObj.uploader = null;
         imgObj.uploaderSize = 2040;
         imgObj.upload = function () {
-            if(imgObj.uploader){
+            if (imgObj.uploader) {
                 imgObj.uploader.reload({
                     data: {
                         folder: imgObj.folder,
@@ -191,16 +161,16 @@ layui.use(['jquery', 'layer', 'element', 'flow', 'upload'], function () {
                     }
 
                     if (res.status == 'success') {
-                        $('.hd-box-image>div').each(function(){
-                            if($.trim($(this).text()) == $.trim(res.name)){
+                        $('.hd-box-image>div').each(function () {
+                            if ($.trim($(this).text()) == $.trim(res.name)) {
                                 $(this).parent('div').parent('div').remove();
                             }
                         });
 
                         imgObj.folderImages.push(imgObj.boxImgTpl.replace('-IMG-SRC-', res.src).replace('-IMG-NAME-', res.name));
-                        if($('#hd-load-image .layui-flow-more').length == 0){
+                        if ($('#hd-load-image .layui-flow-more').length == 0) {
                             $('#hd-load-image').append(imgObj.boxImgTpl.replace('-IMG-SRC-', res.src).replace('-IMG-NAME-', res.name));
-                        }else{
+                        } else {
                             $('#hd-load-image .layui-flow-more').before(imgObj.boxImgTpl.replace('-IMG-SRC-', res.src).replace('-IMG-NAME-', res.name));
                         }
                     }
@@ -248,7 +218,7 @@ layui.use(['jquery', 'layer', 'element', 'flow', 'upload'], function () {
             layui.element.init('nav');
             sessionStorage.setItem('image_folder', JSON.stringify(imgFolder));
 
-            if(imgObj.folderImages.length == 0){
+            if (imgObj.folderImages.length == 0) {
                 $('#hd-load-image').html('');
                 imgObj.getImage();
             }
@@ -298,7 +268,7 @@ layui.use(['jquery', 'layer', 'element', 'flow', 'upload'], function () {
             }
 
             // 初始化目录导航
-            if(!$.isEmptyObject(imgObj.initFolders)){
+            if (!$.isEmptyObject(imgObj.initFolders)) {
                 let imgFolder = {};
                 for (let idx in imgObj.initFolders) {
                     imgFolder[imgObj.initFolders[idx]] = {isNav: false};

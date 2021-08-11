@@ -1,5 +1,5 @@
 <?php
-\App\Helper\TemplateHelper::widget('sp_admin', 'header', ['timestamp' => $timestamp ?? '']);
+\App\Helper\TemplateHelper::widget('sp_admin', 'header', ['show_top_line' => false, 'timestamp' => $timestamp ?? '']);
 ?>
     <script>
         var lang_codes = JSON.parse('<?php echo json_encode($lang_codes);?>');
@@ -59,7 +59,7 @@
             });
         });
     </script>
-    <div class="layui-fluid hd-padding-top60">
+    <div class="layui-fluid hd-padding-top30">
         <div class="layui-tab layui-tab-brief" lay-filter="cate_list">
             <ul class="layui-tab-title"></ul>
             <div class="layui-tab-content"></div>

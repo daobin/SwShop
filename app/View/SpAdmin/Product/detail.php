@@ -261,17 +261,46 @@
             hdImg.init({
                 elem: '.sku_images',
                 url: '/spadmin/upload-image',
-                initFolders: JSON.parse('<?php echo json_encode($upload_folders);?>')
+                initFolders: JSON.parse('<?php echo json_encode($upload_folders);?>'),
+                imgSelectCallback: function () {
+                    if (hdImg.imgSelected.length == 0) {
+                        layer.alert('请选择图片', hdImg.openAlertCfg);
+                        return;
+                    }
+
+                    let imgHtml = '<div style="position: relative; display: inline-block; margin: 10px; border: 1px solid #ccc;">' +
+                        '-INPUT-HIDDEN-<img src="-IMG-SRC-" /><i class="layui-icon layui-icon-close-fill hd-btn-del-image" ' +
+                        ' style="position: absolute; top: 0; right: 0; font-size: 20px; color: #FF5722; cursor: pointer;"></i></div>';
+
+
+                    for (let idx in hdImg.imgSelected) {
+                        if ($('#list_img_' + hdImg.imgBoxIdx + ' img').length >= 10) {
+                            layer.alert('每项最多可添加10张图片', hdImg.openAlertCfg);
+                            break;
+                        }
+
+                        if ($('#list_img_' + hdImg.imgBoxIdx + ' img[src="' + hdImg.imgSelected[idx] + '"]').length == 0) {
+                            let inputName = $('input.hd-input-sku').eq(hdImg.imgBoxIdx).attr('name')
+                                .replace('[sku]', '[image][' + $('#list_img_' + hdImg.imgBoxIdx).find('img').length + ']');
+
+                            $('#list_img_' + hdImg.imgBoxIdx).append(
+                                imgHtml.replace('-IMG-SRC-', hdImg.imgSelected[idx])
+                                    .replace('-INPUT-HIDDEN-', '<input type="hidden" name="' + inputName + '" value="' + hdImg.imgSelected[idx] + '" />')
+                            );
+                        }
+                    }
+
+                    if (hdImg.layerIdx != null) {
+                        layer.close(hdImg.layerIdx);
+                    }
+                }
             });
 
             $('#btn_add_sku').click(function () {
                 $('#sku_list').append($('#tpl_sku_info').html().replaceAll('-IDX-', $('#sku_list tr').get().length));
                 layui.form.render('select');
 
-                hdImg.init({
-                    elem: '.sku_images',
-                    url: '/spadmin/upload-image'
-                });
+                hdImg.init();
             });
             $(document).on('click', '.btn_del_sku', function () {
                 $(this).parent('td').parent('tr').remove();
