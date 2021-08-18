@@ -30,5 +30,8 @@
     "files": [
       "app/function.php"
     ]
+  },
+  "require-dev": {
+    "swoole/ide-helper": "4.6.7"
   }
 }

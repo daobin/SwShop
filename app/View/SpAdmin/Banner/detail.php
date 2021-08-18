@@ -38,19 +38,22 @@
                                 <?php
                                 if (!empty($banner_info['image_list'])) {
                                     foreach ($banner_info['image_list'] as $sort => $image_info) {
-                                        $image_src = $oss_access_host.$image_info['image_path'].'/'.$image_info['image_name'];
+                                        $image_src = $oss_access_host . $image_info['image_path'] . '/' . $image_info['image_name'];
                                         ?>
                                         <div class="layui-row hd-padding-bottom30">
                                             <div class="layui-col-xs3">
-                                                <input type="hidden" name="image_list[<?php echo $sort; ?>]" value="<?php echo $image_src; ?>"/>
-                                                <img style="display: block; width: 100%;" src="<?php echo $image_src; ?>"/>
+                                                <input type="hidden" name="image_list[<?php echo $sort; ?>]"
+                                                       value="<?php echo $image_src; ?>"/>
+                                                <img style="display: block; width: 100%;"
+                                                     src="<?php echo $image_src; ?>"/>
                                             </div>
                                             <div class="layui-col-xs9">
                                                 <div class="layui-form-item">
                                                     <label class="layui-form-label">跳转链接</label>
                                                     <div class="layui-input-block">
                                                         <input type="text" class="layui-input"
-                                                               name="link[<?php echo $sort; ?>]" value="<?php echo xss_text($image_info['window_link']);?>"/>
+                                                               name="link[<?php echo $sort; ?>]"
+                                                               value="<?php echo xss_text($image_info['window_link']); ?>"/>
                                                     </div>
                                                 </div>
                                                 <div class="layui-form-item">

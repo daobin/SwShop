@@ -26,13 +26,10 @@ class UploadController extends Controller
         $data = [];
         $imageList = (new UploadBiz())->getUploadListByFolder($this->shopId, $folder, $page, $pageSize);
         if (!empty($imageList)) {
-            $imgSizeArr = ConfigHelper::get('product.image_size', []);
-            $imgSize = $imgSizeArr ? reset($imgSizeArr) : '';
-
             $ossAccessHost = (new OssHelper($this->shopId))->accessHost;
             foreach ($imageList as $imageInfo) {
                 if (strpos($imageInfo['oss_object'], '/prod_img/') !== false) {
-                    $imageInfo['oss_object'] = str_replace('_d_d', '_' . $imgSize . '_' . $imgSize, $imageInfo['oss_object']);
+                    $imageInfo['oss_object'] = str_replace('_d_d', '_300_300', $imageInfo['oss_object']);
                 }
 
                 $data[] = [

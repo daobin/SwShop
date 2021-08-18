@@ -17,6 +17,7 @@ class TemplateHelper
     {
         $tplFile = self::$viewDir . $template . '.php';
         if (!is_file($tplFile)) {
+            print_r($tplFile.PHP_EOL);
             throw new \Exception('Sorry, the accessed resource does not exist.');
         }
 

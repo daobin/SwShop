@@ -8,8 +8,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"/>
 
     <link rel="stylesheet" href="/static/layui/css/layui.css"/>
-    <link rel="stylesheet"
-          href="/static/spadmin/hd.admin.css<?php echo $timestamp ?? ''; ?>"/>
+    <link rel="stylesheet" href="/static/spadmin/hd.admin.css<?php echo $timestamp ?? ''; ?>"/>
 
     <!--[if lt IE 9]>
     <script type="text/javascript" src="/static/html5shiv.min.js"></script>

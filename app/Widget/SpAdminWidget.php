@@ -44,7 +44,7 @@ class SpAdminWidget extends Widget
                     ['name' => '商城信息', 'icon' => 'layui-icon-tips', 'iframe' => 'config-web_info'],
 //                    ['name' => '邮件配置', 'icon' => 'layui-icon-email', 'iframe' => 'config-mail'],
 //                    ['name' => 'OSS 配置', 'icon' => 'layui-icon-file', 'iframe' => 'config-oss'],
-//                    ['name' => '前台模板样式', 'icon' => 'layui-icon-tree', 'iframe' => 'config-css'],
+                    ['name' => '前台模板样式', 'icon' => 'layui-icon-tree', 'iframe' => 'config-css'],
 //                    ['name' => '多币种配置', 'icon' => 'layui-icon-rmb', 'iframe' => 'currency'],
 //                    ['name' => '支付方式', 'icon' => 'layui-icon-senior', 'iframe' => 'payment'],
                 ]

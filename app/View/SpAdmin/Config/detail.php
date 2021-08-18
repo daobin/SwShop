@@ -16,10 +16,24 @@
                     if (strtolower($config_group) == 'css') {
                         echo '<div class="layui-collapse" lay-accordion>';
                         if (!empty($config_value)) {
-                            foreach ($config_value as $name => $val) {
+                            foreach ($config_value as $theme => $css) {
                                 echo '<div class="layui-colla-item">';
-                                echo '<h2 class="layui-colla-title">前台模板【', $name, '】</h2>';
+                                echo '<h2 class="layui-colla-title">前台模板【', $theme, '】</h2>';
                                 echo '<div class="layui-colla-content layui-show">';
+                                if (is_array($css) && !empty($css)) {
+                                    foreach ($css as $name) {
+                                        $css_content = '';
+                                        $css_file = ROOT_DIR . 'public/static/index/' . strtolower($theme) . '/' . strtolower($name) . '.css';
+                                        if (file_exists($css_file)) {
+                                            $css_content = file_get_contents($css_file);
+                                        }
+
+                                        echo '<div class="layui-form-item">';
+                                        echo '<label class="layui-form-label">', $name, '.css</label>';
+                                        echo '<div class="layui-input-block">';
+                                        echo '<textarea class="layui-textarea" name="css_list[', $theme, '][', $name, ']" style="height: 200px;">', $css_content, '</textarea></div></div>';
+                                    }
+                                }
                                 echo '</div></div>';
                             }
                         }

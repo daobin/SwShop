@@ -19,6 +19,10 @@ class Widget
     {
         $widget = explode('\\', get_class($this));
         $widget = str_replace('Widget', '', end($widget));
+        if ($widget === 'Index') {
+            $tplTheme = 'Default';
+            $widget .= '/' . $tplTheme;
+        }
         $template = $widget . '/' . trim($template);
         return TemplateHelper::view($template, $data);
     }

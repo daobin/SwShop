@@ -81,6 +81,35 @@ class ConfigController extends Controller
 
         if (strtolower($cfgGrp) == 'css') {
             // 将样式内容保存至样式文件
+            $cssList = $this->post('css_list', []);
+            if (!empty($cssList)) {
+                foreach ($cssList as $theme => $css) {
+                    if (empty($theme) || empty($css)) {
+                        continue;
+                    }
+
+                    foreach ($css as $name => $content) {
+                        $theme = strtolower($theme);
+                        $cssPath = ROOT_DIR . 'public/static/index/' . $theme;
+                        if (!is_dir($cssPath) && !mkdir($cssPath, 0775)) {
+                            return ['status' => 'fail', 'msg' => LanguageHelper::get('invalid_request')];
+                        }
+
+                        $name = strtolower($name);
+                        $cssFile = $cssPath . '/' . $name . '.css';
+                        if (file_exists($cssFile)) {
+                            // 备份原有文件内容
+                            $backFile = $cssPath . '/' . $name . date('_Ymd') . '.css';
+                            $flag = sprintf('****** Time:: %s, ****** Operator:: %s', date('Y-m-d H:i:s'), $this->operator);
+                            file_put_contents($backFile, $flag . PHP_EOL, FILE_APPEND);
+                            file_put_contents($backFile, file_get_contents($cssFile) . PHP_EOL, FILE_APPEND);
+                        }
+
+                        // 覆盖写入
+                        file_put_contents($cssFile, trim($content));
+                    }
+                }
+            }
 
             // 更新时间戳
             $cfgBiz->updateConfigByKey($this->shopId, $cfgKey, [
@@ -128,8 +157,8 @@ class ConfigController extends Controller
                 break;
         }
 
-        if($cfgKey == 'TIMESTAMP'){
-            $cfgVal = '?'.trim($cfgVal, '?');
+        if ($cfgKey == 'TIMESTAMP') {
+            $cfgVal = '?' . trim($cfgVal, '?');
         }
 
         $update = $cfgBiz->updateConfigByKey($this->shopId, $cfgKey, [

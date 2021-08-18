@@ -14,6 +14,7 @@ RouteHelper::get('/', 'Index.Index.index');
 RouteHelper::get('/login', 'Index.Index.login');
 RouteHelper::post('/login', 'Index.Ajax.loginProcess');
 RouteHelper::post('/register', 'Index.Ajax.registerProcess');
+RouteHelper::get('account', 'Index.Customer.index');
 RouteHelper::get('/<cate_name>-c<cate_id>', 'Index.Product.category', [
     'cate_name' => '\w+',
     'cate_id' => '\d+',

@@ -103,5 +103,14 @@
             'reference' => '120b605dfeb996808c31b6477290a714d356e822',
             'dev_requirement' => false,
         ),
+        'swoole/ide-helper' => array(
+            'pretty_version' => '4.6.7',
+            'version' => '4.6.7.0',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../swoole/ide-helper',
+            'aliases' => array(),
+            'reference' => '0d1409b8274117addfe64d3ea412812a69807411',
+            'dev_requirement' => true,
+        ),
     ),
 );

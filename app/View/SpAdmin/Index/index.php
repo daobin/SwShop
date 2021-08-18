@@ -94,6 +94,9 @@
             </ul>
             <ul class="layui-nav layui-layout-right">
                 <li class="layui-nav-item">
+                    <a href="/" target="_blank"><i class="layui-icon layui-icon-home"></i> 网站首页</a>
+                </li>
+                <li class="layui-nav-item">
                     <a><img src="//t.cn/RCzsdCq" class="layui-nav-img"/><?php echo xss_text($admin_name); ?></a>
                     <dl class="layui-nav-child">
                         <dd><a href="/spadmin/logout.html" class="hd-color-red">安全退出</a></dd>

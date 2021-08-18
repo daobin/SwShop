@@ -8,19 +8,29 @@ declare(strict_types=1);
 namespace App\Controller\Index;
 
 use App\Controller\Controller;
+use App\Helper\SafeHelper;
 
 class IndexController extends Controller
 {
     public function index()
     {
-        return '<h1>Hello Index::index</h1>';
+        return $this->render();
     }
 
-    public function login(){
-        return 'Please Login';
+    public function login()
+    {
+        $safeHelper = new SafeHelper($this->request, $this->response);
+
+        $data = [
+            'register_tk' => $safeHelper->buildCsrfToken('IDX', 'register'),
+            'login_tk' => $safeHelper->buildCsrfToken('IDX', 'login'),
+        ];
+        return $this->render($data);
     }
 
-    public function pageNotFound(){
-        return 'Page Not Found';
+    public function pageNotFound()
+    {
+        $this->response->status(404);
+        return $this->render();
     }
 }

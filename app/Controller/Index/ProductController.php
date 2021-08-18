@@ -11,12 +11,19 @@ use App\Controller\Controller;
 
 class ProductController extends Controller
 {
-    public function category(){
-        $data = ['cate_name' => '大件家居'];
+    public function category()
+    {
+        $data = [];
+
         return $this->render($data);
     }
 
-    public function detail(){
-        return '<h1>Product Detail\'s Page</h1>';
+    public function detail()
+    {
+        $data = [
+            'device' => $this->device
+        ];
+
+        return $this->render($data);
     }
 }

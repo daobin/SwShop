@@ -7,7 +7,7 @@
  */
 declare(strict_types=1);
 
-define('ROOT_DIR', realpath(__DIR__ . '/../') . '/');
+define('ROOT_DIR', dirname(__DIR__) . '/');
 
 // 自动加载
 require ROOT_DIR . 'vendor/autoload.php';

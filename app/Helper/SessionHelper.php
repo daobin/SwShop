@@ -114,11 +114,11 @@ class SessionHelper
 
     private function createSessionId(): string
     {
-        $clientIp = $this->request->server['remote_addr'] ?? '';
+        $ipLong = $this->request->ipLong ?? 0;
 
         $sid = random_bytes(8);
         $sid = bin2hex($sid) . time();
-        $sid .= $clientIp ? '_' . ip2long($clientIp) : '';
+        $sid .= $ipLong ? '_' . $ipLong : '';
         return strtoupper($sid);
     }
 }

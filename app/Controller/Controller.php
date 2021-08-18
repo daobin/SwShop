@@ -17,10 +17,14 @@ class Controller
      * @var SessionHelper
      */
     protected $session;
-    protected $spAdminInfo;
     protected $operator;
+    protected $customerId;
     protected $langCodes;
     protected $shopId;
+    protected $host;
+    protected $device;
+    protected $ip;
+    protected $ipCountryIsoCode2;
 
     public function __construct($request, $response)
     {
@@ -29,11 +33,44 @@ class Controller
 
         $this->session = new SessionHelper($this->request, $this->response);
 
-        $this->spAdminInfo = $this->session->get('sp_admin_info', '');
-        $this->spAdminInfo = $this->spAdminInfo ? json_decode($this->spAdminInfo, true) : [];
-        $this->operator = $this->spAdminInfo['account'] ?? '--';
+        $spAdminInfo = $this->session->get('sp_admin_info', '');
+        $spAdminInfo = $spAdminInfo ? json_decode($spAdminInfo, true) : [];
+        $this->operator = $spAdminInfo['account'] ?? '--';
+
+        $customerInfo = $this->session->get('sp_customer_info');
+        $customerInfo = $customerInfo ? json_decode($customerInfo, true) : [];
+        $this->customerId = $customerInfo['customer_id'] ?? 0;
+
         $this->langCodes = ConfigHelper::getLangCodes();
         $this->shopId = $this->request->shop_id;
+        $this->host = $this->request->header['host'];
+
+        $this->chkDevice();
+        $this->chkClientIp();
+    }
+
+    private function chkDevice()
+    {
+        $this->device = 'PC';
+
+        $ua = $this->request->header['user-agent'] ?? '';
+        $ua = strtolower($ua);
+
+        $iphone = strstr($ua, 'mobile') !== false;
+        $android = strstr($ua, 'android') !== false;
+        $winPhone = strstr($ua, 'phone') !== false;
+        $iPad = strstr($ua, 'ipad') !== false;
+        $androidPad = $android && strstr($ua, 'mobile') !== false;
+
+        if ($iphone || $android || $winPhone || $iPad || $androidPad) {
+            $this->device = 'M';
+        }
+    }
+
+    private function chkClientIp()
+    {
+        $this->ip = $this->request->ipLong ?? 0;
+        $this->ipCountryIsoCode2 = '';
     }
 
     public function get($name, $default = '', $filter = 'trim')
@@ -78,11 +115,25 @@ class Controller
 
     public function render($data = [], $template = null)
     {
-        $template ??= implode('/', [$this->request->module, $this->request->controller, $this->request->action]);
+        if ($this->request->module === 'Index') {
+            $tplTheme = 'Default';
+            $template ??= implode('/', [$this->request->module, $tplTheme, $this->request->controller, $this->request->action]);
+        } else {
+            $template ??= implode('/', [$this->request->module, $this->request->controller, $this->request->action]);
+        }
 
-        // 静态资源时间戳
+        // Static Resource Timestamp
         $timestamp = (new ConfigBiz())->getConfigByKey($this->shopId, 'TIMESTAMP');
         $data['timestamp'] = $timestamp['config_value'] ?? '?' . date('YmdH');
+
+        // Valid Customer Id
+        $data['customer_id'] = $this->customerId;
+
+        // Widget Params
+        $data['widget_params'] = [
+            'timestamp' => $data['timestamp'],
+            'customer_id' => $data['customer_id']
+        ];
 
         return TemplateHelper::view($template, $data);
     }

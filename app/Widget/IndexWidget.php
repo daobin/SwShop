@@ -9,12 +9,16 @@ class IndexWidget extends Widget
     {
         $data = [
             'timestamp' => $params['timestamp'] ?? '?' . date('YmdH'),
+            'customer_id' => $params['customer_id'] ?? 0
         ];
         return $this->render('header', $data);
     }
 
     public function footer($params = [])
     {
-        return $this->render('footer');
+        $data = [
+            'timestamp' => $params['timestamp'] ?? '?' . date('YmdH'),
+        ];
+        return $this->render('footer', $data);
     }
 }

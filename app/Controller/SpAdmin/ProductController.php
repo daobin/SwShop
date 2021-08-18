@@ -31,12 +31,12 @@ class ProductController extends Controller
             ];
 
             $cateId = $this->get('category_id');;
-            if(is_numeric($cateId)){
+            if (is_numeric($cateId)) {
                 $condition['product_category_id'] = $cateId;
             }
 
             $prodStatus = $this->get('prod_status');
-            if(is_numeric($prodStatus)){
+            if (is_numeric($prodStatus)) {
                 $condition['product_status'] = $prodStatus;
             }
 
@@ -145,7 +145,7 @@ class ProductController extends Controller
             'product_id' => $prodId,
             'product_category_id' => $cateId,
             'product_status' => $prodStatus,
-            'product_url' => $prodUrl,
+            'product_url' => empty($prodUrl) ? '' : '/' . $prodUrl,
             'sort' => $prodSort,
             'weight' => $weight,
             'weight_unit' => $weightUnit,
@@ -203,7 +203,8 @@ class ProductController extends Controller
                 $imgData = [];
                 if (!empty($datum['image']) && is_array($datum['image']) && !empty(reset($datum['image']))) {
                     foreach ($datum['image'] as $sort => $image) {
-                        $imageName = preg_replace('/_\d+_\d+/', '_d_d', basename($image));
+                        $imageName = explode('?', basename($image));
+                        $imageName = preg_replace('/_\d+_\d+/', '_d_d', reset($imageName));
 
                         $imgData[] = [
                             'shop_id' => $this->shopId,

@@ -53,8 +53,7 @@ class HttpServer
                 throw new \Exception(LanguageHelper::get('invalid_request'));
             }
 
-            $host = trim($request->header['host']);
-            $domain = explode('.', $host);
+            $domain = explode('.', $request->header['host']);
             $domainArrCnt = count($domain);
             if ($domainArrCnt < 2) {
                 throw new \Exception(LanguageHelper::get('invalid_request'));
@@ -82,6 +81,8 @@ class HttpServer
             // 店铺检验合法，初始化店铺相关配置至 Request 对象
             $request->shop_id = $shopInfo['shop_id'];
             $request->domain = $domain;
+            $request->ip = $request->server['remote_addr'] ?? '';
+            $request->ipLong = ip2long($request->ip);
 
             // 目前仅支持 GET 、POST
             $request->isGet = true;
@@ -104,8 +105,8 @@ class HttpServer
             $session = new SessionHelper($request, $response);
             switch (strtolower($request->module)) {
                 case 'index':
-                    $needLoginPage = [];
-                    if (in_array(strtolower($request->controller), $needLoginPage)) {
+                    $customerInfo = $session->get('sp_customer_info');
+                    if (empty($customerInfo) && in_array(strtolower($request->controller), ['customer'])) {
                         if ($request->isAjax) {
                             $response->header('Content-type', 'application/json; charset=' . $charset);
                             $response->end(json_encode(['status' => 'fail', 'url' => '/login.html']));
@@ -115,9 +116,13 @@ class HttpServer
                         $response->redirect('/login.html');
                         return;
                     }
+                    if(!empty($customerInfo) && in_array($request->action, ['login', 'loginProcess', 'registerProcess'])){
+                        $response->redirect('/account.html');
+                        return;
+                    }
                     break;
                 case 'spadmin':
-                    $spAdminInfo = $session->get('sp_admin_info', '');
+                    $spAdminInfo = $session->get('sp_admin_info', []);
                     $spAdminInfo = $spAdminInfo ? json_decode($spAdminInfo, true) : [];
                     if (empty($spAdminInfo) && !in_array($request->action, ['login', 'loginProcess'])) {
                         if ($request->isAjax) {
