@@ -22,8 +22,9 @@ class AdminBiz
 
     public function getAdminByAccount(int $shopId, string $account): array
     {
-        return $this->dbHelper->table('admin')->where(
-            ['shop_id' => $shopId, 'account' => $account])
-            ->find();
+        $fields = ['admin_id', 'account', 'password', 'updated_at', 'updated_by'];
+
+        return $this->dbHelper->table('admin')->where(['shop_id' => $shopId, 'account' => $account])
+            ->fields($fields)->find();
     }
 }

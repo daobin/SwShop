@@ -9,8 +9,11 @@ declare(strict_types=1);
 
 namespace App\Server;
 
+use App\Biz\ConfigBiz;
+use App\Biz\CurrencyBiz;
+use App\Biz\LanguageBiz;
+use App\Biz\ShopBiz;
 use App\Helper\ConfigHelper;
-use App\Helper\DbHelper;
 use App\Helper\LanguageHelper;
 use App\Helper\RouteHelper;
 use App\Helper\SafeHelper;
@@ -48,27 +51,24 @@ class HttpServer
 
     public function requestHandler($request, $response)
     {
+        $invalidRequest = 'Invalid request.';
+
         try {
             if (empty($request->header['host'])) {
-                throw new \Exception(LanguageHelper::get('invalid_request'));
+                throw new \Exception($invalidRequest);
             }
 
             $domain = explode('.', $request->header['host']);
             $domainArrCnt = count($domain);
             if ($domainArrCnt < 2) {
-                throw new \Exception(LanguageHelper::get('invalid_request'));
+                throw new \Exception($invalidRequest);
             }
 
             // 店铺网站合法性验证
-            $dbHelper = new DbHelper();
             $domain = $domain[$domainArrCnt - 2] . '.' . $domain[$domainArrCnt - 1];
-            $shopInfo = $dbHelper->table('sys_shop')
-                ->fields(['shop_id', 'shop_status', 'shop_domain', 'shop_domain2', 'shop_domain2_redirect_code'])
-                ->whereOr(['shop_domain' => $domain, 'shop_domain2' => $domain])
-                ->orderBy(['shop_id' => 'desc'])
-                ->find();
+            $shopInfo = (new ShopBiz())->getShopByDomain($domain);
             if (empty($shopInfo) || (int)$shopInfo['shop_status'] !== 1) {
-                throw new \Exception(LanguageHelper::get('invalid_website'));
+                throw new \Exception('Invalid website');
             }
 
             // 店铺多域名情况的跳转处理
@@ -78,22 +78,26 @@ class HttpServer
                 return;
             }
 
+            $charset = ConfigHelper::get('app.charset', 'UTF-8');
             // 店铺检验合法，初始化店铺相关配置至 Request 对象
-            $request->shop_id = $shopInfo['shop_id'];
+            $request->shopId = (int)$shopInfo['shop_id'];
             $request->domain = $domain;
             $request->ip = $request->server['remote_addr'] ?? '';
             $request->ipLong = ip2long($request->ip);
-
-            // 目前仅支持 GET 、POST
+            // 请求方式目前仅支持 GET 、POST
             $request->isGet = true;
             $request->isPost = false;
-            if(isset($request->server['request_method']) && strtoupper($request->server['request_method']) == 'POST'){
+            if (isset($request->server['request_method']) && strtoupper($request->server['request_method']) == 'POST') {
                 $request->isGet = false;
                 $request->isPost = true;
             }
             // 判断是否为异步请求
             $request->isAjax = isset($request->header['x-requested-with']) && strtoupper($request->header['x-requested-with']) == 'XMLHTTPREQUEST';
-            $charset = ConfigHelper::get('app.charset', 'UTF-8');
+
+            // 时区设置
+            $timezone = (new ConfigBiz())->getConfigByKey($request->shopId, 'TIMEZONE');
+            $timezone = !empty($timezone['config_value']) ? $timezone['config_value'] : ConfigHelper::get('app.timezone', 'UTC');
+            date_default_timezone_set($timezone);
 
             // 路由设置
             list($module, $controller, $action) = RouteHelper::buildRoute($request);
@@ -101,12 +105,35 @@ class HttpServer
             $request->controller = $controller;
             $request->action = $action;
 
-            // 登录状态验证
             $session = new SessionHelper($request, $response);
+            $lang = (new LanguageBiz())->getDefaultLanguage($request->shopId);
+            $request->langCode = strtolower($lang['language_code'] ?? 'en');
+            $request->currency = (new CurrencyBiz())->getDefaultCurrency($request->shopId);
+
             switch (strtolower($request->module)) {
                 case 'index':
+                    // 语言配置验证
+                    if (empty($lang)) {
+                        print_r('Invalid language');
+
+                        $response->header('Content-type', 'text/html; charset=' . $charset);
+                        $response->end($invalidRequest);
+                        return;
+                    }
+
+                    // 币种配置验证
+                    if (empty($request->currency)) {
+                        print_r('Invalid currency');
+
+                        $response->header('Content-type', 'text/html; charset=' . $charset);
+                        $response->end($invalidRequest);
+                        return;
+                    }
+
+                    // 登录状态验证
                     $customerInfo = $session->get('sp_customer_info');
-                    if (empty($customerInfo) && in_array(strtolower($request->controller), ['customer'])) {
+                    if (empty($customerInfo) && in_array(strtolower($request->controller), ['customer', 'shopping']) && $request->action != 'cart') {
+                        $session->set('login_to', RouteHelper::buildUrl($request->module . '.' . $request->controller . '.' . $request->action));
                         if ($request->isAjax) {
                             $response->header('Content-type', 'application/json; charset=' . $charset);
                             $response->end(json_encode(['status' => 'fail', 'url' => '/login.html']));
@@ -116,12 +143,16 @@ class HttpServer
                         $response->redirect('/login.html');
                         return;
                     }
-                    if(!empty($customerInfo) && in_array($request->action, ['login', 'loginProcess', 'registerProcess'])){
+
+                    if (!empty($customerInfo) && in_array($request->action, ['login', 'loginProcess', 'registerProcess'])) {
                         $response->redirect('/account.html');
                         return;
                     }
+
                     break;
+
                 case 'spadmin':
+                    // 登录状态验证
                     $spAdminInfo = $session->get('sp_admin_info', []);
                     $spAdminInfo = $spAdminInfo ? json_decode($spAdminInfo, true) : [];
                     if (empty($spAdminInfo) && !in_array($request->action, ['login', 'loginProcess'])) {
@@ -148,10 +179,10 @@ class HttpServer
                 if (!isset($request->post['hash_tk']) || !($safeHelper->chkCsrfToken($request->post['hash_tk']))) {
                     if ($request->isAjax) {
                         $response->header('Content-type', 'application/json; charset=' . $charset);
-                        $response->end(json_encode(['status' => 'fail', 'msg' => LanguageHelper::get('invalid_request')]));
+                        $response->end(json_encode(['status' => 'fail', 'msg' => $invalidRequest]));
                     } else {
                         $response->header('Content-type', 'text/html; charset=' . $charset);
-                        $response->end(LanguageHelper::get('invalid_request'));
+                        $response->end($invalidRequest);
                     }
 
                     return;
@@ -174,10 +205,10 @@ class HttpServer
 
             if ($request->isAjax) {
                 $response->header('Content-type', 'application/json; charset=' . $charset);
-                $response->end(json_encode(['status' => 'fail', 'msg' => LanguageHelper::get('invalid_request')]));
+                $response->end(json_encode(['status' => 'fail', 'msg' => $invalidRequest]));
             } else {
                 $response->header('Content-type', 'text/html; charset=' . $charset);
-                $response->end(LanguageHelper::get('invalid_request'));
+                $response->end($invalidRequest);
             }
         }
 

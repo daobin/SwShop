@@ -35,25 +35,21 @@ class LanguageHelper
         }
     }
 
-    public static function get($key, $lang = '')
+    public static function get($key, $langCode = '')
     {
-        if (empty($lang) || !in_array($lang, array_keys(self::$langMaps))) {
-            $langCodes = ConfigHelper::getLangCodes();
-            $lang = reset($langCodes);
+        $langCode = $langCode ? strtolower($langCode) : 'en';
+
+        if (isset(self::$langMaps[$langCode][$key])) {
+            return self::$langMaps[$langCode][$key];
         }
 
-        $lang = strtolower($lang);
-        if (isset(self::$langMaps[$lang][$key])) {
-            return self::$langMaps[$lang][$key];
-        }
-
-        if ($lang === 'en') {
+        if ($langCode === 'en') {
             return $key;
         }
 
-        $lang = 'en';
-        if (isset(self::$langMaps[$lang][$key])) {
-            return self::$langMaps[$lang][$key];
+        $langCode = 'en';
+        if (isset(self::$langMaps[$langCode][$key])) {
+            return self::$langMaps[$langCode][$key];
         }
 
         return $key;

@@ -13,7 +13,8 @@ use App\Controller\Controller;
 
 class CustomerController extends Controller
 {
-    public function index(){
-        return 'Customer Page';
+    public function index()
+    {
+        return $this->render();
     }
 }

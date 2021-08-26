@@ -44,9 +44,9 @@ class UploadBiz
             return [];
         }
 
-        return $this->dbHelper->table('upload_file')->where(
-            ['shop_id' => $shopId, 'origin_name' => $originName])
-            ->find();
+        $fields = ['upload_file_id', 'origin_name', 'oss_object', 'file_class', 'folder', 'updated_at', 'updated_by'];
+        return $this->dbHelper->table('upload_file')->where(['shop_id' => $shopId, 'origin_name' => $originName])
+            ->fields($fields)->find();
     }
 
     public function getUploadListByFolder(int $shopId, string $folder, int $page = 1, int $pageSize = 30): array
@@ -55,9 +55,9 @@ class UploadBiz
             return [];
         }
 
-        return $this->dbHelper->table('upload_file')->where(
-            ['shop_id' => $shopId, 'folder' => $folder])
-            ->page($page, $pageSize)->select();
+        $fields = ['upload_file_id', 'origin_name', 'oss_object', 'file_class', 'folder', 'updated_at', 'updated_by'];
+        return $this->dbHelper->table('upload_file')->where(['shop_id' => $shopId, 'folder' => $folder])
+            ->fields($fields)->page($page, $pageSize)->select();
     }
 
     public function saveUploadInfo(array $data): int

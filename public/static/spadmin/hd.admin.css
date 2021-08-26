@@ -8,11 +8,11 @@ a, image, a:active, image:active{border: none !important;}
 .hd-align-left{text-align: left !important;}
 .hd-align-right{text-align: right !important;}
 .hd-align-center{text-align: center !important;}
-.hd-font-size18{font-size: 18px !important;}
+.hd-font-size-18{font-size: 18px !important;}
 .hd-cursor-pointer{cursor: pointer !important;}
 .hd-inline-block{display: inline-block !important; margin-left: 10px !important; margin-top: 10px !important;}
-.hd-width150{width: 150px !important;}
-.hd-margin-top30{margin-top: 30px !important;}
+.hd-width-150{width: 150px !important;}
+.hd-margin-top-30{margin-top: 30px !important;}
 .hd-padding-top10{padding-top: 10px !important;}
 .hd-padding-top30{padding-top: 30px !important;}
 .hd-padding-top60{padding-top: 60px !important;}
@@ -29,6 +29,7 @@ a, image, a:active, image:active{border: none !important;}
 #hd-main .layui-tab-content iframe{width: 100%; height: 100%; border: none;}
 
 #hd-top-line{position: fixed; top: 0; left: 0; z-index: 9; right: 0; padding-top: 10px; background: #fff;}
+#hd-bottom-options{position: fixed; bottom: 0; right: 15px; background: #fff;}
 
 .layui-table-cell{height: auto !important;}
 .layui-icon-edit, .layui-icon-delete, .layui-icon-release{cursor: pointer !important; font-size: 18px;}

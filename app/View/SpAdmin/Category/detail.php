@@ -138,7 +138,7 @@
                 <div class="layui-form-mid layui-word-aux">排序由小到大，不填则默认为0</div>
             </div>
             <div class="layui-form-item">
-                <label class="layui-form-label">类目 URL</label>
+                <label class="layui-form-label">类目 URL <span class="hd-color-red">*</span></label>
                 <div class="layui-input-inline">
                     <input type="text" class="layui-input" name="cate_url" maxlength="100"
                            placeholder="不含请求协议和域名部分"
@@ -178,14 +178,12 @@
                     </div>
                 </div>
             </div>
-            <div class="layui-form-item hd-margin-top30">
-                <div class="layui-input-block">
-                    <input type="hidden" name="hash_tk" value="<?php echo $csrf_token; ?>"/>
-                    <input class="layui-btn" type="submit" lay-submit lay-filter="cate_edit"
-                           value="<?php echo xss_text('save', true); ?>"/>
-                    <input class="layui-btn layui-btn-primary hd-layer-close" type="button"
-                           value="<?php echo xss_text('cancel', true); ?>"/>
-                </div>
+            <div class="layui-form-item" id="hd-bottom-options">
+                <input type="hidden" name="hash_tk" value="<?php echo $csrf_token; ?>"/>
+                <input class="layui-btn" type="submit" lay-submit lay-filter="cate_edit"
+                       value="<?php echo xss_text('save', true); ?>"/>
+                <input class="layui-btn layui-btn-primary hd-layer-close" type="button"
+                       value="<?php echo xss_text('cancel', true); ?>"/>
             </div>
         </form>
     </div>

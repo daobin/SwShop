@@ -14,7 +14,7 @@ layui.use(['jquery', 'layer', 'element', 'flow', 'upload'], function () {
             offset: '120px',
             closeBtn: 0
         };
-        imgObj.imgBoxIdx = 0;
+        imgObj.imgBoxIdx = -1;
         imgObj.imgSelected = [];
         imgObj.imgSelectCallback = null;
         imgObj.layerIdx = null;
@@ -37,7 +37,13 @@ layui.use(['jquery', 'layer', 'element', 'flow', 'upload'], function () {
             '<button class="layui-btn layui-btn-sm" id="hd-btn-close-image"><i class="layui-icon layui-icon-close"></i> 关闭图片管理</button></div>' +
             '<div id="hd-box-list-image"><div class="layui-fluid" style="padding: 10px;"><div class="layui-row" id="hd-load-image"></div></div></div>';
 
+        imgObj.btnClickOptionInit = false,
         imgObj.btnClickOption = function () {
+            if(imgObj.btnClickOptionInit){
+                return;
+            }
+            imgObj.btnClickOptionInit = true;
+
             $(document).on('click', '#hd-btn-add-folder', function () {
                 let promptCfg = $.extend({}, imgObj.openAlertCfg);
                 promptCfg.title = '请输入图片目录 <span class="layui-word-aux">只允许小写字母、数字、-</span>';
@@ -66,7 +72,6 @@ layui.use(['jquery', 'layer', 'element', 'flow', 'upload'], function () {
                 } else {
                     $('.hd-box-image').removeClass('active');
                 }
-                imgObj.imgSelected = [];
 
             }).on('click', '#hd-btn-select-image', function () {
                 if (imgObj.imgSelectCallback != null) {
@@ -78,6 +83,7 @@ layui.use(['jquery', 'layer', 'element', 'flow', 'upload'], function () {
                 }
 
             }).on('click', '.hd-box-image', function () {
+                console.log($(this).hasClass('active'));
                 if ($(this).hasClass('active')) {
                     $(this).removeClass('active');
                     for (let idx in imgObj.imgSelected) {
@@ -101,10 +107,8 @@ layui.use(['jquery', 'layer', 'element', 'flow', 'upload'], function () {
                 imgObj.folderImages = [];
                 imgObj.showFolderImage(folder);
                 imgObj.upload();
-            });
-
-            // 打开上传图片管理工具弹窗
-            $('.hd-btn-open-image').on('click', function () {
+            }).on('click', '.hd-btn-open-image', function () {
+                // 打开上传图片管理工具弹窗
                 imgObj.imgBoxIdx = $('.hd-btn-open-image').index($(this));
                 imgObj.imgSelected = [];
 
@@ -279,15 +283,14 @@ layui.use(['jquery', 'layer', 'element', 'flow', 'upload'], function () {
             $(imgObj.elem).each(function (idx) {
                 // 避免多次重复初始化操作元素
                 if ($.trim($(this).html()) != '') {
-                    imgObj.btnClickOption();
                     return;
                 }
 
                 let listImgId = 'list_img_' + idx;
                 let html = imgObj.initContent.replace('-LIST-IMG-ID-', listImgId).replace('-IMG-TPL-', '&nbsp;');
                 $(this).append(html);
-                imgObj.btnClickOption();
             });
+            imgObj.btnClickOption();
         };
     })(window.hdImg);
 });

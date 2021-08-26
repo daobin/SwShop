@@ -1,70 +1,74 @@
 <?php
 \App\Helper\TemplateHelper::widget('index', 'header', $widget_params ?? []);
+$cate_name = xss_text($cate_info['description']['category_name'] ?? '');
 ?>
     <div class="hd-height-15">&nbsp;</div>
     <div id="hd-crumb" class="container">
         <ol class="breadcrumb">
             <li><a href="/">Home</a></li>
-            <li class="active">Guitar</li>
+            <li class="active"><?php echo $cate_name;?></li>
         </ol>
     </div>
     <div class="container">
         <h2>
-            Guitar
-            <div class="btn-group pull-right">
-                <button class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                    Sort By: Relevance
-                    <span class="caret"></span>
-                </button>
-                <ul class="dropdown-menu">
-                    <li><a href="/"><i class="fa fa-thumbs-o-up text-danger"></i> Relevance</a></li>
-                    <li><a href="/"><i class="fa fa-dollar text-danger"></i> High to Low</a></li>
-                    <li><a href="/"><i class="fa fa-dollar text-danger"></i> Low to High</a></li>
-                </ul>
-            </div>
+            <?php echo $cate_name;?>
+            <?php if (!empty($sort_list)) { ?>
+                <div class="btn-group pull-right">
+                    <button class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                        Sort By: <?php echo $sort_list[$sort]['text'] ?? 'Relevance'; ?>
+                        <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <?php
+                        foreach ($sort_list as $sk => $sv) {
+                            if ($sk == $sort) {
+                                continue;
+                            }
+                            echo '<li><a href="?sort=', $sk, '"><i class="', $sv['icon'], ' text-danger"></i> ', $sv['text'], '</a></li>';
+                        }
+                        ?>
+                    </ul>
+                </div>
+            <?php } ?>
         </h2>
-        <div class="row hd-margin-top-bottom15">
-            <div class="col-md-3 hd-prod-box">
-                <div class="thumbnail">
-                    <a href="/prod-p1.html">
-                        <img src="https://sw-shop.oss-cn-hongkong.aliyuncs.com/sp_1/prod_img/gitar/5cca9f4f0701acbbe99de13236b249dc_300_300.jpg?1628158151?1628760297"/>
-                    </a>
-                    <div class="caption">
-                        <a href="/prod-p1.html" class="title"
-                           title="Glarry Brass Trumpet Bb with 7C Mouthpiece Black Silver Golden Glarry Brass Trumpet Bb with 7C Mouthpiece Black Silver Golden2">
-                            Glarry Brass Trumpet Bb with 7C Mouthpiece Black Silver Golden Glarry Brass Trumpet Bb with
-                            7C Mouthpiece Black Silver Golden
-                        </a>
-                        <div class="price">$99.99</div>
+        <?php if (!empty($prod_list)) { ?>
+            <div class="row hd-margin-top-bottom-60">
+                <?php
+                foreach ($prod_list as $prod_info) {
+                    $prod_link = $prod_info['product_url'] . '-p' . $prod_info['product_id'] . '.html';
+                    $prod_img = $oss_access_host . $prod_info['image_path'] . '/' . $prod_info['image_name'] . '?' . $prod_info['updated_at'];
+                    $prod_img = str_replace('_d_d', '_300_300', $prod_img);
+                    ?>
+                    <div class="col-md-3 hd-prod-box">
+                        <div class="thumbnail">
+                            <a href="/<?php echo $prod_link; ?>">
+                                <img alt="<?php echo xss_text($prod_info['product_name']); ?>"
+                                     src="<?php echo $prod_img; ?>"/>
+                            </a>
+                            <div class="caption">
+                                <a href="/<?php echo $prod_link; ?>" class="title"
+                                   title="<?php echo xss_text($prod_info['product_name']); ?>">
+                                    <?php echo xss_text($prod_info['product_name']); ?>
+                                </a>
+                                <div class="price"><?php echo format_price($prod_info['price'], $currency, 1, true); ?></div>
+                            </div>
+                        </div>
                     </div>
-                </div>
+                <?php } ?>
             </div>
-            <div class="col-md-3 hd-prod-box">
-                <div class="thumbnail">
-                    <a href="/">
-                        <img src="https://sw-shop.oss-cn-hongkong.aliyuncs.com/sp_1/prod_img/gitar/7e85d77b18a22f68e2e84e318fe8ea6a_300_300.jpg?1628158151?1628760297"/>
-                    </a>
-                    <div class="caption">
-                        <a href="/" class="title"
-                           title="Glarry Brass Trumpet Bb with 7C Mouthpiece Black Silver Golden Glarry Brass Trumpet Bb with 7C Mouthpiece Black Silver Golden2">
-                            Glarry Brass Trumpet Bb with 7C Mouthpiece Black Silver Golden Glarry Brass Trumpet Bb with
-                            7C Mouthpiece Black Silver Golden
-                        </a>
-                        <div class="price">$99.99</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            <ul class="pager">
-                <li class="previous">
-                    <a href="#"><span>&larr;</span> Previous</a>
-                </li>
-                <li class="next">
-                    <a href="#">Next <span>&rarr;</span></a>
-                </li>
-            </ul>
-        </div>
+            <?php
+            if ($page_total > 1) {
+                echo '<div class="row"><ul class="pager">';
+                if ($page > 1) {
+                    echo '<li class="previous"><a href="', $page_link, 'page=', $page - 1, '"><span>&larr;</span> Previous</a></li>';
+                }
+                if ($page_total > $page) {
+                    echo '<li class="next"><a href="', $page_link, 'page=', $page + 1, '">Next <span>&rarr;</span></a></li>';
+                }
+                echo '</ul></div>';
+            }
+        }
+        ?>
     </div>
 <?php
 \App\Helper\TemplateHelper::widget('index', 'footer', $widget_params ?? []);

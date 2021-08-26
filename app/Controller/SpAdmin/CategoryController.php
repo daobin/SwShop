@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace App\Controller\SpAdmin;
 
+use App\Biz\LanguageBiz;
 use App\Biz\ProductBiz;
 use App\Controller\Controller;
 use App\Helper\LanguageHelper;
@@ -21,7 +22,8 @@ class CategoryController extends Controller
         $cateTreeList = [];
         $prodBiz = new ProductBiz();
 
-        foreach ($this->langCodes as $idx => $langCode) {
+        $langCodes = (new LanguageBiz())->getLangCodes($this->shopId);
+        foreach ($langCodes as $idx => $langCode) {
             $cateTreeList[$idx] = [
                 [
                     'id' => 0 - $idx - 1,
@@ -32,7 +34,7 @@ class CategoryController extends Controller
             ];
         }
 
-        return $this->render(['lang_codes' => $this->langCodes, 'cate_tree_list' => $cateTreeList]);
+        return $this->render(['lang_codes' => $langCodes, 'cate_tree_list' => $cateTreeList]);
     }
 
     public function detail()
@@ -44,7 +46,7 @@ class CategoryController extends Controller
         $cateId = $this->get('cate_id', 0);
         $cateId = (int)$cateId;
         if ($cateId < 0) {
-            return LanguageHelper::get('invalid_request');
+            return LanguageHelper::get('invalid_request', $this->langCode);
         }
 
         $prodBiz = new ProductBiz();
@@ -52,7 +54,7 @@ class CategoryController extends Controller
             [
                 'category_name' => '顶级类目',
                 'product_category_id' => 0,
-                'children' => $prodBiz->getCategoryTree($this->shopId, 0, reset($this->langCodes), $cateId)
+                'children' => $prodBiz->getCategoryTree($this->shopId, 0, $this->langCode, $cateId)
             ]
         ];
 
@@ -72,7 +74,7 @@ class CategoryController extends Controller
             'cate_info' => $cateInfo,
             'cate_desc_list' => $cateDescList,
             'cate_tree_list' => $cateTreeList,
-            'lang_codes' => $this->langCodes,
+            'lang_codes' => (new LanguageBiz())->getLangCodes($this->shopId),
             'csrf_token' => (new SafeHelper($this->request, $this->response))->buildCsrfToken('BG', 'cate_' . $cateId)
         ]);
     }
@@ -98,13 +100,19 @@ class CategoryController extends Controller
         $reviewSize = $reviewSize > 0 ? $reviewSize : 0;
 
         $cateUrl = trim($cateUrl, '/');
+        $cateUrl = process_url_string($cateUrl);
+        if(empty($cateUrl)){
+            return ['status' => 'fail', 'msg' => '请输入类目 URL'];
+        }
+        if (filter_var($cateUrl, FILTER_VALIDATE_URL)) {
+            return ['status' => 'fail', 'msg' => '类目 URL 无效'];
+        }
         if (!empty($redirectLink) && !filter_var($redirectLink, FILTER_VALIDATE_URL)) {
             return ['status' => 'fail', 'msg' => '跳转链接无效'];
         }
 
-        $defaultLangCode = reset($this->langCodes);
-        if (empty($this->request->post['cate_name'][$defaultLangCode])) {
-            return ['status' => 'fail', 'msg' => '默认语言[' . strtoupper($defaultLangCode) . ']的类目名称不能为空'];
+        if (empty($this->request->post['cate_name'][$this->langCode])) {
+            return ['status' => 'fail', 'msg' => '默认语言[' . strtoupper($this->langCode) . ']的类目名称不能为空'];
         }
 
         $cateNameList = $this->request->post['cate_name'];
@@ -138,13 +146,13 @@ class CategoryController extends Controller
             $metaTitle = $metaTitleList[$langCode] ?? '';
             $metaKeywords = $metaKeywordsList[$langCode] ?? '';
             $metaDesc = $metaDescList[$langCode] ?? '';
-            if ($langCode != $defaultLangCode) {
-                $cateName = empty($cateName) ? $cateNameList[$defaultLangCode] : $cateName;
-                $cateDesc = empty($cateDesc) ? $cateDescList[$defaultLangCode] : $cateDesc;
-                $cateDescM = empty($cateDescM) ? $cateDescMList[$defaultLangCode] : $cateDescM;
-                $metaTitle = empty($metaTitle) ? $metaTitleList[$defaultLangCode] : $metaTitle;
-                $metaKeywords = empty($metaKeywords) ? $metaKeywordsList[$defaultLangCode] : $metaKeywords;
-                $metaDesc = empty($metaDesc) ? $metaDescList[$defaultLangCode] : $metaDesc;
+            if ($langCode != $this->langCode) {
+                $cateName = empty($cateName) ? $cateNameList[$this->langCode] : $cateName;
+                $cateDesc = empty($cateDesc) ? $cateDescList[$this->langCode] : $cateDesc;
+                $cateDescM = empty($cateDescM) ? $cateDescMList[$this->langCode] : $cateDescM;
+                $metaTitle = empty($metaTitle) ? $metaTitleList[$this->langCode] : $metaTitle;
+                $metaKeywords = empty($metaKeywords) ? $metaKeywordsList[$this->langCode] : $metaKeywords;
+                $metaDesc = empty($metaDesc) ? $metaDescList[$this->langCode] : $metaDesc;
             }
 
             $cateDescM = empty($cateDescM) ? $cateDesc : $cateDescM;

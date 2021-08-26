@@ -94,11 +94,14 @@ class BannerController extends Controller
                     return ['status' => 'fail', 'msg' => '图片 [' . ($sort + 1) . '] 跳转链接无效'];
                 }
 
+                $imageName = explode('?', basename($image));
+                $imageName = reset($imageName);
+
                 $data['image_list'][] = [
                     'banner_id' => $bannerId,
                     'shop_id' => $this->shopId,
                     'image_path' => str_replace($ossAccessHost, '', dirname($image)),
-                    'image_name' => basename($image),
+                    'image_name' => $imageName,
                     'sort' => $sort,
                     'is_new_window' => empty($isNewList[$sort]) ? 0 : 1,
                     'window_link' => $link,

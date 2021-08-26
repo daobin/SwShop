@@ -9,7 +9,7 @@
         </ol>
     </div>
     <div class="container">
-        <div class="row hd-margin-bottom30">
+        <div class="row hd-margin-bottom-30">
             <div class="col-md-6">
                 <form id="hd-form-register" action="/register.html" method="post" autocomplete="off">
                     <div class="form-group">

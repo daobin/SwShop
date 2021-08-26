@@ -82,6 +82,7 @@
                         }
                         },
                         {field: 'cate_level', title: '所属类目', align: 'center'},
+                        {field: 'price', title: '默认价格（<?php echo $currency_symbol;?>）', align: 'center'},
                         {field: 'last_operation', title: '最后操作', align: 'center'},
                         {fixed: 'right', width: '100', align: 'center', toolbar: '#operate'}
                     ]
@@ -103,9 +104,6 @@
                         });
                         layer.full(layer_idx);
                         break;
-                    case 'look':
-                        layer.alert('前台功能尚未完成，敬请等待', open_alert_cfg);
-                        break;
                 }
             });
 
@@ -120,7 +118,9 @@
     </script>
     <script type="text/html" id="operate">
         <i class="layui-icon layui-icon-edit" lay-event="edit"></i>
-        <i class="layui-icon layui-icon-release" lay-event="look"></i>
+        <a href="/{{d.product_url}}-p{{d.product_id}}.html" target="_blank">
+            <i class="layui-icon layui-icon-release" lay-event="look"></i>
+        </a>
     </script>
 <?php
 \App\Helper\TemplateHelper::widget('sp_admin', 'footer');

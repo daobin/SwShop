@@ -7,12 +7,61 @@
  */
 declare(strict_types=1);
 
+// URL 字串处理
+function process_url_string(string $url): string
+{
+    $url = trim($url);
+    $url = str_replace('_', '-', $url);
+    $url = preg_replace('/[^\w\d\-]+/', '-', $url);
+    $url = preg_replace('/[\-]+/', '-', $url);
+
+    return strtolower($url);
+}
+
+// 格式化价格
+function format_price(float $price, array $currency, int $qty = 1, bool $returnSymbol = false): string
+{
+    if (empty($currency['currency_code'])) {
+        return '0';
+    }
+
+    $symbolLeft = $currency['symbol_left'] ?? '';
+    $symbolRight = $currency['symbol_right'] ?? '';
+    $value = $currency['value'] ? (float)$currency['value'] : 0;
+    $decimalPlaces = $currency['decimal_places'] ? (int)$currency['decimal_places'] : 0;
+    $decimalPoint = $currency['decimal_point'] ?? '.';
+    $thousandsPoint = $currency['thousands_point'] ?? ',';
+
+    $price = round(($price * $value), $decimalPlaces) * $qty;
+    if ($returnSymbol === true) {
+        return $symbolLeft . number_format($price, $decimalPlaces, $decimalPoint, $thousandsPoint) . $symbolRight;
+    }
+
+    return number_format($price, $decimalPlaces, $decimalPoint, '');
+}
+
+// 格式化价格总额
+function format_price_total(float $price, array $currency): string
+{
+    if (empty($currency['currency_code'])) {
+        return '0';
+    }
+
+    $symbolLeft = $currency['symbol_left'] ?? '';
+    $symbolRight = $currency['symbol_right'] ?? '';
+    $decimalPlaces = $currency['decimal_places'] ? (int)$currency['decimal_places'] : 0;
+    $decimalPoint = $currency['decimal_point'] ?? '.';
+    $thousandsPoint = $currency['thousands_point'] ?? ',';
+
+    return $symbolLeft . number_format($price, $decimalPlaces, $decimalPoint, $thousandsPoint) . $symbolRight;
+}
+
 // XSS 防护
-function xss_text(string $text, bool $isLangCode = false): string
+function xss_text(string $text, string $langCode = ''): string
 {
     $text ??= '';
-    if ($isLangCode === true) {
-        $text = \App\Helper\LanguageHelper::get($text);
+    if (!empty($langCode)) {
+        $text = \App\Helper\LanguageHelper::get($text, $langCode);
     }
 
     return htmlspecialchars($text);
@@ -78,26 +127,4 @@ function chk_file_security_is_risk(string $filename): bool
     }
 
     return false;
-}
-
-namespace Oss\OssClient {
-    function is_resource($resource)
-    {
-        if (\Swoole\Runtime::getHookFlags() & SWOOLE_HOOK_CURL) {
-            return \is_resource($resource) || $resource instanceof \Swoole\Curl\Handler;
-        }
-
-        return \is_resource($resource);
-    }
-}
-
-namespace Oss\Http {
-    function is_resource($resource)
-    {
-        if (\Swoole\Runtime::getHookFlags() & SWOOLE_HOOK_CURL) {
-            return \is_resource($resource) || $resource instanceof \Swoole\Curl\Handler;
-        }
-
-        return \is_resource($resource);
-    }
 }

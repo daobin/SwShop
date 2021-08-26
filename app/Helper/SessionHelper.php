@@ -26,11 +26,11 @@ class SessionHelper
         $this->request = $request;
         $this->response = $response;
 
-        $redisCfgs = (new ConfigBiz())->getConfigListByGroup($request->shop_id, 'redis');
+        $redisCfgs = (new ConfigBiz())->getConfigListByGroup($request->shopId, 'redis');
         $redisCfgs = array_column($redisCfgs, 'config_value', 'config_key');
         $this->expire = $redisCfgs['REDIS_EXPIRE'] > 0 ? $redisCfgs['REDIS_EXPIRE'] : 1800;
 
-        $index = $request->shop_id % 10;
+        $index = $request->shopId % 10;
         $this->redis = (new RedisHelper())->openRedis($redisCfgs['REDIS_HOST'], $redisCfgs['REDIS_PORT'], $redisCfgs['REDIS_AUTH'], $index);
 
         $this->start();

@@ -68,10 +68,4 @@ class ConfigHelper
 
         return $value;
     }
-
-    public static function getLangCodes(): array
-    {
-        $langCodes = self::get('app.languages');
-        return !empty($langCodes) && is_array($langCodes) ? $langCodes : ['en'];
-    }
 }

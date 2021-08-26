@@ -35,6 +35,11 @@ layui.use(['jquery', 'layer'], function () {
         $(this).val(val);
     });
 
+    // Text to pwd
+    $(document).on('focus', '.hd-password', function () {
+        $(this).prop('type', 'password');
+    });
+
     // 关闭当前 iframe 弹出层
     $(document).on('click', '.hd-layer-close', function () {
         parent.layer.close(parent.layer.getFrameIndex(window.name));

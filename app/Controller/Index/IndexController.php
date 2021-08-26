@@ -7,14 +7,29 @@ declare(strict_types=1);
 
 namespace App\Controller\Index;
 
+use App\Biz\BannerBiz;
+use App\Biz\ConfigBiz;
+use App\Biz\ProductBiz;
 use App\Controller\Controller;
+use App\Helper\OssHelper;
 use App\Helper\SafeHelper;
 
 class IndexController extends Controller
 {
     public function index()
     {
-        return $this->render();
+        $loopBanner = (new BannerBiz())->getBannerByCode($this->shopId, 'index_main_loop');
+        $loopBanner = empty($loopBanner['banner_status']) || empty($loopBanner['image_list']) ? [] : $loopBanner['image_list'];
+
+        $featuredProds = (new ProductBiz())->getFeaturedProductList($this->shopId, $this->langCode, $this->warehouseCode);
+
+        $data = [
+            'oss_access_host' => (new OssHelper($this->shopId))->accessHost,
+            'loop_banner' => $loopBanner,
+            'featured_prods' => $featuredProds,
+            'index_bottom_text' => (new ConfigBiz())->getConfigByKey($this->shopId, 'INDEX_BOTTOM_TEXT')
+        ];
+        return $this->render($data);
     }
 
     public function login()
@@ -26,6 +41,12 @@ class IndexController extends Controller
             'login_tk' => $safeHelper->buildCsrfToken('IDX', 'login'),
         ];
         return $this->render($data);
+    }
+
+    public function logout()
+    {
+        $this->session->clear();
+        $this->response->redirect('/login.html');
     }
 
     public function pageNotFound()

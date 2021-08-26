@@ -26,7 +26,9 @@ class BannerBiz
             return [];
         }
 
-        return $this->dbHelper->table('banner')->where(['shop_id' => $shopId])->select();
+        $fields = ['banner_id', 'title', 'code', 'banner_status', 'updated_at', 'updated_by'];
+
+        return $this->dbHelper->table('banner')->where(['shop_id' => $shopId])->fields($fields)->select();
     }
 
     public function getBannerById(int $shopId, int $bannerId): array
@@ -35,15 +37,41 @@ class BannerBiz
             return [];
         }
 
-        $bannerInfo = $this->dbHelper->table('banner')->where(
-            ['shop_id' => $shopId, 'banner_id' => $bannerId])->find();
+        $fields = ['banner_id', 'title', 'code', 'banner_status', 'updated_at', 'updated_by'];
+        $bannerInfo = $this->dbHelper->table('banner')->where(['shop_id' => $shopId, 'banner_id' => $bannerId])
+            ->fields($fields)->find();
         if (empty($bannerInfo)) {
             return [];
         }
 
+        $fields = ['banner_image_id', 'banner_id', 'image_path', 'image_name', 'sort', 'is_new_window', 'window_link', 'updated_at', 'updated_by'];
         $bannerInfo['image_list'] = $this->dbHelper->table('banner_image')->where(
             ['shop_id' => $shopId, 'banner_id' => $bannerId])
-            ->orderBy(['sort' => 'asc'])->select();
+            ->fields($fields)->orderBy(['sort' => 'asc'])->select();
+        if (!empty($bannerInfo['image_list'])) {
+            $bannerInfo['image_list'] = array_column($bannerInfo['image_list'], null, 'sort');
+        }
+
+        return $bannerInfo;
+    }
+
+    public function getBannerByCode(int $shopId, string $code): array
+    {
+        if ($shopId <= 0 || empty($code)) {
+            return [];
+        }
+
+        $fields = ['banner_id', 'title', 'code', 'banner_status', 'updated_at', 'updated_by'];
+        $bannerInfo = $this->dbHelper->table('banner')->where(['shop_id' => $shopId, 'code' => $code])
+            ->fields($fields)->find();
+        if (empty($bannerInfo)) {
+            return [];
+        }
+
+        $fields = ['banner_image_id', 'banner_id', 'image_path', 'image_name', 'sort', 'is_new_window', 'window_link', 'updated_at', 'updated_by'];
+        $bannerInfo['image_list'] = $this->dbHelper->table('banner_image')->where(
+            ['shop_id' => $shopId, 'banner_id' => $bannerInfo['banner_id']])
+            ->fields($fields)->orderBy(['sort' => 'asc'])->select();
         if (!empty($bannerInfo['image_list'])) {
             $bannerInfo['image_list'] = array_column($bannerInfo['image_list'], null, 'sort');
         }

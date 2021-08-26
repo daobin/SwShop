@@ -28,7 +28,8 @@
       "App\\": "app/"
     },
     "files": [
-      "app/function.php"
+      "app/function.php",
+      "app/conflict.php"
     ]
   },
   "require-dev": {

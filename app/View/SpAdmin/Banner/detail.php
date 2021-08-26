@@ -2,7 +2,7 @@
 \App\Helper\TemplateHelper::widget('sp_admin', 'header', ['show_top_line' => false, 'timestamp' => $timestamp ?? '']);
 ?>
     <div class="layui-fluid">
-        <form class="layui-form hd-margin-top30" method="post" autocomplete="off">
+        <form class="layui-form hd-margin-top-30" method="post" autocomplete="off">
             <div class="layui-form-item">
                 <label class="layui-form-label">广告项目</label>
                 <div class="layui-input-block">
@@ -37,8 +37,9 @@
                             <div class="layui-col-xs9" id="list_img_0">
                                 <?php
                                 if (!empty($banner_info['image_list'])) {
-                                    foreach ($banner_info['image_list'] as $sort => $image_info) {
-                                        $image_src = $oss_access_host . $image_info['image_path'] . '/' . $image_info['image_name'];
+                                    $sort = 0;
+                                    foreach ($banner_info['image_list'] as $image_info) {
+                                        $image_src = $oss_access_host . $image_info['image_path'] . '/' . $image_info['image_name'] . '?' . $image_info['updated_at'];
                                         ?>
                                         <div class="layui-row hd-padding-bottom30">
                                             <div class="layui-col-xs3">
@@ -51,8 +52,9 @@
                                                 <div class="layui-form-item">
                                                     <label class="layui-form-label">跳转链接</label>
                                                     <div class="layui-input-block">
-                                                        <input type="text" class="layui-input"
+                                                        <input type="text" class="layui-input" maxlength="500"
                                                                name="link[<?php echo $sort; ?>]"
+                                                               placeholder="包含请求协议和域名内在的完整链接"
                                                                value="<?php echo xss_text($image_info['window_link']); ?>"/>
                                                     </div>
                                                 </div>
@@ -76,6 +78,7 @@
                                             </div>
                                         </div>
                                         <?php
+                                        $sort++;
                                     }
                                 }
                                 ?>
@@ -89,7 +92,7 @@
                     </div>
                 </div>
             </div>
-            <div class="layui-form-item hd-margin-top30">
+            <div class="layui-form-item" id="hd-bottom-options">
                 <div class="layui-input-block">
                     <input type="hidden" name="hash_tk" value="<?php echo $csrf_token; ?>"/>
                     <input class="layui-btn" type="submit" lay-submit lay-filter="banner_edit"
@@ -103,14 +106,15 @@
     <script type="text/html" id="tpl_img_info">
         <div class="layui-row hd-padding-bottom30">
             <div class="layui-col-xs3">
-                <input type="hidden" name="image_list[0]" value="-IMG-SRC-"/>
+                <input type="hidden" name="image_list[-IDX-]" value="-IMG-SRC-"/>
                 <img style="display: block; width: 100%;" src="-IMG-SRC-"/>
             </div>
             <div class="layui-col-xs9">
                 <div class="layui-form-item">
                     <label class="layui-form-label">跳转链接</label>
                     <div class="layui-input-block">
-                        <input type="text" class="layui-input" name="link[0]" value=""/>
+                        <input type="text" class="layui-input" name="link[-IDX-]" maxlength="500"
+                               placeholder="包含请求协议和域名内在的完整链接"/>
                     </div>
                 </div>
                 <div class="layui-form-item">
@@ -118,9 +122,9 @@
                     <div class="layui-input-block">
                         <?php
                         if (empty($banner_info['is_new_window'])) {
-                            echo '<input type="checkbox" name="is_new[0]" lay-skin="switch" lay-text="是|否"/>';
+                            echo '<input type="checkbox" name="is_new[-IDX-]" lay-skin="switch" lay-text="是|否"/>';
                         } else {
-                            echo '<input type="checkbox" name="is_new[0]" lay-skin="switch" lay-text="是|否" checked/>';
+                            echo '<input type="checkbox" name="is_new[-IDX-]" lay-skin="switch" lay-text="是|否" checked/>';
                         }
                         ?>
                     </div>
@@ -153,7 +157,7 @@
                         }
 
                         if ($('#list_img_' + hdImg.imgBoxIdx + ' img[src="' + hdImg.imgSelected[idx] + '"]').length == 0) {
-                            let imgHtml = $.trim($('#tpl_img_info').html()).replaceAll('[0]', '[' + hdImg.imgBoxIdx + ']');
+                            let imgHtml = $.trim($('#tpl_img_info').html()).replaceAll('-IDX-', $('#list_img_' + hdImg.imgBoxIdx + ' img').length);
                             $('#list_img_' + hdImg.imgBoxIdx).append(imgHtml.replaceAll('-IMG-SRC-', hdImg.imgSelected[idx]));
                         }
                     }

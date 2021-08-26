@@ -8,7 +8,7 @@
     <title>Hello Sw Shop</title>
     <link rel="stylesheet" href="/static/bootstrap/css/bootstrap.css"/>
     <style>
-        .error-pic img {
+        body img {
             position: absolute;
             top: 100px;
             left: 0;
@@ -16,7 +16,7 @@
             margin: auto;
         }
 
-        .error-pic h5 {
+        body h5 {
             position: absolute;
             top: 500px;
             left: 0;
@@ -27,7 +27,7 @@
             font-weight: bold;
         }
 
-        .error-pic a {
+        body a {
             position: absolute;
             top: 600px;
             left: 0;
@@ -40,10 +40,21 @@
     </style>
 </head>
 <body>
-<div class="error-pic">
+<div id="error">
     <img src="/static/index/default/404.png"/>
     <h5 class="text-muted">ERROR 404 - Page Not Found</h5>
-    <a href="/" class="text-primary">Back to home</a>
 </div>
+<script>
+    if (self == top) {
+        var a = document.createElement('a');
+        a.href = '/';
+        a.class = 'text-primary';
+
+        var n = document.createTextNode('Back to home');
+        a.appendChild(n);
+
+        document.getElementById('error').appendChild(a);
+    }
+</script>
 </body>
 </html>

@@ -27,8 +27,9 @@ class ConfigBiz
             return [];
         }
 
-        return $this->dbHelper->table('config')->where(
-            ['shop_id' => $shopId, 'config_group' => $group])->select();
+        $fields = ['config_id', 'config_group', 'config_key', 'config_value', 'value_type', 'config_name', 'updated_at', 'updated_by'];
+        return $this->dbHelper->table('config')->where(['shop_id' => $shopId, 'config_group' => $group])
+            ->fields($fields)->select();
     }
 
     public function getConfigByKey(int $shopId, string $key): array
@@ -38,8 +39,9 @@ class ConfigBiz
             return [];
         }
 
-        return $this->dbHelper->table('config')->where(
-            ['shop_id' => $shopId, 'config_key' => $key])->find();
+        $fields = ['config_id', 'config_group', 'config_key', 'config_value', 'value_type', 'config_name', 'updated_at', 'updated_by'];
+        return $this->dbHelper->table('config')->where(['shop_id' => $shopId, 'config_key' => $key])
+            ->fields($fields)->find();
     }
 
     public function updateConfigByKey(int $shopId, string $key, array $data): int

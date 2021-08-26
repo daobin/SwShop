@@ -117,12 +117,13 @@
                 <div class="layui-form-mid layui-word-aux">排序由小到大，不填则默认为0</div>
             </div>
             <div class="layui-form-item">
-                <label class="layui-form-label">商品 URL</label>
-                <div class="layui-input-block">
+                <label class="layui-form-label">商品 URL <span class="hd-color-red">*</span></label>
+                <div class="layui-input-inline">
                     <input type="text" class="layui-input" name="prod_url" maxlength="100"
                            placeholder="不含请求协议和域名部分"
                            value="<?php echo $prod_info['product_url'] ?? ''; ?>"/>
                 </div>
+                <div class="layui-form-mid layui-word-aux">用于 SEO 优化</div>
             </div>
             <div class="layui-form-item">
                 <label class="layui-form-label">商品重量</label>
@@ -195,7 +196,7 @@
             <div class="layui-form-item">
                 <label class="layui-form-label">
                     添加 SKU
-                    <i class="layui-icon layui-icon-add-circle hd-cursor-pointer hd-color-blue hd-font-size18"
+                    <i class="layui-icon layui-icon-add-circle hd-cursor-pointer hd-color-blue hd-font-size-18"
                        id="btn_add_sku"></i>
                 </label>
                 <div class="layui-input-block" style="max-height: 600px; overflow-y: scroll;">
@@ -219,14 +220,12 @@
                     </div>
                 </div>
             </div>
-            <div class="layui-form-item hd-margin-top30">
-                <div class="layui-input-block">
-                    <input type="hidden" name="hash_tk" value="<?php echo $csrf_token; ?>"/>
-                    <input class="layui-btn" type="submit" lay-submit lay-filter="prod_edit"
-                           value="<?php echo xss_text('save', true); ?>"/>
-                    <input class="layui-btn layui-btn-primary hd-layer-close" type="button"
-                           value="<?php echo xss_text('cancel', true); ?>"/>
-                </div>
+            <div class="layui-form-item" id="hd-bottom-options">
+                <input type="hidden" name="hash_tk" value="<?php echo $csrf_token; ?>"/>
+                <input class="layui-btn" type="submit" lay-submit lay-filter="prod_edit"
+                       value="<?php echo xss_text('save', true); ?>"/>
+                <input class="layui-btn layui-btn-primary hd-layer-close" type="button"
+                       value="<?php echo xss_text('cancel', true); ?>"/>
             </div>
         </form>
     </div>

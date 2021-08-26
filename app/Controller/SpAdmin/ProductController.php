@@ -10,8 +10,10 @@ declare(strict_types=1);
 namespace App\Controller\SpAdmin;
 
 use App\Biz\ConfigBiz;
+use App\Biz\LanguageBiz;
 use App\Biz\ProductBiz;
 use App\Biz\UploadBiz;
+use App\Biz\WarehouseBiz;
 use App\Controller\Controller;
 use App\Helper\ConfigHelper;
 use App\Helper\LanguageHelper;
@@ -27,7 +29,7 @@ class ProductController extends Controller
         if ($this->request->isAjax) {
             $condition = [
                 'shop_id' => $this->shopId,
-                'language_code' => reset($this->langCodes)
+                'language_code' => $this->langCode
             ];
 
             $cateId = $this->get('category_id');;
@@ -40,10 +42,9 @@ class ProductController extends Controller
                 $condition['product_status'] = $prodStatus;
             }
 
-            $orderBy = [];
             $page = $this->request->get['page'] ?? 1;
             $pageSize = $this->request->get['limit'] ?? 10;
-            $prodList = $prodBiz->getProductList($condition, $orderBy, (int)$page, (int)$pageSize);
+            $prodList = $prodBiz->getProductList($condition, [], (int)$page, (int)$pageSize);
 
             return [
                 'code' => 0,
@@ -52,9 +53,15 @@ class ProductController extends Controller
             ];
         }
 
+        $currencySymbol = '';
+        if($this->currency){
+            $currencySymbol = $this->currency['symbol_left'].$this->currency['symbol_right'];
+        }
+
         return $this->render([
-            'cate_tree_list' => $prodBiz->getCategoryTree($this->shopId, 0, reset($this->langCodes)),
-            'product_status_arr' => ConfigHelper::get('product.product_status')
+            'cate_tree_list' => $prodBiz->getCategoryTree($this->shopId, 0, $this->langCode),
+            'product_status_arr' => ConfigHelper::get('product.product_status'),
+            'currency_symbol' => $currencySymbol
         ]);
     }
 
@@ -79,8 +86,9 @@ class ProductController extends Controller
         $weightUnits = $weightUnits['config_value'] ?? [];
         $sizeUnits = $cfgBiz->getConfigByKey($this->shopId, 'SIZE_UNIT');
         $sizeUnits = $sizeUnits['config_value'] ?? [];
-        $warehouses = $cfgBiz->getConfigByKey($this->shopId, 'WAREHOUSE');
-        $warehouses = $warehouses['config_value'] ?? [];
+
+        $warehouses = (new WarehouseBiz())->getWarehouseList($this->shopId);
+        $warehouses = $warehouses ? array_column($warehouses, 'warehouse_name', 'warehouse_code') : ['-' => '无仓库模式'];
 
         return $this->render([
             'prod_info' => $prodInfo,
@@ -91,9 +99,9 @@ class ProductController extends Controller
             'weight_units' => $weightUnits,
             'size_units' => $sizeUnits,
             'warehouses' => $warehouses,
-            'cate_tree_list' => $prodBiz->getCategoryTree($this->shopId, 0, reset($this->langCodes)),
+            'cate_tree_list' => $prodBiz->getCategoryTree($this->shopId, 0, $this->langCode),
             'upload_folders' => (new UploadBiz())->getFolderArr($this->shopId),
-            'lang_codes' => $this->langCodes,
+            'lang_codes' => (new LanguageBiz())->getLangCodes($this->shopId),
             'csrf_token' => (new SafeHelper($this->request, $this->response))->buildCsrfToken('BG', 'prod_' . $prodId)
         ]);
     }
@@ -129,7 +137,11 @@ class ProductController extends Controller
             return ['status' => 'fail', 'msg' => '请选择商品分类'];
         }
         $prodUrl = trim($prodUrl, '/');
-        if (!empty($prodUrl) && filter_var($prodUrl, FILTER_VALIDATE_URL)) {
+        $prodUrl = process_url_string($prodUrl);
+        if (empty($prodUrl)) {
+            return ['status' => 'fail', 'msg' => '请输入商品 URL'];
+        }
+        if (filter_var($prodUrl, FILTER_VALIDATE_URL)) {
             return ['status' => 'fail', 'msg' => '商品 URL 无效'];
         }
         if ($weight > 0 && empty($weightUnit)) {
@@ -145,7 +157,7 @@ class ProductController extends Controller
             'product_id' => $prodId,
             'product_category_id' => $cateId,
             'product_status' => $prodStatus,
-            'product_url' => empty($prodUrl) ? '' : '/' . $prodUrl,
+            'product_url' => $prodUrl,
             'sort' => $prodSort,
             'weight' => $weight,
             'weight_unit' => $weightUnit,
@@ -177,11 +189,15 @@ class ProductController extends Controller
                         $price = empty($datum['price'][$warehouse]) ? 0 : (float)$datum['price'][$warehouse];
                         $listPrice = empty($datum['list_price'][$warehouse]) ? 0 : (float)$datum['list_price'][$warehouse];
 
+                        if ($price <= 0) {
+                            return ['status' => 'fail', 'msg' => 'SKU [' . $sku . '] 销售价必须大于0'];
+                        }
                         if ($price > $listPrice && $listPrice > 0) {
                             return ['status' => 'fail', 'msg' => 'SKU [' . $sku . '] 销售价不能大于市场价'];
                         }
 
-                        $qtyPriceData[] = [
+                        $warehouse = strtoupper($warehouse);
+                        $qtyPriceData[$warehouse] = [
                             'shop_id' => $this->shopId,
                             'product_id' => $prodId,
                             'sku' => $sku,
@@ -202,7 +218,8 @@ class ProductController extends Controller
                 // 商品图片
                 $imgData = [];
                 if (!empty($datum['image']) && is_array($datum['image']) && !empty(reset($datum['image']))) {
-                    foreach ($datum['image'] as $sort => $image) {
+                    $imgSort = 0;
+                    foreach ($datum['image'] as $image) {
                         $imageName = explode('?', basename($image));
                         $imageName = preg_replace('/_\d+_\d+/', '_d_d', reset($imageName));
 
@@ -211,7 +228,7 @@ class ProductController extends Controller
                             'sku' => $sku,
                             'image_path' => str_replace($ossAccessHost, '', dirname($image)),
                             'image_name' => $imageName,
-                            'sort' => $sort,
+                            'sort' => $imgSort++,
                             'created_at' => $time,
                             'created_by' => $this->operator,
                             'updated_at' => $time,
@@ -241,9 +258,8 @@ class ProductController extends Controller
         }
 
         // 商品描述信息
-        $defaultLangCode = reset($this->langCodes);
-        if (empty($this->request->post['prod_name'][$defaultLangCode])) {
-            return ['status' => 'fail', 'msg' => '默认语言 [' . strtoupper($defaultLangCode) . '] 的商品名称不能为空'];
+        if (empty($this->request->post['prod_name'][$this->langCode])) {
+            return ['status' => 'fail', 'msg' => '默认语言 [' . strtoupper($this->langCode) . '] 的商品名称不能为空'];
         }
 
         $prodNameList = $this->request->post['prod_name'];
@@ -261,13 +277,13 @@ class ProductController extends Controller
             $metaTitle = $metaTitleList[$langCode] ?? '';
             $metaKeywords = $metaKeywordsList[$langCode] ?? '';
             $metaDesc = $metaDescList[$langCode] ?? '';
-            if ($langCode != $defaultLangCode) {
-                $prodName = empty($prodName) ? $prodNameList[$defaultLangCode] : $prodName;
-                $prodDesc = empty($prodDesc) ? $prodDescList[$defaultLangCode] : $prodDesc;
-                $prodDescM = empty($prodDescM) ? $prodDescMList[$defaultLangCode] : $prodDescM;
-                $metaTitle = empty($metaTitle) ? $metaTitleList[$defaultLangCode] : $metaTitle;
-                $metaKeywords = empty($metaKeywords) ? $metaKeywordsList[$defaultLangCode] : $metaKeywords;
-                $metaDesc = empty($metaDesc) ? $metaDescList[$defaultLangCode] : $metaDesc;
+            if ($langCode != $this->langCode) {
+                $prodName = empty($prodName) ? $prodNameList[$this->langCode] : $prodName;
+                $prodDesc = empty($prodDesc) ? $prodDescList[$this->langCode] : $prodDesc;
+                $prodDescM = empty($prodDescM) ? $prodDescMList[$this->langCode] : $prodDescM;
+                $metaTitle = empty($metaTitle) ? $metaTitleList[$this->langCode] : $metaTitle;
+                $metaKeywords = empty($metaKeywords) ? $metaKeywordsList[$this->langCode] : $metaKeywords;
+                $metaDesc = empty($metaDesc) ? $metaDescList[$this->langCode] : $metaDesc;
             }
 
             $prodDescM = empty($prodDescM) ? $prodDesc : $prodDescM;

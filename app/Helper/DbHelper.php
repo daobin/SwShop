@@ -123,7 +123,32 @@ class DbHelper
         $selectFields = '`' . implode('`, `', $fields) . '`';
         $selectFields = str_replace(['`*`', '.'], ['*', '`.`'], $selectFields);
 
-        $this->sqlBuild['fields'] = $selectFields;
+        if (empty($this->sqlBuild['fields'])) {
+            $this->sqlBuild['fields'] = $selectFields;
+        } else {
+            $this->sqlBuild['fields'] .= ', ' . $selectFields;
+        }
+        return $this;
+    }
+
+    public function sum(array $fields)
+    {
+        if (empty($fields)) {
+            return $this;
+        }
+
+        array_walk($fields, function (&$field) {
+            $field = str_replace('.', '`.`', $field);
+            $field = 'sum(`' . $field . '`)';
+        });
+
+        $fields = implode(', ', $fields);
+        if (empty($this->sqlBuild['fields'])) {
+            $this->sqlBuild['fields'] = $fields;
+        } else {
+            $this->sqlBuild['fields'] .= ', ' . $fields;
+        }
+
         return $this;
     }
 
@@ -191,6 +216,14 @@ class DbHelper
     public function page(int $page = 1, int $pageSize = 10)
     {
         return $this->limit(($page - 1) * $pageSize, $pageSize);
+    }
+
+    public function count(){
+        $this->sqlBuild['fields'] = 'count(*) as `cnt`';
+        $preData = $this->buildSql('select');
+        $this->stmt->execute($preData);
+        $result = $this->stmt->fetch(\PDO::FETCH_ASSOC);
+        return $result['cnt'] ?? 0;
     }
 
     public function select()
@@ -303,7 +336,7 @@ class DbHelper
         return $result;
     }
 
-    private function buildWhere()
+    private function buildWhere($buildType)
     {
         $preSql = '';
         $preData = [];
@@ -318,7 +351,11 @@ class DbHelper
                     switch (strtolower($opt)) {
                         case 'in':
                             $inSql = '`' . $field . '` in (%s)';
-                            $where[] = sprintf($inSql, implode(', ', array_fill(0, count($value), '?')));
+                            if (empty($value)) {
+                                $where[] = sprintf($inSql, '?');
+                            } else {
+                                $where[] = sprintf($inSql, implode(', ', array_fill(0, count($value), '?')));
+                            }
                             break;
                         default:
                             $where[] = '`' . $field . '` ' . $opt . ' ?';
@@ -328,8 +365,12 @@ class DbHelper
                 }
 
                 if (is_array($value)) {
-                    foreach ($value as $val) {
-                        $preData[] = $val;
+                    if (empty($value)) {
+                        $preData[] = '0';
+                    } else {
+                        foreach ($value as $val) {
+                            $preData[] = $val;
+                        }
                     }
                 } else {
                     $preData[] = $value;
@@ -360,7 +401,9 @@ class DbHelper
 
         }
 
-        if (empty($preSql) || empty($preData)) {
+        if ($buildType == 'SELECT') {
+            $preSql = empty($preSql) ? '1' : $preSql;
+        } else if (empty($preSql) || empty($preData)) {
             throw new \PDOException('SQL: Condition Build Invalid');
         }
 
@@ -387,7 +430,7 @@ class DbHelper
                 if (empty($this->sqlBuild['fields'])) {
                     $this->sqlBuild['fields'] = '*';
                 }
-                list($preSql, $preData) = $this->buildWhere();
+                list($preSql, $preData) = $this->buildWhere($buildType);
                 $preSql = 'SELECT ' . $this->sqlBuild['fields'] . ' FROM ' . $this->sqlBuild['table'] . ' %s WHERE ' . $preSql;
 
                 $joinSql = '';
@@ -425,12 +468,12 @@ class DbHelper
                 }
                 $setSql = trim($setSql, ', ');
 
-                list($preSql, $preData) = $this->buildWhere();
+                list($preSql, $preData) = $this->buildWhere($buildType);
                 $preData = array_merge($setData, $preData);
                 $preSql = 'UPDATE ' . $this->sqlBuild['table'] . ' SET ' . $setSql . ' WHERE ' . $preSql;
                 break;
             case 'DELETE':
-                list($preSql, $preData) = $this->buildWhere();
+                list($preSql, $preData) = $this->buildWhere($buildType);
                 $preSql = 'DELETE FROM ' . $this->sqlBuild['table'] . ' WHERE ' . $preSql;
                 break;
             case 'INSERT':
