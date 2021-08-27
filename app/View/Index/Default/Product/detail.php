@@ -1,67 +1,125 @@
 <?php
 \App\Helper\TemplateHelper::widget('index', 'header', $widget_params ?? []);
+$default_sku = reset($sku_arr);
+$first_img_src = '';
 ?>
     <div class="hd-height-15">&nbsp;</div>
     <div id="hd-crumb" class="container">
         <ol class="breadcrumb">
             <li><a href="/">Home</a></li>
-            <li><a href="/guitar-c1.html">Guitar</a></li>
-            <li class="active">My Guitar</li>
+            <?php
+            $cate_name = '';
+            if (!empty($cate_level)) {
+                foreach ($cate_level as $level_info) {
+                    $level_name = xss_text($level_info['category_name']);
+                    if ($prod_info['product_category_id'] == $level_info['product_category_id']) {
+                        $cate_name = $level_name;
+                        break;
+                    }
+
+                    $cate_link = $level_info['category_url'] . '-c' . $level_info['product_category_id'] . '.html';
+                    echo '<li><a href="/', $cate_link, '">', $level_name, '</a></li>';
+                }
+            }
+            ?>
+            <li class="active"><?php echo $cate_name; ?></li>
         </ol>
     </div>
     <div class="container hd-margin-top-30">
         <div class="row">
             <div class="col-md-6">
-                <div id="hd-main-image-loop" class="carousel">
-                    <div class="carousel-inner">
-                        <div class="item active">
-                            <img src="https://sw-shop.oss-cn-hongkong.aliyuncs.com/sp_1/prod_img/gitar/5cca9f4f0701acbbe99de13236b249dc_800_800.jpg?1628158151"/>
-                        </div>
-                        <div class="item">
-                            <img src="https://sw-shop.oss-cn-hongkong.aliyuncs.com/sp_1/prod_img/gitar/7e85d77b18a22f68e2e84e318fe8ea6a_800_800.jpg?1628158151"/>
-                        </div>
-                    </div>
+                <?php if (!empty($sku_img_list[$default_sku])) { ?>
+                    <div id="hd-main-image-loop" class="carousel">
+                        <div class="carousel-inner">
+                            <?php
+                            foreach ($sku_img_list[$default_sku] as $sku_img) {
+                                $img_src = $oss_access_host . $sku_img['image_path'] . '/' . $sku_img['image_name'] . '?' . $sku_img['updated_at'];
+                                $img_src = str_replace('_d_d', '_800_800', $img_src);
+                                echo '<div class="item ', ($first_img_src ? '' : ' active '), '">';
+                                echo '<img src="', $img_src, '"/>';
+                                echo '</div>';
 
-                    <a class="left carousel-control" data-slide="prev" href="#hd-main-image-loop">
-                        <span class="glyphicon glyphicon-chevron-left"></span>
-                        <span class="sr-only">Previous</span>
-                    </a>
-                    <a class="right carousel-control" data-slide="next" href="#hd-main-image-loop">
-                        <span class="glyphicon glyphicon-chevron-right"></span>
-                        <span class="sr-only">Next</span>
-                    </a>
-                </div>
+                                $first_img_src = $first_img_src ? $first_img_src : $img_src;
+                            }
+                            ?>
+                        </div>
+
+                        <a class="left carousel-control" data-slide="prev" href="#hd-main-image-loop">
+                            <span class="glyphicon glyphicon-chevron-left"></span>
+                            <span class="sr-only">Previous</span>
+                        </a>
+                        <a class="right carousel-control" data-slide="next" href="#hd-main-image-loop">
+                            <span class="glyphicon glyphicon-chevron-right"></span>
+                            <span class="sr-only">Next</span>
+                        </a>
+                    </div>
+                <?php } ?>
             </div>
             <div class="col-md-6" id="hd-prod-info">
                 <div class="hd-margin-top-30 visible-xs visible-sm">&nbsp;</div>
                 <h1><?php echo xss_text($prod_info['desc']['product_name'] ?? ''); ?></h1>
                 <div class="row hd-margin-top-30">
                     <div class="col-md-3 hd-font-weight-bold">SKU :</div>
-                    <div class="col-md-9"><?php echo xss_text($prod_info['sku'] ?? '-- GT0001'); ?></div>
+                    <div class="col-md-9 hd-sku"><?php echo $default_sku; ?></div>
                 </div>
                 <div class="row hd-margin-top-30">
                     <div class="col-md-3 hd-font-weight-bold">Ship From :</div>
                     <div class="col-md-9">US Warehouse (Arrivals in 5-7 business days)</div>
                 </div>
+                <?php
+                if (!empty($sku_arr)) {
+                    echo '<div class="row hd-margin-top-30" id="hd-sku-img-select">';
+                    foreach ($sku_arr as $sku) {
+                        if (empty($sku_img_list[$sku])) {
+                            continue;
+                        }
+
+                        $sku_img = reset($sku_img_list[$sku]);
+                        $img_src = $oss_access_host . $sku_img['image_path'] . '/' . $sku_img['image_name'] . '?' . $sku_img['updated_at'];
+                        $img_src = str_replace('_d_d', '_100_100', $img_src);
+                        if ($sku == $default_sku) {
+                            echo '<img class="active" data-sku="', $sku, '" src="', $img_src, '" />';
+                        } else {
+                            echo '<img data-sku="', $sku, '" src="', $img_src, '" />';
+                        }
+                    }
+                    echo '</div>';
+                }
+                ?>
                 <div class="row hd-margin-top-30">
                     <div class="col-md-12 hd-prod-box">
-                        <span class="price hd-display-inline-block hd-margin-right-15">$149.99</span>
-                        <span class="origin hd-display-inline-block hd-margin-right-15">&nbsp;$299.99&nbsp;</span>
-                        <span class="off hd-display-inline-block hd-margin-right-15">50% OFF</span>
+                        <?php
+                        $qty = 0;
+                        if (!empty($sku_qty_price_list[$default_sku]['price'])) {
+                            $qty = (int)$sku_qty_price_list[$default_sku]['qty'];
+
+                            echo '<span class="price hd-display-inline-block hd-margin-right-15">';
+                            echo $sku_qty_price_list[$default_sku]['price_text'], '</span>';
+
+                            if ($sku_qty_price_list[$default_sku]['price_off']) {
+                                echo '<span class="origin hd-display-inline-block hd-margin-right-15">&nbsp;';
+                                echo $sku_qty_price_list[$default_sku]['list_price_text'] . '&nbsp;</span>';
+
+                                echo '<span class="off hd-display-inline-block hd-margin-right-15">';
+                                echo $sku_qty_price_list[$default_sku]['price_off'], '</span>';
+                            }
+                        }
+                        ?>
                     </div>
                 </div>
                 <div class="row hd-margin-top-30">
                     <div class="col-md-4">
                         <div class="input-group hd-width-150">
                             <div class="btn input-group-addon hd-prod-qty-minus">-</div>
-                            <input type="text" class="form-control hd-prod-qty-val text-center" value="1"/>
-                            <div class="btn input-group-addon hd-prod-qty-plus">+</div>
+                            <input type="text" id="hd-prod-qty-val" class="form-control hd-prod-qty-val text-center"
+                                   data-qty="<?php echo $qty; ?>" data-val="1" value="1"/>
+                            <div class="btn input-group-addon hd-prod-qty-plus" data-qty="<?php echo $qty; ?>">+</div>
                         </div>
                     </div>
                 </div>
                 <div class="row hd-margin-top-30">
                     <div class="col-md-4">
-                        <button class="btn btn-lg btn-warning hd-add-to-cart">Add To Cart</button>
+                        <button class="btn btn-lg btn-warning" id="hd-add-to-cart">Add To Cart</button>
                     </div>
                 </div>
             </div>
@@ -73,26 +131,8 @@
                     <li><a>Shipping & Payment</a></li>
                 </ul>
             </div>
-            <div id="hd-prod-desc" class="hd-prod-detail-content">
-                <h3>Introductions:</h3>
-                <p>
-                    The newly upgraded Glarry GP Ⅱ Electric Bass features a premium Basswood body alongside a Hard Maple
-                    neck and fingerboard.
-                    Other improvements include upgraded Split Single-Coil pickup, upgraded bass strings and a Bone nut.
-                    It is an awesome and affordable classic bass guitar priced
-                    for beginners and music lovers. Out of the box, the upgraded GP Ⅱ will have you playing in the
-                    bedroom, the studio or the stage in no time.
-                </p>
-                <p>
-                    <img src="https://www.glarrymusic.com/up/f_attachment/product/G17000088/G17000088-16.jpg"/>
-                </p>
-                <p>
-                    <img src="https://www.glarrymusic.com/up/f_attachment/product/G17000088/G17000088-13.jpg"/>
-                </p>
-                <p>
-                    <img src="https://www.glarrymusic.com/up/f_attachment/product/G17000088/G17000088-18.jpg"/>
-                </p>
-            </div>
+            <div id="hd-prod-desc"
+                 class="hd-prod-detail-content"><?php echo $prod_info['desc']['product_description'] ?? ''; ?></div>
             <div id="hd-shipping-payment" class="hd-prod-detail-content hd-margin-top-bottom-60">
                 <h3>Shipping</h3>
                 <p>Generally speaking, we arrange for shipment within 48 hours after placing the order. Individual
@@ -107,27 +147,83 @@
             </div>
         </div>
     </div>
-    <input type="hidden" class="hd-sku" value="GT0001"/>
+    <input type="hidden" id="hd-sku" value="<?php echo $default_sku; ?>"/>
     <input type="hidden" id="hd-cart-tk" value="<?php echo $cart_tk ?? ''; ?>"/>
 <?php if ($device == 'PC') { ?>
     <script src="/static/jquery/jquery.zoom.min.js"></script>
     <script>
-        $('#hd-main-image-loop .item img').click(function () {
-            let imgSrc = $(this).attr('src');
+        function init_zoom_sku_img_list() {
+            $('#hd-main-image-loop .item img').click(function () {
+                let imgSrc = $(this).attr('src');
 
-            $('#hd-main-image-loop').zoom({
-                url: imgSrc,
-                callback: function () {
-                    $('#hd-main-image-loop .zoomImg').css('opacity', '1');
-                },
-                onZoomOut: function () {
+                $('#hd-main-image-loop').zoom({
+                    url: imgSrc,
+                    callback: function () {
+                        $('#hd-main-image-loop .zoomImg').css('opacity', '1');
+                    },
+                    onZoomOut: function () {
+                        $('#hd-main-image-loop .zoomImg').remove();
+                    }
+                });
+                $(document).on('click', '#hd-main-image-loop .zoomImg', function () {
                     $('#hd-main-image-loop .zoomImg').remove();
+                });
+            });
+        }
+
+        var first_img_src = '<?php echo $first_img_src;?>';
+        var img_list = <?php echo json_encode($sku_img_list);?>;
+        var qty_price_list = <?php echo json_encode($sku_qty_price_list);?>;
+        $('#hd-sku-img-select img').click(function () {
+            if ($(this).hasClass('active')) {
+                return;
+            }
+
+            let sku = $(this).data('sku');
+            if (qty_price_list[sku] == undefined || img_list[sku] == undefined) {
+                return;
+            }
+
+            $('#hd-main-image-loop .carousel-inner').html(function () {
+                first_img_src = '';
+                let img_html = '';
+                for (let sort in img_list[sku]) {
+                    let img_src = '<?php echo $oss_access_host;?>' + img_list[sku][sort]['image_path'] + '/';
+                    img_src += img_list[sku][sort]['image_name'] + '?' + img_list[sku][sort]['updated_at'];
+                    img_src = img_src.replace('_d_d', '_800_800');
+
+                    if (first_img_src == '') {
+                        first_img_src = img_src;
+                        img_html += '<div class="item active"><img src="' + img_src + '"/></div>';
+                    } else {
+                        img_html += '<div class="item"><img src="' + img_src + '"/></div>';
+                    }
                 }
+
+                return img_html;
             });
-            $(document).on('click', '#hd-main-image-loop .zoomImg', function () {
-                $('#hd-main-image-loop .zoomImg').remove();
+
+            $('#hd-prod-info .hd-prod-box').html(function () {
+                let qty_price_html = '<span class="price hd-display-inline-block hd-margin-right-15">' + qty_price_list[sku]['price_text'] + '</span>';
+                if (qty_price_list[sku]['price_off'] != '') {
+                    qty_price_html += '<span class="origin hd-display-inline-block hd-margin-right-15">&nbsp;' + qty_price_list[sku]['list_price_text'] + '&nbsp;</span>' +
+                        '<span class="off hd-display-inline-block hd-margin-right-15">' + qty_price_list[sku]['price_off'] + '</span>';
+                }
+                return qty_price_html;
             });
+
+            $('.hd-sku').text(sku);
+            $('#hd-sku').val(sku);
+            $('.hd-prod-qty-plus, #hd-prod-qty-val').data('qty', qty_price_list[sku]['qty']);
+            $('#hd-prod-qty-val').val(1);
+
+            $('#hd-sku-img-select img').removeClass('active');
+            $(this).addClass('active');
+
+            init_zoom_sku_img_list();
         });
+
+        init_zoom_sku_img_list();
     </script>
     <?php
 }

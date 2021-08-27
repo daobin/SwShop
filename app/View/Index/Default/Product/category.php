@@ -6,12 +6,25 @@ $cate_name = xss_text($cate_info['description']['category_name'] ?? '');
     <div id="hd-crumb" class="container">
         <ol class="breadcrumb">
             <li><a href="/">Home</a></li>
-            <li class="active"><?php echo $cate_name;?></li>
+            <?php
+            if (!empty($cate_level)) {
+                foreach ($cate_level as $level_info) {
+                    $level_name = xss_text($level_info['category_name']);
+                    if ($cate_name == $level_name) {
+                        break;
+                    }
+
+                    $cate_link = $level_info['category_url'] . '-c' . $level_info['product_category_id'] . '.html';
+                    echo '<li><a href="/', $cate_link, '">', $level_name, '</a></li>';
+                }
+            }
+            ?>
+            <li class="active"><?php echo $cate_name; ?></li>
         </ol>
     </div>
     <div class="container">
         <h2>
-            <?php echo $cate_name;?>
+            <?php echo $cate_name; ?>
             <?php if (!empty($sort_list)) { ?>
                 <div class="btn-group pull-right">
                     <button class="btn btn-default dropdown-toggle" data-toggle="dropdown">
@@ -35,6 +48,7 @@ $cate_name = xss_text($cate_info['description']['category_name'] ?? '');
             <div class="row hd-margin-top-bottom-60">
                 <?php
                 foreach ($prod_list as $prod_info) {
+                    $prod_name = xss_text($prod_info['product_name']);
                     $prod_link = $prod_info['product_url'] . '-p' . $prod_info['product_id'] . '.html';
                     $prod_img = $oss_access_host . $prod_info['image_path'] . '/' . $prod_info['image_name'] . '?' . $prod_info['updated_at'];
                     $prod_img = str_replace('_d_d', '_300_300', $prod_img);
@@ -46,9 +60,8 @@ $cate_name = xss_text($cate_info['description']['category_name'] ?? '');
                                      src="<?php echo $prod_img; ?>"/>
                             </a>
                             <div class="caption">
-                                <a href="/<?php echo $prod_link; ?>" class="title"
-                                   title="<?php echo xss_text($prod_info['product_name']); ?>">
-                                    <?php echo xss_text($prod_info['product_name']); ?>
+                                <a href="/<?php echo $prod_link; ?>" class="title" title="<?php echo $prod_name; ?>">
+                                    <?php echo $prod_name; ?>
                                 </a>
                                 <div class="price"><?php echo format_price($prod_info['price'], $currency, 1, true); ?></div>
                             </div>

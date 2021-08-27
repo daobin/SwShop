@@ -85,6 +85,7 @@
             <div class="row">
                 <?php
                 foreach ($featured_prods as $prod_info) {
+                    $prod_name = xss_text($prod_info['product_name']);
                     $prod_link = $prod_info['product_url'] . '-p' . $prod_info['product_id'] . '.html';
                     $prod_img = $oss_access_host . $prod_info['image_path'] . '/' . $prod_info['image_name'] . '?' . $prod_info['updated_at'];
                     $prod_img = str_replace('_d_d', '_300_300', $prod_img);
@@ -95,9 +96,8 @@
                                 <img alt="<?php echo xss_text($prod_info['product_name']); ?>" src="<?php echo $prod_img; ?>"/>
                             </a>
                             <div class="caption">
-                                <a href="/<?php echo $prod_link; ?>" class="title"
-                                   title="<?php echo xss_text($prod_info['product_name']); ?>">
-                                    <?php echo xss_text($prod_info['product_name']); ?>
+                                <a href="/<?php echo $prod_link; ?>" class="title" title="<?php echo $prod_name; ?>">
+                                    <?php echo $prod_name; ?>
                                 </a>
                                 <div class="price"><?php echo format_price($prod_info['price'], $currency, 1, true); ?></div>
                             </div>

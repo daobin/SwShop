@@ -39,7 +39,7 @@
                         }
                         echo '</div>';
                         // 避免 JS 解析错误
-                        $config_value = '{}';
+                        $config_value = json_encode([]);
                         echo '<input type="hidden" name="config_value" value="{}"/>';
                     } else {
                         switch (strtolower($value_type)) {
@@ -92,7 +92,7 @@
                     name: 'config_value',
                     height: 'auto',
                     tips: '请选择配置',
-                    data: JSON.parse('<?php echo $config_value;?>'),
+                    data: <?php echo $config_value;?>,
                     filterable: true,
                     searchTips: '请选择配置，若不存在配置请输入新增，名称与值可用等号分隔，如 Name=Value',
                     create: function (val) {

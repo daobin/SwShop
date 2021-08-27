@@ -57,7 +57,7 @@
                 showLine: false
             },
             initValue: [<?php echo $prod_info['product_category_id'] ?? 0;?>],
-            data: JSON.parse('<?php echo json_encode($cate_tree_list);?>')
+            data: <?php echo json_encode($cate_tree_list);?>
         });
     </script>
     <script>

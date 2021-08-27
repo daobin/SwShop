@@ -2,8 +2,8 @@
 \App\Helper\TemplateHelper::widget('sp_admin', 'header', ['show_top_line' => false, 'timestamp' => $timestamp ?? '']);
 ?>
     <script>
-        var lang_codes = JSON.parse('<?php echo json_encode($lang_codes);?>');
-        var prod_desc_list = JSON.parse('<?php echo json_encode($prod_desc_list);?>');
+        var lang_codes = <?php echo json_encode($lang_codes);?>;
+        var prod_desc_list = <?php echo json_encode($prod_desc_list);?>;
 
         layui.use('element', function () {
             let element = layui.element;
@@ -253,14 +253,14 @@
                 showLine: false
             },
             initValue: [<?php echo $prod_info['product_category_id'] ?? 0;?>],
-            data: JSON.parse('<?php echo json_encode($cate_tree_list);?>')
+            data: <?php echo json_encode($cate_tree_list);?>
         });
 
         layui.use('form', function () {
             hdImg.init({
                 elem: '.sku_images',
                 url: '/spadmin/upload-image',
-                initFolders: JSON.parse('<?php echo json_encode($upload_folders);?>'),
+                initFolders: <?php echo json_encode($upload_folders);?>,
                 imgSelectCallback: function () {
                     if (hdImg.imgSelected.length == 0) {
                         layer.alert('请选择图片', hdImg.openAlertCfg);

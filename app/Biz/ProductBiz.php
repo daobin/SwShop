@@ -126,6 +126,9 @@ class ProductBiz
                 case 'product_status':
                     $where[$key] = (int)$value;
                     break;
+                case 'product_ids':
+                    $where['product_id'] = ['in', $value];
+                    break;
                 case 'category_ids':
                     $where['product_category_id'] = ['in', $value];
                     break;
@@ -133,7 +136,7 @@ class ProductBiz
         }
 
         if (empty($orderBy)) {
-            $orderBy = ['sort' => 'asc'];
+            $orderBy = ['product_id' => 'desc'];
         }
 
         $this->count = $this->dbHelper->table('product')->where($where)->count();

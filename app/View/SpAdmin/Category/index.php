@@ -2,8 +2,8 @@
 \App\Helper\TemplateHelper::widget('sp_admin', 'header', ['show_top_line' => false, 'timestamp' => $timestamp ?? '']);
 ?>
     <script>
-        var lang_codes = JSON.parse('<?php echo json_encode($lang_codes);?>');
-        var cate_tree_list = JSON.parse('<?php echo json_encode($cate_tree_list);?>');
+        var lang_codes = <?php echo json_encode($lang_codes);?>;
+        var cate_tree_list = <?php echo json_encode($cate_tree_list);?>;
 
         layui.use(['element'], function () {
             let element = layui.element;

@@ -12,6 +12,7 @@ use App\Biz\ProductBiz;
 use App\Biz\ShoppingBiz;
 use App\Controller\Controller;
 use App\Helper\LanguageHelper;
+use App\Helper\OssHelper;
 
 class AjaxController extends Controller
 {
@@ -21,10 +22,10 @@ class AjaxController extends Controller
         $password = $this->post('password');
         $customer = (new CustomerBiz())->getCustomerByEmail($this->shopId, $email);
         if (empty($customer)) {
-            return ['status' => 'fail', 'msg' => 'Invalid email or password'];
+            return ['status' => 'fail', 'msg' => LanguageHelper::get('email_or_pwd_invalid', $this->langCode)];
         }
         if (!password_verify($password, $customer['password'])) {
-            return ['status' => 'fail', 'msg' => 'Invalid email or password'];
+            return ['status' => 'fail', 'msg' => LanguageHelper::get('email_or_pwd_invalid', $this->langCode)];
         }
 
         $this->session->renameKey($this->request->domain);
@@ -92,18 +93,21 @@ class AjaxController extends Controller
         $prodQty = $this->post('prod_qty', 0);
         $prodQty = (int)$prodQty;
         if ($prodQty <= 0) {
-            return ['status' => 'fail', 'msg' => '商品数量无效'];
+            $this->session->remove($idempotentField);
+            return ['status' => 'fail', 'msg' => LanguageHelper::get('prod_qty_invalid', $this->langCode)];
         }
 
-        $warehouse = 'US';
-        $skuInfo = (new ProductBiz())->getSkuQtyPriceListBySkuArr($this->shopId, [$sku]);
-        $skuInfo = $skuInfo[$sku][$warehouse] ?? [];
+        $prodBiz = new ProductBiz();
+        $skuInfo = $prodBiz->getSkuQtyPriceListBySkuArr($this->shopId, [$sku]);
+        $skuInfo = $skuInfo[$sku][$this->warehouseCode] ?? [];
         if (empty($skuInfo)) {
+            $this->session->remove($idempotentField);
             return ['status' => 'fail', 'msg' => LanguageHelper::get('invalid_request')];
         }
 
         if ((int)$skuInfo['qty'] <= 0) {
-            return ['status' => 'fail', 'msg' => '商品已缺货'];
+            $this->session->remove($idempotentField);
+            return ['status' => 'fail', 'msg' => LanguageHelper::get('prod_sold_out', $this->langCode)];
         }
 
         $cartData = [
@@ -114,17 +118,19 @@ class AjaxController extends Controller
         ];
 
         $cartQty = $prodQty;
-        if (empty($this->cartList)) {
-            $this->cartList[] = $cartData;
-        } else {
-            foreach ($this->cartList as $idx => $cartInfo) {
-                if ($sku == $cartInfo['sku']) {
-                    $this->cartList[$idx]['qty'] = $prodQty + $cartInfo['qty'];
-                    $this->cartList[$idx]['price'] = $cartData['price'];
-                } else {
-                    $cartQty += $cartInfo['qty'];
+        $isNew = true;
+        if (!empty($this->cartList)) {
+            foreach ($this->cartList as $cartSku => $cartInfo) {
+                $cartQty += $cartInfo['qty'];
+                if ($sku == $cartSku) {
+                    $this->cartList[$cartSku]['qty'] = $prodQty + $cartInfo['qty'];
+                    $this->cartList[$cartSku]['price'] = $cartData['price'];
+                    $isNew = false;
                 }
             }
+        }
+        if ($isNew) {
+            $this->cartList[$sku] = $cartData;
         }
         $this->session->set('cart_list', json_encode($this->cartList));
 
@@ -152,18 +158,20 @@ class AjaxController extends Controller
         $prodQty = $this->post('prod_qty', 0);
         $prodQty = (int)$prodQty;
         if ($prodQty <= 0) {
-            return ['status' => 'fail', 'msg' => '商品数量无效'];
+            $this->session->remove($idempotentField);
+            return ['status' => 'fail', 'msg' => LanguageHelper::get('prod_qty_invalid', $this->langCode)];
         }
 
-        $warehouse = 'US';
         $skuInfo = (new ProductBiz())->getSkuQtyPriceListBySkuArr($this->shopId, [$sku]);
-        $skuInfo = $skuInfo[$sku][$warehouse] ?? [];
+        $skuInfo = $skuInfo[$sku][$this->warehouseCode] ?? [];
         if (empty($skuInfo)) {
+            $this->session->remove($idempotentField);
             return ['status' => 'fail', 'msg' => LanguageHelper::get('invalid_request')];
         }
 
         if ((int)$skuInfo['qty'] <= 0) {
-            return ['status' => 'fail', 'msg' => '商品已缺货'];
+            $this->session->remove($idempotentField);
+            return ['status' => 'fail', 'msg' => LanguageHelper::get('prod_sold_out', $this->langCode)];
         }
 
         $cartData = [
@@ -176,21 +184,21 @@ class AjaxController extends Controller
 
         $cartPrice = (float)format_price($cartData['price'], $this->currency, $prodQty);
         $cartQty = $prodQty;
-        $exist = false;
+        $isNew = true;
         if (!empty($this->cartList)) {
-            foreach ($this->cartList as $idx => $cartInfo) {
-                if ($sku == $cartInfo['sku']) {
-                    $exist = true;
-                    $this->cartList[$idx]['qty'] = $prodQty;
-                    $this->cartList[$idx]['price'] = $cartData['price'];
+            foreach ($this->cartList as $cartSku => $cartInfo) {
+                if ($sku == $cartSku) {
+                    $isNew = false;
+                    $this->cartList[$cartSku]['qty'] = $prodQty;
+                    $this->cartList[$cartSku]['price'] = $cartData['price'];
                 } else {
                     $cartPrice += (float)format_price($cartInfo['price'], $this->currency, $cartInfo['qty']);
                     $cartQty += $cartInfo['qty'];
                 }
             }
         }
-        if (!$exist) {
-            $this->cartList[] = $cartData;
+        if ($isNew) {
+            $this->cartList[$cartSku] = $cartData;
         }
         $this->session->set('cart_list', json_encode($this->cartList));
 

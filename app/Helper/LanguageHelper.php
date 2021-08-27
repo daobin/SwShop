@@ -35,7 +35,7 @@ class LanguageHelper
         }
     }
 
-    public static function get($key, $langCode = '')
+    public static function get($key, $langCode = 'en')
     {
         $langCode = $langCode ? strtolower($langCode) : 'en';
 

@@ -3,8 +3,8 @@
 ?>
     <script src="/static/layui/xm-select.js"></script>
     <script>
-        var lang_codes = JSON.parse('<?php echo json_encode($lang_codes);?>');
-        var cate_desc_list = JSON.parse('<?php echo json_encode($cate_desc_list);?>');
+        var lang_codes = <?php echo json_encode($lang_codes);?>;
+        var cate_desc_list = <?php echo json_encode($cate_desc_list);?>;
         layui.use(['form', 'element'], function () {
             let element = layui.element;
             for (let lang_idx in lang_codes) {
@@ -96,7 +96,7 @@
                     showLine: false
                 },
                 initValue: [<?php echo (int)$parent_id;?>],
-                data: JSON.parse('<?php echo json_encode($cate_tree_list);?>'),
+                data: <?php echo json_encode($cate_tree_list);?>,
                 on: function(data){
                     console.log(data);
                 }

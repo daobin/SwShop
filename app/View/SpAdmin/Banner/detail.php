@@ -143,7 +143,7 @@
                 elem: '#image_list',
                 url: '/spadmin/upload-image',
                 uploaderSize: 1020,
-                initFolders: JSON.parse('<?php echo json_encode($upload_folders);?>'),
+                initFolders: <?php echo json_encode($upload_folders);?>,
                 imgSelectCallback: function () {
                     if (hdImg.imgSelected.length == 0) {
                         layer.alert('请选择图片', hdImg.openAlertCfg);

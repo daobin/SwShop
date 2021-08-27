@@ -75,7 +75,8 @@ function upCartProd(eleObj) {
     }
 
     let qty = eleObj.parent('div').find('.hd-prod-qty-val').val();
-    let sku = eleObj.parent('div').find('.hd-sku').val();
+    let sku = eleObj.parent('div').siblings('.hd-sku').val();
+
     $.ajax({
         type: 'post',
         url: '/update-cart-product.html',
@@ -98,31 +99,63 @@ function upCartProd(eleObj) {
 
 // 商品数量、添加购物车
 $(document).on('keyup', '.hd-prod-qty-val', function () {
-    $(this).val($(this).val().replace(/[^\d]+/, ''));
+    let qty = $(this).val().replace(/[^\d]+/, '');
+    if (qty == '') {
+        return;
+    }
+
+    let max_qty = parseInt($(this).data('qty'));
+    qty = parseInt(qty) > max_qty ? max_qty : qty;
+    $(this).val(qty);
 
 }).on('blur', '.hd-prod-qty-val', function () {
     if ($.trim($(this).val()) == '') {
-        $(this).val('0');
+        $(this).val(1);
     }
+
+    if ($(this).data('val') == $(this).val()) {
+        return;
+    }
+    $(this).data('val', $(this).val());
+
     upCartProd($(this));
 
 }).on('click', '.hd-prod-qty-minus', function () {
-    let qty = $.trim($('.hd-prod-qty-val').val());
+    let idx = $('.hd-prod-qty-minus').index($(this));
+    let qty = $.trim($('.hd-prod-qty-val').eq(idx).val());
     qty = parseInt(qty) - 1;
-    qty = qty > 0 ? qty : 0;
-    $('.hd-prod-qty-val').val(qty);
+    qty = qty > 0 ? qty : 1;
+
+    $('.hd-prod-qty-val').eq(idx).val(qty);
+
+    if ($('.hd-prod-qty-val').eq(idx).data('val') == $('.hd-prod-qty-val').eq(idx).val()) {
+        return;
+    }
+    $('.hd-prod-qty-val').eq(idx).data('val', $('.hd-prod-qty-val').eq(idx).val());
+
     upCartProd($(this));
 
 }).on('click', '.hd-prod-qty-plus', function () {
-    let qty = $.trim($('.hd-prod-qty-val').val());
+    let idx = $('.hd-prod-qty-plus').index($(this));
+    let qty = $.trim($('.hd-prod-qty-val').eq(idx).val());
     qty = parseInt(qty) + 1;
-    $('.hd-prod-qty-val').val(qty);
+
+    let max_qty = parseInt($(this).data('qty'));
+    qty = parseInt(qty) > max_qty ? max_qty : qty;
+
+    $('.hd-prod-qty-val').eq(idx).val(qty);
+
+    if ($('.hd-prod-qty-val').eq(idx).data('val') == $('.hd-prod-qty-val').eq(idx).val()) {
+        return;
+    }
+    $('.hd-prod-qty-val').eq(idx).data('val', $('.hd-prod-qty-val').eq(idx).val());
+
     upCartProd($(this));
 
-}).on('click', '.hd-add-to-cart', function () {
+}).on('click', '#hd-add-to-cart', function () {
     let idx = $('.hd-add-to-cart').index($(this));
-    let qty = $('.hd-prod-qty-val').eq(idx).val();
-    let sku = $('.hd-sku').eq(idx).val();
+    let sku = $('#hd-sku').val();
+    let qty = $('#hd-prod-qty-val').val();
     $.ajax({
         type: 'post',
         url: '/add-to-cart.html',
@@ -143,7 +176,7 @@ $(document).on('keyup', '.hd-prod-qty-val', function () {
                     '<b class="hd-color-888 hd-display-inline-block hd-margin-right-15">' + res.add_qty + ' item(s) added to cart</b>' +
                     '<b>Total: <span class="price">' + res.add_price + '</span></b></div>' +
                     '<div class="form-group hd-width-100">' +
-                    '<img style="width: 100%;" src="https://sw-shop.oss-cn-hongkong.aliyuncs.com/sp_1/prod_img/gitar/5cca9f4f0701acbbe99de13236b249dc_800_800.jpg?1628158151" /></div>';
+                    '<img style="width: 100%; border: 1px solid #ddd;" src="' + first_img_src + '" /></div>';
 
                 let modalFooter = '<a href="/shopping/cart.html" class="btn btn-warning hd-display-inline-block hd-margin-right-15">View Cart & Checkout</a>' +
                     '<a data-dismiss="modal" class="hd-display-inline-block">Continue Shopping &gt;&gt;</a>';
@@ -159,6 +192,10 @@ $(document).on('keyup', '.hd-prod-qty-val', function () {
             alert('Unknown error, please refresh the page later and try again!');
         }
     });
+}).on('click', 'a.hd-cart-remove-yes', function () {
+    $('div.popover').parent('td').parent('tr').remove();
+}).on('click', 'a.hd-cart-remove-no', function () {
+    $('div.popover').siblings('a[data-toggle="popover"]').click();
 });
 
 // Tip Tool
@@ -168,15 +205,25 @@ $('a[data-toggle="tooltip"]').tooltip({
 });
 
 // Remove Cart Product Popover Tool
-$('i[data-toogle="popover"]').popover();
-// $('#hd-cart-products i.glyphicon-trash').each(function () {
-//     $(this).popover({
-//         placement: 'bottom',
-//         trigger: 'focus',
-//         html: true,
-//         content: 'Remove from your cart ?'
-//     })
-// });
+$('#hd-cart-products a[data-toggle="popover"]').each(function () {
+    $(this).popover({
+        placement: 'bottom',
+        trigger: 'click',
+        html: true,
+        title: 'Remove from your cart ?',
+        content: function () {
+            return '<div class="text-right">' +
+                '<a class="btn btn-sm btn-danger hd-cart-remove-yes" data-sku="' + $(this).data('sku') + '">Yes</a>&nbsp;&nbsp;' +
+                '<a class="btn btn-sm btn-default hd-cart-remove-no">No</a>' +
+                '</div>';
+        },
+        whiteList: {
+            div: ['class'],
+            a: ['class', 'data-sku']
+        }
+    })
+});
+
 
 // Text to pwd
 $(document).on('focus', '.hd-password', function () {
