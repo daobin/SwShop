@@ -59,7 +59,7 @@
                         <input type="hidden" class="hd-sku" value="<?php echo $sku; ?>"/>
                     <?php } ?>
                 </td>
-                <td class="text-center hidden-xs">
+                <td class="text-center hidden-xs hd-prod-total">
                     <?php
                     if ($prod_qty > 0) {
                         echo format_price_total($price_total, $currency);
@@ -85,17 +85,21 @@
         </div>
     </div>
     <div id="hd-checkout" class="row hd-margin-top-bottom-60">
-        <div class="col-md-3">
+        <div class="col-md-3 col-xs-6">
             <a class="btn btn-lg btn-default" href="/">Continue Shopping</a>
         </div>
-        <div class="col-md-9 text-right">
-            <img class="hd-display-inline-block hd-margin-right-15"
+        <div class="col-md-9 text-right hidden-xs hidden-sm">
+            <img class="hd-display-inline-block hd-margin-right-15 hd-btn-pp"
                  src="/static/index/default/buy-now-with-paypal.png"/>
             <a class="btn btn-lg btn-warning" href="/shopping/confirmation.html">Checkout</a>
+        </div>
+        <div class="col-xs-6 text-right visible-xs visible-sm">
+            <a class="btn btn-lg btn-warning" href="/shopping/confirmation.html">Checkout</a>
+        </div>
+        <div class="col-xs-12 text-right visible-xs visible-sm">
+            <img class="hd-display-inline-block hd-margin-top-bottom-15 hd-btn-pp"
+                 src="/static/index/default/buy-now-with-paypal.png"/>
         </div>
     </div>
 </div>
 <input type="hidden" id="hd-cart-tk" value="<?php echo $cart_tk ?? ''; ?>"/>
-<script>
-    $('body>div.container').css('min-height', ($(window).height() - 269) + 'px');
-</script>

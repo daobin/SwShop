@@ -73,13 +73,13 @@
     <div class="layui-form-item hd-margin-top-30">
         <i class="layui-icon layui-icon-username"></i>
         <input class="layui-input" type="text" maxlength="16"
-               placeholder="<?php echo xss_text('enter_account', true); ?>" name="account"
+               placeholder="<?php echo xss_text('account', true); ?>" name="account"
                lay-verify="account" lay-verType="alert"/>
     </div>
     <div class="layui-form-item">
         <i class="layui-icon layui-icon-password"></i>
         <input class="layui-input hd-password" type="text" maxlength="32"
-               placeholder="<?php echo xss_text('enter_password', true); ?>" name="password"
+               placeholder="<?php echo xss_text('password', true); ?>" name="password"
                lay-verify="password" lay-verType="alert"/>
     </div>
     <div class="layui-form-item hd-margin-top-30">

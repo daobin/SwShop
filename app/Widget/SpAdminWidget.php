@@ -7,17 +7,13 @@ class SpAdminWidget extends Widget
 {
     public function header($params = [])
     {
-        $data = [
-            'show_top_line' => $params['show_top_line'] ?? true,
-            'add_url' => $params['add_url'] ?? '',
-            'timestamp' => $params['timestamp'] ?? '?' . date('YmdH'),
-        ];
-        return $this->render('header', $data);
+        $params['show_top_line'] = $params['show_top_line'] ?? true;
+        return $this->render('header', $params);
     }
 
     public function leftNav($params = [])
     {
-        $navs = [
+        $params['navs'] = [
             ['name' => '数据表盘', 'icon' => 'layui-icon-console', 'iframe' => 'dashboard'],
             ['name' => '用户管理', 'icon' => 'layui-icon-user', 'iframe' => 'customer'],
             ['name' => '订单管理', 'icon' => 'layui-icon-cart', 'iframe' => 'order'],
@@ -47,15 +43,16 @@ class SpAdminWidget extends Widget
                     ['name' => '仓库配置', 'icon' => 'layui-icon-release', 'iframe' => 'warehouse'],
                     ['name' => '语言配置', 'icon' => 'layui-icon-dialogue', 'iframe' => 'language'],
                     ['name' => '币种配置', 'icon' => 'layui-icon-dollar', 'iframe' => 'currency'],
+                    ['name' => '国家地址', 'icon' => 'layui-icon-website', 'iframe' => 'country'],
                     ['name' => '支付方式', 'icon' => 'layui-icon-senior', 'iframe' => 'payment'],
                 ]
             ],
         ];
-        return $this->render('left_nav', ['navs' => $navs]);
+        return $this->render('left_nav', $params);
     }
 
     public function footer($params = [])
     {
-        return $this->render('footer');
+        return $this->render('footer', $params);
     }
 }

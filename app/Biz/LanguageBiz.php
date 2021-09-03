@@ -27,10 +27,10 @@ class LanguageBiz
         }
 
         $time = time();
-        $code = strtolower($language['language_code']);
+
         $data = [
             'shop_id' => $shopId,
-            'language_code' => $code,
+            'language_code' => strtolower($language['language_code']),
             'language_name' => $language['language_name'],
             'sort' => $language['sort'] ?? 0,
             'created_at' => $time,

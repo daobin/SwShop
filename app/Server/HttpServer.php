@@ -132,16 +132,19 @@ class HttpServer
 
                     // 登录状态验证
                     $customerInfo = $session->get('sp_customer_info');
-                    if (empty($customerInfo) && in_array(strtolower($request->controller), ['customer', 'shopping']) && $request->action != 'cart') {
+                    if (in_array(strtolower($request->controller), ['customer', 'shopping'])) {
                         $session->set('login_to', RouteHelper::buildUrl($request->module . '.' . $request->controller . '.' . $request->action));
-                        if ($request->isAjax) {
-                            $response->header('Content-type', 'application/json; charset=' . $charset);
-                            $response->end(json_encode(['status' => 'fail', 'url' => '/login.html']));
+
+                        if (empty($customerInfo) && $request->action != 'cart') {
+                            if ($request->isAjax) {
+                                $response->header('Content-type', 'application/json; charset=' . $charset);
+                                $response->end(json_encode(['status' => 'fail', 'url' => '/login.html']));
+                                return;
+                            }
+
+                            $response->redirect('/login.html');
                             return;
                         }
-
-                        $response->redirect('/login.html');
-                        return;
                     }
 
                     if (!empty($customerInfo) && in_array($request->action, ['login', 'loginProcess', 'registerProcess'])) {

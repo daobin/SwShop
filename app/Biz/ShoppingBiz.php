@@ -20,7 +20,7 @@ class ShoppingBiz
         $this->dbHelper = new DbHelper();
     }
 
-    public function getCartByCustomerId(int $shopId, int $customerId, ?string $sku = null): array
+    public function getCartListByCustomerId(int $shopId, int $customerId, ?string $sku = null): array
     {
         if ($shopId <= 0 || $customerId <= 0 || $sku !== null && empty($sku)) {
             return [];
@@ -33,7 +33,9 @@ class ShoppingBiz
             return $this->dbHelper->table('shopping_cart')->where($where)->fields($fields)->find();
         }
 
-        return $this->dbHelper->table('shopping_cart')->where($where)->fields($fields)->select();
+        $cartList = $this->dbHelper->table('shopping_cart')->where($where)->fields($fields)->select();
+        $cartList = $cartList ? array_column($cartList, null, 'sku') : [];
+        return $cartList;
     }
 
     public function getCartQtyByCustomerId(int $shopId, int $customerId): int
@@ -49,39 +51,51 @@ class ShoppingBiz
         return (int)$cartQty;
     }
 
-    public function updateCart(int $shopId, int $customerId, array $cartList): int
+    public function updateCart(int $shopId, int $customerId, array $cartList): array
     {
-        if ($shopId <= 0 || $customerId <= 0 || empty($cartList)) {
-            return 0;
+        if ($shopId <= 0 || $customerId <= 0) {
+            return [];
         }
 
         $time = time();
-        $customerCartList = $this->getCartByCustomerId($shopId, $customerId);
-        $customerCartList = $customerCartList ? array_column($customerCartList, null, 'sku') : [];
+        $customerCartList = $this->getCartListByCustomerId($shopId, $customerId);
 
-        $cartList = array_column($cartList, null, 'sku');
-        foreach ($cartList as $sku => $cartInfo) {
-            $saveData = [
-                'shop_id' => $shopId,
-                'customer_id' => $customerId,
-                'product_id' => (int)$cartInfo['product_id'],
-                'sku' => $sku,
-                'qty' => (int)$cartInfo['qty'],
-                'price' => (float)$cartInfo['price'],
-                'created_at' => $time,
-                'updated_at' => $time
-            ];
+        if (!empty($cartList)) {
+            foreach ($cartList as $sku => $cartInfo) {
+                $saveData = [
+                    'shop_id' => $shopId,
+                    'customer_id' => $customerId,
+                    'product_id' => (int)$cartInfo['product_id'],
+                    'sku' => $sku,
+                    'qty' => (int)$cartInfo['qty'],
+                    'price' => (float)$cartInfo['price'],
+                    'updated_at' => $time
+                ];
 
-            if (empty($customerCartList[$sku])) {
-                $this->dbHelper->table('shopping_cart')->insert($saveData);
-            } else {
-                unset($saveData['created_at']);
-                $this->dbHelper->table('shopping_cart')->where(
-                    ['shop_id' => $shopId, 'shopping_cart_id' => $customerCartList[$sku]['shopping_cart_id']])
-                    ->update($saveData);
+                if (empty($customerCartList[$sku])) {
+                    $saveData['created_at'] = $time;
+                    $this->dbHelper->table('shopping_cart')->insert($saveData);
+                } else {
+                    $this->dbHelper->table('shopping_cart')->where(
+                        ['shop_id' => $shopId, 'shopping_cart_id' => $customerCartList[$sku]['shopping_cart_id']])
+                        ->update($saveData);
+
+                    unset($customerCartList[$sku]);
+                }
             }
         }
 
-        return $this->getCartQtyByCustomerId($shopId, $customerId);
+        if (!empty($customerCartList)) {
+            foreach ($customerCartList as $sku => $carInfo) {
+                $cartList[$sku] = [
+                    'product_id' => (int)$carInfo['product_id'],
+                    'sku' => $sku,
+                    'qty' => (int)$carInfo['qty'],
+                    'price' => (float)$carInfo['price']
+                ];
+            }
+        }
+
+        return $cartList;
     }
 }

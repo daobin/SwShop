@@ -27,10 +27,10 @@ class WarehouseBiz
         }
 
         $time = time();
-        $code = strtoupper($warehouse['warehouse_code']);
+
         $data = [
             'shop_id' => $shopId,
-            'warehouse_code' => $code,
+            'warehouse_code' => strtoupper($warehouse['warehouse_code']),
             'warehouse_name' => $warehouse['warehouse_name'],
             'sort' => $warehouse['sort'] ?? 0,
             'created_at' => $time,

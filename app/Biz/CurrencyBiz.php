@@ -27,10 +27,10 @@ class CurrencyBiz
         }
 
         $time = time();
-        $code = strtoupper($currency['currency_code']);
+
         $data = [
             'shop_id' => $shopId,
-            'currency_code' => $code,
+            'currency_code' => strtoupper($currency['currency_code']),
             'currency_name' => $currency['currency_name'],
             'symbol_left' => $currency['symbol_left'],
             'symbol_right' => $currency['symbol_right'],

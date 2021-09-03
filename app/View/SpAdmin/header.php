@@ -19,10 +19,10 @@
     <script src="/static/spadmin/hd.image.js<?php echo $timestamp ?? ''; ?>"></script>
 </head>
 <body>
-<?php if ($show_top_line){ ?>
+<?php if (!empty($show_top_line)){ ?>
 <div class="layui-fluid" id="hd-top-line">
     <div class="layui-row">
-        <div class="layui-col-xs11">
+        <div class="layui-col-xs10">
             <?php
             if (empty($add_url)) {
                 echo '&nbsp;';
@@ -31,7 +31,12 @@
             }
             ?>
         </div>
-        <div class="layui-col-xs1 hd-align-right">
+        <div class="layui-col-xs2 hd-align-right">
+            <?php
+            if(!empty($back)){
+                echo '<a class="hd-layer-close layui-btn layui-btn-sm layui-btn-warm">&lt;&lt; Back</a>';
+            }
+            ?>
             <a class="layui-btn layui-btn-sm layui-btn-normal hd-opt-refresh">
                 <i class="layui-icon layui-icon-refresh"></i>
             </a>

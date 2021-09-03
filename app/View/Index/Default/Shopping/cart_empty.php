@@ -33,7 +33,3 @@
         </div>
     </div>
 </div>
-<script>
-    $('body').css('overflow', 'hidden');
-    $('body>div.container').height($(window).height() - 260);
-</script>

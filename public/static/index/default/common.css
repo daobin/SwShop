@@ -1,4 +1,4 @@
-html, body{position: relative; width: 100%; margin: 0; padding: 0;}
+html, body{position: relative; width: 100%; margin: 0; padding: 0; color: #333;}
 body p{margin: 0; padding: 0;}
 body a{color: inherit; font-size: inherit; cursor: pointer;}
 body a, body image, body a:active, body image:active, body button:active{border: none;}
@@ -7,6 +7,7 @@ body .hd-position-relative{position: relative;}
 body .hd-position-fixed{position: fixed;}
 body .hd-left-top-0{top: 0;}
 body .hd-display-none{display: none;}
+body .hd-display-block{display: block;}
 body .hd-display-inline-block{display: inline-block;}
 body .hd-width-full{width: 100%;}
 body .hd-width-100{ width: 100px;}
@@ -18,6 +19,7 @@ body .hd-font-size-18{font-size: 18px;}
 body .hd-font-size-24{font-size: 24px;}
 body .hd-color-333{color: #333;}
 body .hd-color-888{color: #888;}
+body .hd-margin-top-10{margin-top: 10px;}
 body .hd-margin-top-15{margin-top: 15px;}
 body .hd-margin-top-30{margin-top: 30px;}
 body .hd-margin-top-130{margin-top: 130px;}
@@ -25,6 +27,7 @@ body .hd-margin-bottom-30{margin-bottom: 30px;}
 body .hd-margin-top-bottom-15{margin-top: 15px; margin-bottom: 15px;}
 body .hd-margin-top-bottom-30{margin-top: 30px; margin-bottom: 30px;}
 body .hd-margin-top-bottom-60{margin-top: 60px; margin-bottom: 60px;}
+body .hd-margin-left-15{margin-left: 15px;}
 body .hd-margin-right-15{margin-right: 15px;}
 body .hd-margin-left-right-auto{margin-right: auto; margin-left: auto;}
 body .hd-border-none{border: none;}
@@ -90,7 +93,12 @@ body .hd-cursor-pointer{cursor: pointer;}
 
 #hd-checkout img{height: 46px; border-radius: 6px; cursor: pointer;}
 
+#hd-address-list .hd-address{position: relative; padding: 15px; margin-top: 60px; border: 1px solid #ccc; border-radius: 4px;}
+.hd-address .hd-address-opt{position: absolute; top: -30px; left: 0;}
+.hd-address .hd-set-default{cursor: pointer; font-weight: normal;}
+
 #hd-footer{width: 100%; padding: 20px 0; background: #0f0f0f;}
+#hd-footer.fixed{position: fixed; bottom: 0; left: 0;}
 #hd-footer .copyright {color: #ccc;}
 #hd-back-top{position: fixed; right: 15px; bottom: 15px; z-index: 1000; width: 50px; height: 50px; line-height: 50px; border-radius: 25px;}
 #hd-back-top i{font-size: 20px; top: 0;}

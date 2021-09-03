@@ -48,7 +48,7 @@ class ProductController extends Controller
 
             return [
                 'code' => 0,
-                'count' => count($prodList),
+                'count' => $prodBiz->count,
                 'data' => $prodList
             ];
         }

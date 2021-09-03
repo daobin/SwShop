@@ -30,7 +30,7 @@ layui.use(['jquery', 'layer'], function () {
 
     // 只允许正数，含小数
     $(document).on('keyup', '.hd-float-only', function () {
-        let val = $(this).val().replace(/[^\d\.]+/, '');
+        var val = $(this).val().replace(/[^\d\.]+/, '');
         val = val.replace(/\.{2,}/, '.');
         $(this).val(val);
     });
@@ -52,7 +52,7 @@ function show_date_time(elem) {
         return;
     }
 
-    let date = new Date();
+    var date = new Date();
     setInterval(function () {
         date.setSeconds(date.getSeconds() + 1);
 

@@ -11,7 +11,7 @@
     <div class="container">
         <div class="row hd-margin-bottom-30">
             <div class="col-md-6">
-                <form id="hd-form-register" action="/register.html" method="post" autocomplete="off">
+                <form class="hd-form" action="/register.html" method="post" autocomplete="off">
                     <div class="form-group">
                         <h3>Create Account</h3>
                     </div>
@@ -32,7 +32,7 @@
                 </form>
             </div>
             <div class="col-md-5 col-md-offset-1">
-                <form id="hd-form-login" method="post" autocomplete="off">
+                <form class="hd-form" method="post" autocomplete="off">
                     <div class="form-group">
                         <h3>Sign In</h3>
                     </div>

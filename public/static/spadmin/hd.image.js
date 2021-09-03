@@ -1,8 +1,8 @@
 // 基于 LayUI 框架的图片管理工具
 layui.use(['jquery', 'layer', 'element', 'flow', 'upload'], function () {
-    let $ = layui.jquery;
-    let layer = layui.layer;
-    let upload = layui.upload;
+    var $ = layui.jquery;
+    var layer = layui.layer;
+    var upload = layui.upload;
 
     window.hdImg = window.hdImg || {};
     (function (imgObj) {
@@ -45,7 +45,7 @@ layui.use(['jquery', 'layer', 'element', 'flow', 'upload'], function () {
             imgObj.btnClickOptionInit = true;
 
             $(document).on('click', '#hd-btn-add-folder', function () {
-                let promptCfg = $.extend({}, imgObj.openAlertCfg);
+                var promptCfg = $.extend({}, imgObj.openAlertCfg);
                 promptCfg.title = '请输入图片目录 <span class="layui-word-aux">只允许小写字母、数字、-</span>';
                 promptCfg.formType = 0;
                 layer.prompt(promptCfg, function (folder, idx) {
@@ -86,7 +86,7 @@ layui.use(['jquery', 'layer', 'element', 'flow', 'upload'], function () {
                 console.log($(this).hasClass('active'));
                 if ($(this).hasClass('active')) {
                     $(this).removeClass('active');
-                    for (let idx in imgObj.imgSelected) {
+                    for (var idx in imgObj.imgSelected) {
                         if ($.trim($(this).find('img')[0].src) == imgObj.imgSelected[idx]) {
                             imgObj.imgSelected.splice(idx, 1);
                         }
@@ -99,7 +99,7 @@ layui.use(['jquery', 'layer', 'element', 'flow', 'upload'], function () {
             }).on('click', '.hd-btn-del-image', function () {
                 $(this).parent('div').remove();
             }).on('click', '#hd-nav-folder .layui-nav-item a', function () {
-                let folder = $(this).attr('folder');
+                var folder = $(this).attr('folder');
                 if (folder == undefined || folder == '' || imgObj.folder == folder) {
                     return;
                 }
@@ -112,16 +112,16 @@ layui.use(['jquery', 'layer', 'element', 'flow', 'upload'], function () {
                 imgObj.imgBoxIdx = $('.hd-btn-open-image').index($(this));
                 imgObj.imgSelected = [];
 
-                let openCfg = $.extend({}, imgObj.openAlertCfg);
+                var openCfg = $.extend({}, imgObj.openAlertCfg);
                 openCfg.title = ['上传图片管理', 'font-size: 18px; background: #333; color: #fff;'];
                 openCfg.type = 1;
                 openCfg.content = imgObj.openContent;
                 imgObj.layerIdx = layer.open(openCfg);
                 layer.full(imgObj.layerIdx);
 
-                let imgFolder = sessionStorage.getItem('image_folder');
+                var imgFolder = sessionStorage.getItem('image_folder');
                 imgFolder = imgFolder ? JSON.parse(imgFolder) : {};
-                for (let idx in imgFolder) {
+                for (var idx in imgFolder) {
                     imgFolder[idx].isNav = false;
                 }
                 sessionStorage.setItem('image_folder', JSON.stringify(imgFolder));
@@ -194,7 +194,7 @@ layui.use(['jquery', 'layer', 'element', 'flow', 'upload'], function () {
             folder = folder == '' ? 'def' : folder;
             imgObj.folder = folder;
 
-            let imgFolder = sessionStorage.getItem('image_folder');
+            var imgFolder = sessionStorage.getItem('image_folder');
             imgFolder = imgFolder ? JSON.parse(imgFolder) : {};
             if (!imgFolder.hasOwnProperty(folder)) {
                 imgFolder[folder] = {
@@ -202,7 +202,7 @@ layui.use(['jquery', 'layer', 'element', 'flow', 'upload'], function () {
                 };
             }
 
-            for (let idx in imgFolder) {
+            for (var idx in imgFolder) {
                 if (imgFolder[idx].isNav) {
                     continue;
                 }
@@ -273,8 +273,8 @@ layui.use(['jquery', 'layer', 'element', 'flow', 'upload'], function () {
 
             // 初始化目录导航
             if (!$.isEmptyObject(imgObj.initFolders)) {
-                let imgFolder = {};
-                for (let idx in imgObj.initFolders) {
+                var imgFolder = {};
+                for (var idx in imgObj.initFolders) {
                     imgFolder[imgObj.initFolders[idx]] = {isNav: false};
                 }
                 sessionStorage.setItem('image_folder', JSON.stringify(imgFolder));
@@ -286,8 +286,8 @@ layui.use(['jquery', 'layer', 'element', 'flow', 'upload'], function () {
                     return;
                 }
 
-                let listImgId = 'list_img_' + idx;
-                let html = imgObj.initContent.replace('-LIST-IMG-ID-', listImgId).replace('-IMG-TPL-', '&nbsp;');
+                var listImgId = 'list_img_' + idx;
+                var html = imgObj.initContent.replace('-LIST-IMG-ID-', listImgId).replace('-IMG-TPL-', '&nbsp;');
                 $(this).append(html);
             });
             imgObj.btnClickOption();

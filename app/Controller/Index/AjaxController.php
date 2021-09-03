@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Index;
 
+use App\Biz\AddressBiz;
 use App\Biz\CustomerBiz;
 use App\Biz\ProductBiz;
 use App\Biz\ShoppingBiz;
@@ -20,19 +21,22 @@ class AjaxController extends Controller
     {
         $email = $this->post('email');
         $password = $this->post('password');
-        $customer = (new CustomerBiz())->getCustomerByEmail($this->shopId, $email);
-        if (empty($customer)) {
+        $customerInfo = (new CustomerBiz())->getCustomerByEmail($this->shopId, $email);
+        if (empty($customerInfo)) {
             return ['status' => 'fail', 'msg' => LanguageHelper::get('email_or_pwd_invalid', $this->langCode)];
         }
-        if (!password_verify($password, $customer['password'])) {
+        if (!password_verify($password, $customerInfo['password'])) {
             return ['status' => 'fail', 'msg' => LanguageHelper::get('email_or_pwd_invalid', $this->langCode)];
         }
+
+        unset($customerInfo['password']);
 
         $this->session->renameKey($this->request->domain);
-        $this->session->set('sp_customer_info', json_encode($customer));
+        $this->session->set('sp_customer_info', json_encode($customerInfo));
         $this->session->remove('IDXlogin');
 
-        (new ShoppingBiz())->updateCart($this->shopId, $customer['customer_id'], $this->cartList);
+        $this->cartList = (new ShoppingBiz())->updateCart($this->shopId, $customerInfo['customer_id'], $this->cartList);
+        $this->session->set('cart_list', json_encode($this->cartList));
 
         $loginTo = $this->session->get('login_to', '/account.html');
 
@@ -68,12 +72,15 @@ class AjaxController extends Controller
 
         $this->session->remove($idempotentField);
         if ($register['status'] === 'success') {
+            unset($register['customer_info']['password']);
+
             $this->session->renameKey($this->request->domain);
             $this->session->set('sp_customer_info', json_encode($register['customer_info']));
             $this->session->remove('IDXregister');
             $register['url'] = $this->session->get('login_to', '/account.html');
 
-            (new ShoppingBiz())->updateCart($this->shopId, $register['customer_info']['customer_id'], $this->cartList);
+            $this->cartList = (new ShoppingBiz())->updateCart($this->shopId, $register['customer_info']['customer_id'], $this->cartList);
+            $this->session->set('cart_list', json_encode($this->cartList));
         }
 
         return $register;
@@ -132,6 +139,8 @@ class AjaxController extends Controller
         if ($isNew) {
             $this->cartList[$sku] = $cartData;
         }
+
+        $this->cartList = (new ShoppingBiz())->updateCart($this->shopId, $this->customerId, $this->cartList);
         $this->session->set('cart_list', json_encode($this->cartList));
 
         $this->session->remove($idempotentField);
@@ -175,14 +184,14 @@ class AjaxController extends Controller
         }
 
         $cartData = [
-            'shop_id' => $this->shopId,
             'product_id' => (int)$skuInfo['product_id'],
             'sku' => $sku,
             'qty' => $prodQty,
             'price' => (float)$skuInfo['price']
         ];
 
-        $cartPrice = (float)format_price($cartData['price'], $this->currency, $prodQty);
+        $prodPrice = (float)format_price($cartData['price'], $this->currency, $prodQty);
+        $cartPrice = $prodPrice;
         $cartQty = $prodQty;
         $isNew = true;
         if (!empty($this->cartList)) {
@@ -198,16 +207,28 @@ class AjaxController extends Controller
             }
         }
         if ($isNew) {
-            $this->cartList[$cartSku] = $cartData;
+            $this->cartList[$sku] = $cartData;
         }
+
+        $this->cartList = (new ShoppingBiz())->updateCart($this->shopId, $this->customerId, $this->cartList);
         $this->session->set('cart_list', json_encode($this->cartList));
 
         $this->session->remove($idempotentField);
 
         return [
             'status' => 'success',
-            'cart_qty' => $cartQty,
+            'prod_price' => format_price_total($prodPrice, $this->currency),
             'cart_price' => format_price_total($cartPrice, $this->currency)
+        ];
+    }
+
+    public function getZoneList()
+    {
+        $countryId = (int)$this->get('country_id', 0);
+        $zoneList = (new AddressBiz())->getZoneList($this->shopId, $countryId, 1, 1000);
+        return [
+            'status' => 'success',
+            'zone_list' => $zoneList ? $zoneList : []
         ];
     }
 }

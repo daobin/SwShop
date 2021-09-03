@@ -46,7 +46,7 @@ class IndexController extends Controller
     public function logout()
     {
         $this->session->clear();
-        $this->response->redirect('/login.html');
+        return $this->response->redirect('/login.html');
     }
 
     public function pageNotFound()

@@ -4,10 +4,105 @@ if ($('#hd-prod-detail-scroll').length == 1) {
     prodScrollWidth = $('#hd-prod-detail-scroll').width();
     prodScrollTop = $('#hd-prod-detail-scroll').offset().top;
 }
-var winHalfHeight = $(window).height() / 2;
+var winHeight = $(window).height();
+var winHalfHeight = winHeight / 2;
+var countryZoneList = [];
+
+// Box Dialog
+var boxDialog = $('#hd-dialog-box').modal({
+    show: false,
+    backdrop: 'static'
+});
+
+// Tip Dialog
+var tipDialog = $('#hd-dialog-tip').modal({
+    show: false
+});
+window.alert = function (msg) {
+    if (msg != undefined && msg != '') {
+        $('#hd-dialog-tip .modal-body').html('<p>' + msg + '</p>');
+        tipDialog.modal('show');
+    }
+};
+
+function getCountryZoneList(countryId, init) {
+    if (countryId == '0') {
+        $('select[name="state_id"]').html('').addClass('hd-display-none');
+        $('input[name="state"]').val('').removeClass('hd-display-none').prop('disabled', true);
+        return;
+    }
+
+    if (countryZoneList[countryId] != undefined) {
+        if (countryZoneList[countryId].length > 0) {
+            $('input[name="state"]').val('').addClass('hd-display-none').prop('disabled', false);
+            $('select[name="state_id"]').html(function () {
+                var html = '';
+                var stateId = $(this).data('id');
+                for (let zone of countryZoneList[countryId]) {
+                    if(stateId == zone['zone_id']){
+                        $(this).data('id', '');
+                        html += '<option value="' + zone['zone_id'] + '" selected>' + zone['zone_name'] + '</option>';
+                    }else{
+                        html += '<option value="' + zone['zone_id'] + '">' + zone['zone_name'] + '</option>';
+                    }
+                }
+                return html;
+            }).removeClass('hd-display-none');
+        } else {
+            $('select[name="state_id"]').html('').addClass('hd-display-none');
+            $('input[name="state"]').val('').removeClass('hd-display-none').prop('disabled', false);
+        }
+        return;
+    }
+
+    $.ajax({
+        url: '/zones.html?country_id=' + countryId,
+        success: function (res) {
+            if (res.zone_list != undefined) {
+                countryZoneList[countryId] = res.zone_list;
+                if (res.zone_list.length > 0) {
+                    $('input[name="state"]').val('').addClass('hd-display-none').prop('disabled', false);
+                    $('select[name="state_id"]').html(function () {
+                        var html = '';
+                        var stateId = $(this).data('id');
+                        for (let zone of countryZoneList[countryId]) {
+                            if(stateId == zone['zone_id']){
+                                $(this).data('id', '');
+                                html += '<option value="' + zone['zone_id'] + '" selected>' + zone['zone_name'] + '</option>';
+                            }else{
+                                html += '<option value="' + zone['zone_id'] + '">' + zone['zone_name'] + '</option>';
+                            }
+                        }
+                        return html;
+                    }).removeClass('hd-display-none');
+                } else {
+                    $('select[name="state_id"]').html('').addClass('hd-display-none');
+                    if(init !== true){
+                        $('input[name="state"]').val('');
+                    }
+                    $('input[name="state"]').removeClass('hd-display-none').prop('disabled', false);
+                }
+            }
+        },
+        error: function () {
+            alert('Unknown error, please refresh the page later and try again!');
+        }
+    });
+}
+
+// Get country's zone list
+getCountryZoneList($.trim($('select[name="country_id"]').val()), true);
+
+$('select[name="country_id"]').change(function () {
+    getCountryZoneList($.trim($(this).val()));
+});
+
+if ($('#hd-footer').offset().top < (winHeight - $('#hd-footer').innerHeight())) {
+    $('#hd-footer').addClass('fixed');
+}
 
 $(document).scroll(function () {
-    let winScrollTop = $(this).scrollTop();
+    var winScrollTop = $(this).scrollTop();
 
     // 商品详情定位
     if (prodScrollTop > 0) {
@@ -28,54 +123,36 @@ $(document).scroll(function () {
     }
 });
 
-// Box Dialog
-var boxDialog = $('#hd-dialog-box').modal({
-    show: false,
-    backdrop: 'static'
-});
-
-// Tip Dialog
-var tipDialog = $('#hd-dialog-tip').modal({
-    show: false
-});
-window.alert = function (msg) {
-    if (msg != undefined && msg != '') {
-        $('#hd-dialog-tip .modal-body').html('<p>' + msg + '</p>');
-        tipDialog.modal('show');
-    }
-};
-
-// 类目导航悬停下拉
+// Category Nav Hover
 $('#hd-header-navbar li.dropdown').hover(function () {
     $(this).find('a[data-toggle="dropdown"]').click();
 }, function () {
     $(this).click();
 });
 
-// 返回顶端
+// Back to Top
 $('#hd-back-top').click(function () {
     $('html').animate({
         scrollTop: '0'
     }, 600);
 });
 
-// 商品详情定位
+// Prod desc position
 $('#hd-prod-detail-scroll li a').click(function () {
-    let idx = $('#hd-prod-detail-scroll li a').index($(this));
-    let scrollTop = $('.hd-prod-detail-content').eq(idx).offset().top - 70;
+    var idx = $('#hd-prod-detail-scroll li a').index($(this));
+    var scrollTop = $('.hd-prod-detail-content').eq(idx).offset().top - 70;
     $('html').animate({
         scrollTop: scrollTop + 'px'
     }, 600);
 });
 
-// 更新购物车商品
 function upCartProd(eleObj) {
     if (!eleObj.parent('div').hasClass('hd-up-cart-prod')) {
         return;
     }
 
-    let qty = eleObj.parent('div').find('.hd-prod-qty-val').val();
-    let sku = eleObj.parent('div').siblings('.hd-sku').val();
+    var qty = eleObj.parent('div').find('.hd-prod-qty-val').val();
+    var sku = eleObj.parent('div').siblings('.hd-sku').val();
 
     $.ajax({
         type: 'post',
@@ -88,6 +165,8 @@ function upCartProd(eleObj) {
         success: function (res) {
             alert(res.msg);
             if (res.status == 'success') {
+                console.log(eleObj.parent('div.hd-up-cart-prod').parent('td').siblings('.hd-prod-total'));
+                eleObj.parent('div.hd-up-cart-prod').parent('td').siblings('.hd-prod-total').text(res.prod_price);
                 $('#hd-cart-sub-total').text(res.cart_price);
             }
         },
@@ -97,14 +176,13 @@ function upCartProd(eleObj) {
     });
 }
 
-// 商品数量、添加购物车
 $(document).on('keyup', '.hd-prod-qty-val', function () {
-    let qty = $(this).val().replace(/[^\d]+/, '');
+    var qty = $(this).val().replace(/[^\d]+/, '');
     if (qty == '') {
         return;
     }
 
-    let max_qty = parseInt($(this).data('qty'));
+    var max_qty = parseInt($(this).data('qty'));
     qty = parseInt(qty) > max_qty ? max_qty : qty;
     $(this).val(qty);
 
@@ -121,8 +199,8 @@ $(document).on('keyup', '.hd-prod-qty-val', function () {
     upCartProd($(this));
 
 }).on('click', '.hd-prod-qty-minus', function () {
-    let idx = $('.hd-prod-qty-minus').index($(this));
-    let qty = $.trim($('.hd-prod-qty-val').eq(idx).val());
+    var idx = $('.hd-prod-qty-minus').index($(this));
+    var qty = $.trim($('.hd-prod-qty-val').eq(idx).val());
     qty = parseInt(qty) - 1;
     qty = qty > 0 ? qty : 1;
 
@@ -136,11 +214,11 @@ $(document).on('keyup', '.hd-prod-qty-val', function () {
     upCartProd($(this));
 
 }).on('click', '.hd-prod-qty-plus', function () {
-    let idx = $('.hd-prod-qty-plus').index($(this));
-    let qty = $.trim($('.hd-prod-qty-val').eq(idx).val());
+    var idx = $('.hd-prod-qty-plus').index($(this));
+    var qty = $.trim($('.hd-prod-qty-val').eq(idx).val());
     qty = parseInt(qty) + 1;
 
-    let max_qty = parseInt($(this).data('qty'));
+    var max_qty = parseInt($(this).data('qty'));
     qty = parseInt(qty) > max_qty ? max_qty : qty;
 
     $('.hd-prod-qty-val').eq(idx).val(qty);
@@ -153,9 +231,9 @@ $(document).on('keyup', '.hd-prod-qty-val', function () {
     upCartProd($(this));
 
 }).on('click', '#hd-add-to-cart', function () {
-    let idx = $('.hd-add-to-cart').index($(this));
-    let sku = $('#hd-sku').val();
-    let qty = $('#hd-prod-qty-val').val();
+    var idx = $('.hd-add-to-cart').index($(this));
+    var sku = $('#hd-sku').val();
+    var qty = $('#hd-prod-qty-val').val();
     $.ajax({
         type: 'post',
         url: '/add-to-cart.html',
@@ -167,18 +245,18 @@ $(document).on('keyup', '.hd-prod-qty-val', function () {
         success: function (res) {
             alert(res.msg);
             if (res.status == 'success') {
-                let cartQty = res.cart_qty == undefined ? 0 : res.cart_qty;
+                var cartQty = res.cart_qty == undefined ? 0 : res.cart_qty;
                 $('#hd-nav-icon .cart .badge, #hd-nav-icon .cart2 .badge').text(cartQty);
 
-                let modalTitle = 'Add to Cart Successfully';
-                let modalBody = '<div class="form-group hd-prod-box hd-font-size-18">' +
+                var modalTitle = 'Add to Cart Successfully';
+                var modalBody = '<div class="form-group hd-prod-box hd-font-size-18">' +
                     '<i class="glyphicon glyphicon-ok text-success"></i>&nbsp;' +
                     '<b class="hd-color-888 hd-display-inline-block hd-margin-right-15">' + res.add_qty + ' item(s) added to cart</b>' +
                     '<b>Total: <span class="price">' + res.add_price + '</span></b></div>' +
                     '<div class="form-group hd-width-100">' +
                     '<img style="width: 100%; border: 1px solid #ddd;" src="' + first_img_src + '" /></div>';
 
-                let modalFooter = '<a href="/shopping/cart.html" class="btn btn-warning hd-display-inline-block hd-margin-right-15">View Cart & Checkout</a>' +
+                var modalFooter = '<a href="/shopping/cart.html" class="btn btn-warning hd-display-inline-block hd-margin-right-15">View Cart & Checkout</a>' +
                     '<a data-dismiss="modal" class="hd-display-inline-block">Continue Shopping &gt;&gt;</a>';
 
                 $('#hd-dialog-box .modal-title').html(modalTitle);
@@ -195,6 +273,10 @@ $(document).on('keyup', '.hd-prod-qty-val', function () {
 }).on('click', 'a.hd-cart-remove-yes', function () {
     $('div.popover').parent('td').parent('tr').remove();
 }).on('click', 'a.hd-cart-remove-no', function () {
+    $('div.popover').siblings('a[data-toggle="popover"]').click();
+}).on('click', 'a.hd-addr-remove-yes', function () {
+    $('div.popover').parent('div.hd-address-opt').parent('div.hd-address').remove();
+}).on('click', 'a.hd-addr-remove-no', function () {
     $('div.popover').siblings('a[data-toggle="popover"]').click();
 });
 
@@ -218,20 +300,41 @@ $('#hd-cart-products a[data-toggle="popover"]').each(function () {
                 '</div>';
         },
         whiteList: {
+            h3: ['class'],
             div: ['class'],
             a: ['class', 'data-sku']
         }
     })
 });
 
+// Remove Address Popover Tool
+$('#hd-address-list a[data-toggle="popover"]').each(function () {
+    $(this).popover({
+        placement: 'bottom',
+        trigger: 'click',
+        html: true,
+        title: 'Remove from your address book ?',
+        content: function () {
+            return '<div class="text-right">' +
+                '<a class="btn btn-sm btn-danger hd-addr-remove-yes" data-addr="' + $(this).data('addr') + '">Yes</a>&nbsp;&nbsp;' +
+                '<a class="btn btn-sm btn-default hd-addr-remove-no">No</a>' +
+                '</div>';
+        },
+        whiteList: {
+            h3: ['class'],
+            div: ['class'],
+            a: ['class', 'data-sku']
+        }
+    })
+});
 
 // Text to pwd
 $(document).on('focus', '.hd-password', function () {
     $(this).prop('type', 'password');
 });
 
-// Register
-$('#hd-form-register').submit(function () {
+// Form Submit
+$('.hd-form').submit(function () {
     $(this).ajaxSubmit({
         dataType: 'json',
         success: function (res) {
@@ -248,20 +351,3 @@ $('#hd-form-register').submit(function () {
     return false;
 });
 
-// Login
-$('#hd-form-login').submit(function () {
-    $(this).ajaxSubmit({
-        dataType: 'json',
-        success: function (res) {
-            alert(res.msg);
-            if (res.url != undefined && res.url != '') {
-                window.location.href = res.url;
-            }
-        },
-        error: function () {
-            alert('Unknown error, please refresh the page later and try again!');
-        }
-    });
-
-    return false;
-});

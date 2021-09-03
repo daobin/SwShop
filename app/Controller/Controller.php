@@ -131,19 +131,34 @@ class Controller
         }
 
         $filterArr = explode(',', $filter);
-
         if (is_string($value)) {
-            foreach ($filterArr as $filter) {
-                $filter = trim($filter);
-                if (empty($filter)) {
-                    continue;
+            return $this->filterInputValue($value, $filterArr);
+        } else if (is_array($value)) {
+            foreach ($value as $idx => $val) {
+                if (is_string($value)) {
+                    $value[$idx] = $this->filterInputValue($val, $filterArr);
                 }
-
-                $value = $filter($value);
             }
-            $value = strip_tags($value);
+        }
 
+        return $value;
+    }
+
+    private function filterInputValue(string $value, array $filterArr): string
+    {
+        $value = strip_tags($value);
+
+        if (empty($filter)) {
             return $value;
+        }
+
+        foreach ($filterArr as $filter) {
+            $filter = trim($filter);
+            if (empty($filter)) {
+                continue;
+            }
+
+            $value = $filter($value);
         }
 
         return $value;

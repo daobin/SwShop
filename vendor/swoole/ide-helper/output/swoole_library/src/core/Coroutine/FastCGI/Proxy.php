@@ -34,7 +34,7 @@ class Proxy
     protected $https = false;
 
     /* @var string */
-    protected $index = 'index.php';
+    protected $index = 'country.php';
 
     /* @var array */
     protected $params = [];

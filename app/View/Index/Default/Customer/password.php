@@ -5,38 +5,36 @@
     <div id="hd-crumb" class="container">
         <ol class="breadcrumb">
             <li><a href="/">Home</a></li>
-            <li class="active">My Profile</li>
+            <li class="active">Change Password</li>
         </ol>
     </div>
     <div class="container">
         <ul class="nav nav-pills nav-justified">
-            <li class="active"><a>My Profile</a></li>
-            <li><a href="/password.html">Change Password</a></li>
+            <li><a href="/account.html">My Profile</a></li>
+            <li class="active"><a>Change Password</a></li>
             <li><a href="/address.html">Address Book</a></li>
             <li><a href="/order.html">Order History</a></li>
         </ul>
         <div class="page-header">
-            <h2 class="hd-color-333">My Profile</h2>
+            <h2 class="hd-color-333">Change Password</h2>
         </div>
         <form class="hd-form form-horizontal hd-margin-top-30" method="post" autocomplete="off">
             <div class="form-group">
-                <label class="control-label col-md-2">Email</label>
+                <label class="control-label col-md-2">Current Password <span class="text-danger">*</span></label>
                 <div class="col-md-10">
-                    <p class="form-control-static"><?php echo $customer_info['email']??''; ?></p>
+                    <input type="text" class="form-control hd-password" name="curr_pwd"/>
                 </div>
             </div>
             <div class="form-group">
-                <label class="control-label col-md-2">First Name <span class="text-danger">*</span></label>
+                <label class="control-label col-md-2">New Password <span class="text-danger">*</span></label>
                 <div class="col-md-10">
-                    <input type="text" class="form-control" name="first_name" maxlength="60"
-                           value="<?php echo $customer_info['first_name']??''; ?>"/>
+                    <input type="text" class="form-control hd-password" name="new_pwd"/>
                 </div>
             </div>
             <div class="form-group">
-                <label class="control-label col-md-2">Last Name <span class="text-danger">*</span></label>
+                <label class="control-label col-md-2">Confirm Password <span class="text-danger">*</span></label>
                 <div class="col-md-10">
-                    <input type="text" class="form-control" name="last_name" maxlength="60"
-                           value="<?php echo $customer_info['last_name']??''; ?>"/>
+                    <input type="text" class="form-control hd-password" name="new_pwd2"/>
                 </div>
             </div>
             <div class="form-group hd-margin-top-30">
