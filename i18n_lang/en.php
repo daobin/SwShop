@@ -20,6 +20,7 @@ return [
     'select_valid_zone' => 'Please select a valid state / province',
     'save_successfully' => 'Saved successfully',
     'save_failed' => 'Save failed',
+    'remove_failed' => 'Removal failed',
     'update' => 'Update',
     'update_completed' => 'Update completed',
     'update_failed' => 'Update failed',

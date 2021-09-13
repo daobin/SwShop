@@ -247,6 +247,23 @@ class AddressBiz
             ['shop_id' => $shopId, 'customer_id' => $customerId, 'customer_address_id' => $addrId])->fields($fields)->find();
     }
 
+    public function deleteAddressById(int $shopId, int $customerId, int $addrId): bool
+    {
+        if ($shopId <= 0 || $customerId <= 0 || $addrId <= 0) {
+            return true;
+        }
+
+        $addrInfo = $this->getAddressById($shopId, $customerId, $addrId);
+        if (empty($addrInfo)) {
+            return true;
+        }
+
+        $cnt = $this->dbHelper->table('customer_address')->where(
+            ['shop_id' => $shopId, 'customer_id' => $customerId, 'customer_address_id' => $addrId])->delete();
+
+        return $cnt > 0 ? true : false;
+    }
+
     public function saveAddress(int $shopId, int $customerId, array $address): int
     {
         if ($shopId <= 0 || $customerId <= 0 || !isset($address['customer_address_id'])) {

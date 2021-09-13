@@ -100,7 +100,8 @@ class CustomerController extends Controller
 
         $data = [
             'default_address_id' => $customerInfo['shipping_address_id'] ?? 0,
-            'address_list' => (new AddressBiz())->getAddressListByCustomerId($this->shopId, $this->customerId)
+            'address_list' => (new AddressBiz())->getAddressListByCustomerId($this->shopId, $this->customerId),
+            'hash_tk' => (new SafeHelper($this->request, $this->response))->buildCsrfToken('IDX', 'del.address'),
         ];
         return $this->render($data);
     }
@@ -140,6 +141,7 @@ class CustomerController extends Controller
         $addrBiz = new AddressBiz();
         $addressList = $addrBiz->getAddressListByCustomerId($this->shopId, $this->customerId);
         if (count($addressList) >= 10) {
+            $this->session->remove($idempotentField);
             return ['status' => 'fail', 'msg' => LanguageHelper::get('max_10_shopping_address', $this->langCode)];
         }
 
@@ -178,6 +180,7 @@ class CustomerController extends Controller
             $emptyTip[] = LanguageHelper::get('invalid_phone_number', $this->langCode);
         }
         if (!empty($emptyTip)) {
+            $this->session->remove($idempotentField);
             return ['status' => 'fail', 'msg' => '* ' . implode('<br/>* ', $emptyTip)];
         }
 

@@ -13,7 +13,6 @@ use App\Biz\ProductBiz;
 use App\Biz\ShoppingBiz;
 use App\Controller\Controller;
 use App\Helper\LanguageHelper;
-use App\Helper\OssHelper;
 
 class AjaxController extends Controller
 {
@@ -220,6 +219,38 @@ class AjaxController extends Controller
             'prod_price' => format_price_total($prodPrice, $this->currency),
             'cart_price' => format_price_total($cartPrice, $this->currency)
         ];
+    }
+
+    public function deleteCartProduct()
+    {
+        $sku = $this->post('sku', 'trim,strtoupper');
+        if ((new ShoppingBiz())->deleteCartSku($this->shopId, $this->customerId, $sku)) {
+            unset($this->cartList[$sku]);
+            $this->session->set('cart_list', json_encode($this->cartList));
+
+            return ['status' => 'success'];
+        }
+
+        return ['status' => 'fail', 'msg' => LanguageHelper::get('remove_failed', $this->langCode)];
+    }
+
+    public function deleteAddress()
+    {
+        $addrId = $this->post('addr', 0);
+        if ((new AddressBiz())->deleteAddressById($this->shopId, $this->customerId, (int)$addrId)) {
+            return ['status' => 'success'];
+        }
+
+        return ['status' => 'fail', 'msg' => LanguageHelper::get('remove_failed', $this->langCode)];
+    }
+
+    public function setDefaultAddress(){
+        $addrId = $this->post('addr', 0);
+        if((new CustomerBiz())->setShippingAddress($this->shopId, $this->customerId, (int)$addrId)){
+            return ['status' => 'success'];
+        }
+
+        return ['status' => 'fail', 'msg' => LanguageHelper::get('remove_failed', $this->langCode)];
     }
 
     public function getZoneList()

@@ -20,6 +20,7 @@ return [
     'select_valid_zone' => '请选择一个有效的州、省',
     'save_successfully' => '保存成功',
     'save_failed' => '保存失败',
+    'remove_failed' => '移除失败',
     'update' => '更新',
     'update_completed' => '更新成功',
     'update_failed' => '更新失败',

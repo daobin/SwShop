@@ -25,6 +25,20 @@ window.alert = function (msg) {
     }
 };
 
+// Loading / Processing
+var processingDialog = $('#hd-dialog-processing').modal({
+    show: false,
+    backdrop: 'static'
+});
+
+function fixedFooter() {
+    if ($('#hd-footer').offset().top <= (winHeight - $('#hd-footer').innerHeight())) {
+        $('#hd-footer').addClass('fixed');
+    } else {
+        $('#hd-footer').removeClass('fixed');
+    }
+}
+
 function getCountryZoneList(countryId, init) {
     if (countryId == '0') {
         $('select[name="state_id"]').html('').addClass('hd-display-none');
@@ -39,10 +53,10 @@ function getCountryZoneList(countryId, init) {
                 var html = '';
                 var stateId = $(this).data('id');
                 for (let zone of countryZoneList[countryId]) {
-                    if(stateId == zone['zone_id']){
+                    if (stateId == zone['zone_id']) {
                         $(this).data('id', '');
                         html += '<option value="' + zone['zone_id'] + '" selected>' + zone['zone_name'] + '</option>';
-                    }else{
+                    } else {
                         html += '<option value="' + zone['zone_id'] + '">' + zone['zone_name'] + '</option>';
                     }
                 }
@@ -66,10 +80,10 @@ function getCountryZoneList(countryId, init) {
                         var html = '';
                         var stateId = $(this).data('id');
                         for (let zone of countryZoneList[countryId]) {
-                            if(stateId == zone['zone_id']){
+                            if (stateId == zone['zone_id']) {
                                 $(this).data('id', '');
                                 html += '<option value="' + zone['zone_id'] + '" selected>' + zone['zone_name'] + '</option>';
-                            }else{
+                            } else {
                                 html += '<option value="' + zone['zone_id'] + '">' + zone['zone_name'] + '</option>';
                             }
                         }
@@ -77,7 +91,7 @@ function getCountryZoneList(countryId, init) {
                     }).removeClass('hd-display-none');
                 } else {
                     $('select[name="state_id"]').html('').addClass('hd-display-none');
-                    if(init !== true){
+                    if (init !== true) {
                         $('input[name="state"]').val('');
                     }
                     $('input[name="state"]').removeClass('hd-display-none').prop('disabled', false);
@@ -97,9 +111,7 @@ $('select[name="country_id"]').change(function () {
     getCountryZoneList($.trim($(this).val()));
 });
 
-if ($('#hd-footer').offset().top < (winHeight - $('#hd-footer').innerHeight())) {
-    $('#hd-footer').addClass('fixed');
-}
+fixedFooter();
 
 $(document).scroll(function () {
     var winScrollTop = $(this).scrollTop();
@@ -139,6 +151,9 @@ $('#hd-back-top').click(function () {
 
 // Prod desc position
 $('#hd-prod-detail-scroll li a').click(function () {
+    $('#hd-prod-detail-scroll li').removeClass('active');
+    $(this).parent('li').addClass('active');
+
     var idx = $('#hd-prod-detail-scroll li a').index($(this));
     var scrollTop = $('.hd-prod-detail-content').eq(idx).offset().top - 70;
     $('html').animate({
@@ -271,13 +286,95 @@ $(document).on('keyup', '.hd-prod-qty-val', function () {
         }
     });
 }).on('click', 'a.hd-cart-remove-yes', function () {
-    $('div.popover').parent('td').parent('tr').remove();
+    processingDialog.modal('show');
+    $.ajax({
+        url: '/delete-cart-product.html',
+        type: 'post',
+        data: {
+            sku: $.trim($(this).data('sku')),
+            hash_tk: $.trim($('#hd-cart-tk').val())
+        },
+        success: function (res) {
+            processingDialog.modal('hide');
+            alert(res.msg);
+            if (res.status != 'success') {
+                return;
+            }
+
+            $('div.popover').parent('td').parent('tr').remove();
+            if ($('#hd-cart-products tr').length <= 1) {
+                var empty = $('#hd-cart-products').parent('div.container').siblings('div.hd-display-none');
+                $('#hd-cart-products').parent('div.container').remove();
+                empty.removeClass('hd-display-none');
+                $('#hd-back-top').hide();
+            }
+
+            fixedFooter();
+        },
+        error: function () {
+            processingDialog.modal('hide');
+            alert('Unknown error, please refresh the page later and try again!');
+        }
+    });
 }).on('click', 'a.hd-cart-remove-no', function () {
     $('div.popover').siblings('a[data-toggle="popover"]').click();
 }).on('click', 'a.hd-addr-remove-yes', function () {
-    $('div.popover').parent('div.hd-address-opt').parent('div.hd-address').remove();
+    processingDialog.modal('show');
+    $.ajax({
+        url: '/delete-address.html',
+        type: 'post',
+        data: {
+            addr: $.trim($(this).data('addr')),
+            hash_tk: $.trim($('#hd-addr-tk').val())
+        },
+        success: function (res) {
+            processingDialog.modal('hide');
+            alert(res.msg);
+            if (res.status != 'success') {
+                return;
+            }
+
+            $('div.popover').parent('div.hd-address-opt').parent('div.hd-address').remove();
+            fixedFooter();
+        },
+        error: function () {
+            processingDialog.modal('hide');
+            alert('Unknown error, please refresh the page later and try again!');
+        }
+    });
 }).on('click', 'a.hd-addr-remove-no', function () {
     $('div.popover').siblings('a[data-toggle="popover"]').click();
+}).on('click', '.hd-set-default input[type="radio"]', function () {
+    if ($('#hd-addr-def').val() == $(this).val()) {
+        return false;
+    }
+
+    $('.hd-set-default input[type="checkbox"]').prop('checked', false);
+    $(this).prop('checked', true);
+
+    processingDialog.modal('show');
+    $.ajax({
+        url: '/default-address.html',
+        type: 'post',
+        data: {
+            addr: $.trim($(this).val()),
+            hash_tk: $.trim($('#hd-addr-tk').val())
+        },
+        success: function (res) {
+            processingDialog.modal('hide');
+            alert(res.msg);
+            if (res.status != 'success') {
+                $('.hd-set-default input[value="' + $('#hd-addr-def').val() + '"]').prop('checked', true);
+                return;
+            }
+        },
+        error: function () {
+            processingDialog.modal('hide');
+            $('.hd-set-default input[value="' + $('#hd-addr-def').val() + '"]').prop('checked', true);
+
+            alert('Unknown error, please refresh the page later and try again!');
+        }
+    });
 });
 
 // Tip Tool
@@ -323,7 +420,7 @@ $('#hd-address-list a[data-toggle="popover"]').each(function () {
         whiteList: {
             h3: ['class'],
             div: ['class'],
-            a: ['class', 'data-sku']
+            a: ['class', 'data-addr']
         }
     })
 });

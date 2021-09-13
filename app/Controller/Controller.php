@@ -184,7 +184,8 @@ class Controller
             'shop_id' => $this->shopId,
             'timestamp' => $data['timestamp'],
             'customer_id' => $data['customer_id'],
-            'cart_qty' => $this->cartQty
+            'cart_qty' => $this->cartQty,
+            'controller' => $this->request->controller
         ];
 
         // Device

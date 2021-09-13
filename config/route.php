@@ -10,12 +10,18 @@ declare(strict_types=1);
 use App\Helper\RouteHelper;
 
 // 店铺前台路由配置
-RouteHelper::get('/', 'Index.Index.index');
-RouteHelper::get('/login', 'Index.Index.login');
-RouteHelper::get('/logout', 'Index.Index.logout');
 RouteHelper::post('/login', 'Index.Ajax.loginProcess');
 RouteHelper::post('/register', 'Index.Ajax.registerProcess');
 RouteHelper::get('/zones', 'Index.Ajax.getZoneList');
+RouteHelper::post('/add-to-cart', 'Index.Ajax.addToCart');
+RouteHelper::post('/update-cart-product', 'Index.Ajax.updateCartProduct');
+RouteHelper::post('/delete-cart-product', 'Index.Ajax.deleteCartProduct');
+RouteHelper::post('/default-address', 'Index.Ajax.setDefaultAddress');
+RouteHelper::post('/delete-address', 'Index.Ajax.deleteAddress');
+
+RouteHelper::get('/', 'Index.Index.index');
+RouteHelper::get('/login', 'Index.Index.login');
+RouteHelper::get('/logout', 'Index.Index.logout');
 RouteHelper::any('/account', 'Index.Customer.index');
 RouteHelper::any('/password', 'Index.Customer.password');
 RouteHelper::get('/address', 'Index.Customer.address');
@@ -31,8 +37,6 @@ RouteHelper::get('/<prod_name>-p<prod_id>', 'Index.Product.detail', [
     'prod_name' => '[\w\-]+',
     'prod_id' => '\d+',
 ]);
-RouteHelper::post('/add-to-cart', 'Index.Ajax.addToCart');
-RouteHelper::post('/update-cart-product', 'Index.Ajax.updateCartProduct');
 RouteHelper::get('/shopping/cart', 'Index.Shopping.cart');
 RouteHelper::get('/shopping/confirmation', 'Index.Shopping.confirmation');
 RouteHelper::post('/shopping/payment', 'Index.Shopping.payment');

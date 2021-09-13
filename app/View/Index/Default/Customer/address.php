@@ -23,8 +23,7 @@
                 </small>
                 <?php if (count($address_list) < 10) { ?>
                     <a class="btn btn-info pull-right" href="/address/add.html">
-                        <i class="glyphicon glyphicon-plus"></i>
-                        Add Address
+                        &plus; Add
                     </a>
                 <?php } ?>
             </h2>
@@ -50,11 +49,11 @@
                         </div>
                         <div class="hd-address-opt">
                             <label class="hd-set-default hd-margin-right-15">
-                                <input class="hd-cursor-pointer" type="checkbox"
+                                <input class="hd-cursor-pointer" type="radio" name="def_addr"
                                     <?php if ($default_address_id == $address['customer_address_id']) {
                                         echo ' checked ';
                                     } ?>
-                                       data-addr="<?php echo $address['customer_address_id']; ?>"/>
+                                       value="<?php echo $address['customer_address_id']; ?>"/>
                                 <span>set as Default address</span>
                             </label>
                             <a class="btn btn-sm" href="/address/<?php echo $address['customer_address_id']; ?>.html">
@@ -72,5 +71,7 @@
             ?>
         </div>
     </div>
+    <input type="hidden" id="hd-addr-tk" value="<?php echo $hash_tk ?? ''; ?>"/>
+    <input type="hidden" id="hd-addr-def" value="<?php echo $default_address_id ?? ''; ?>"/>
 <?php
 \App\Helper\TemplateHelper::widget('index', 'footer', $widget_params ?? []);

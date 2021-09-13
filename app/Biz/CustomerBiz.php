@@ -85,6 +85,16 @@ class CustomerBiz
         return ['status' => 'success', 'msg' => '', 'customer_info' => $this->getCustomerByEmail($shopId, $email)];
     }
 
+    public function setShippingAddress(int $shopId, int $customerId, int $addrId): int
+    {
+        if ($shopId <= 0 || $customerId <= 0 || $addrId <= 0) {
+            return 0;
+        }
+
+        return $this->dbHelper->table('customer')->where(
+            ['shop_id' => $shopId, 'customer_id' => $customerId])->update(['shipping_address_id' => $addrId]);
+    }
+
     public function getCustomerById(int $shopId, int $customerId): array
     {
         if ($shopId <= 0 || $customerId <= 0) {

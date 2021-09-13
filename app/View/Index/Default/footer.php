@@ -1,4 +1,4 @@
-<div id="hd-footer" class="hd-margin-top-30">
+<div id="hd-footer" class="hd-margin-top-60">
     <div class="container">
         <div class="payment text-center hd-margin-top-bottom-15">
             <img src="/static/index/default/payment-list.png" style="max-width: 80%; height: auto;" />
@@ -13,14 +13,14 @@
     </div>
 </div>
 <div class="modal" id="hd-dialog-tip">
-    <div class="modal-dialog modal-sm" style="margin-top: 15%;">
+    <div class="modal-dialog modal-sm" style="margin-top: 20%;">
         <div class="modal-content">
             <div class="modal-body"></div>
         </div>
     </div>
 </div>
 <div class="modal" id="hd-dialog-box">
-    <div class="modal-dialog" style="margin-top: 15%;">
+    <div class="modal-dialog" style="margin-top: 20%;">
         <div class="modal-content">
             <div class="modal-header">
                 <button class="close" data-dismiss="modal"><span>&times;</span></button>
@@ -28,6 +28,15 @@
             </div>
             <div class="modal-body"></div>
             <div class="modal-footer"></div>
+        </div>
+    </div>
+</div>
+<div class="modal" id="hd-dialog-processing">
+    <div class="modal-dialog modal-sm" style="margin-top: 25%;">
+        <div class="modal-content">
+            <div class="modal-body" style="padding: 0;">
+                <img src="/static/index/default/loading.gif" style="display: block; width: 60%; margin: 0 auto;"/>
+            </div>
         </div>
     </div>
 </div>
