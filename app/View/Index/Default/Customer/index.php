@@ -9,7 +9,7 @@
         </ol>
     </div>
     <div class="container">
-        <ul class="nav nav-pills nav-justified">
+        <ul class="nav nav-pills nav-justified bg-info hd-border-radius-4">
             <li class="active"><a>My Profile</a></li>
             <li><a href="/password.html">Change Password</a></li>
             <li><a href="/address.html">Address Book</a></li>

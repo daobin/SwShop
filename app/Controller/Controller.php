@@ -21,6 +21,7 @@ class Controller
     protected $session;
     protected $operator;
     protected $customerId;
+    protected $shippingAddressId;
     protected $langCode;
     protected $shopId;
     protected $host;
@@ -52,6 +53,7 @@ class Controller
         $customerInfo = $this->session->get('sp_customer_info');
         $customerInfo = $customerInfo ? json_decode($customerInfo, true) : [];
         $this->customerId = $customerInfo['customer_id'] ?? 0;
+        $this->shippingAddressId = $customerInfo['shipping_address_id'] ?? 0;
 
         $this->host = $this->request->header['host'];
         $this->shopId = $this->request->shopId;

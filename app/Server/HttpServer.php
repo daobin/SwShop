@@ -133,7 +133,9 @@ class HttpServer
                     // 登录状态验证
                     $customerInfo = $session->get('sp_customer_info');
                     if (in_array(strtolower($request->controller), ['customer', 'shopping'])) {
-                        $session->set('login_to', RouteHelper::buildUrl($request->module . '.' . $request->controller . '.' . $request->action));
+                        $modCtrlAct = $request->module . '.' . $request->controller . '.';
+                        $modCtrlAct .= str_replace('Detail', '', $request->action);
+                        $session->set('login_to', RouteHelper::buildUrl($modCtrlAct));
 
                         if (empty($customerInfo) && $request->action != 'cart') {
                             if ($request->isAjax) {

@@ -11,6 +11,7 @@ namespace App\Controller\Index;
 
 use App\Biz\AddressBiz;
 use App\Biz\CustomerBiz;
+use App\Biz\OrderBiz;
 use App\Controller\Controller;
 use App\Helper\LanguageHelper;
 use App\Helper\SafeHelper;
@@ -98,9 +99,13 @@ class CustomerController extends Controller
     {
         $customerInfo = (new CustomerBiz())->getCustomerById($this->shopId, $this->customerId);
 
+        $from = $this->get('from');
+        $from = !empty($from) ? '?from=' . $from : '';
+
         $data = [
             'default_address_id' => $customerInfo['shipping_address_id'] ?? 0,
             'address_list' => (new AddressBiz())->getAddressListByCustomerId($this->shopId, $this->customerId),
+            'from' => $from,
             'hash_tk' => (new SafeHelper($this->request, $this->response))->buildCsrfToken('IDX', 'del.address'),
         ];
         return $this->render($data);
@@ -119,10 +124,14 @@ class CustomerController extends Controller
         $countryList = $addrBiz->getCountryList($this->shopId, 1, 1000);
         $customerInfo = (new CustomerBiz())->getCustomerById($this->shopId, $this->customerId);
 
+        $from = $this->get('from');
+        $from = !empty($from) ? '?from=' . $from : '';
+
         $data = [
             'addr_info' => $addrInfo,
             'country_list' => $countryList,
             'is_default' => $customerInfo['shipping_address_id'] == $addrId,
+            'from' => $from,
             'hash_tk' => (new SafeHelper($this->request, $this->response))->buildCsrfToken('IDX', 'address'),
         ];
         return $this->render($data);
@@ -220,11 +229,19 @@ class CustomerController extends Controller
             'updated_by' => $this->operator
         ];
 
-        if ($addrBiz->saveAddress($this->shopId, $this->customerId, $address) > 0) {
+        $addrId = $addrBiz->saveAddress($this->shopId, $this->customerId, $address);
+        if ($addrId > 0) {
             $this->session->remove($idempotentField);
+            $url = '/address.html';
+
+            $from = $this->get('from');
+            if ($from == 'confirmation') {
+                $url = '/shopping/confirmation.html?shipping_address=' . $addrId;
+            }
+
             return [
                 'status' => 'success',
-                'url' => '/address.html',
+                'url' => $url,
                 'msg' => LanguageHelper::get('save_successfully', $this->langCode)
             ];
         }
@@ -235,12 +252,15 @@ class CustomerController extends Controller
 
     public function order()
     {
+        $orderList = (new OrderBiz())->getOrderListByCustomerId($this->shopId, $this->customerId);
         return $this->render();
     }
 
     public function orderDetail()
     {
         $orderId = $this->get('order_id', 0);
+        $orderInfo = (new OrderBiz())->getCustomerOrderById($this->shopId, $this->customerId, (int)$orderId);
+
         return $this->render();
     }
 }

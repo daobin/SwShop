@@ -5,11 +5,12 @@
     <div id="hd-crumb" class="container">
         <ol class="breadcrumb">
             <li><a href="/">Home</a></li>
-            <li class="active">Address Book</li>
+            <li><a href="/address.html">Address Book</a></li>
+            <li class="active">Address Detail</li>
         </ol>
     </div>
     <div class="container">
-        <ul class="nav nav-pills nav-justified">
+        <ul class="nav nav-pills nav-justified bg-info hd-border-radius-4">
             <li><a href="/account.html">My Profile</a></li>
             <li><a href="/password.html">Change Password</a></li>
             <li class="active"><a>Address Book</a></li>
@@ -17,11 +18,11 @@
         </ul>
         <div class="page-header">
             <h2 class="hd-color-333">
-                Address Book
-                <small class="hd-font-size-18 hd-margin-left-15 hidden-xs hidden-sm">Edit and save your shipping
-                    address
+                Address Detail
+                <small class="hd-font-size-18 hd-margin-left-15 hidden-xs hidden-sm">
+                    Edit and save your shipping address
                 </small>
-                <a class="btn btn-info pull-right" href="/address.html">
+                <a class="btn btn-info pull-right" href="/address.html<?php echo $from ?? ''; ?>">
                     &lt;&lt; Back
                 </a>
             </h2>

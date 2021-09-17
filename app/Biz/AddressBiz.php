@@ -297,7 +297,9 @@ class AddressBiz
         }
 
         unset($address['created_at'], $address['created_by']);
-        return $this->dbHelper->table('customer_address')->where(
+        $this->dbHelper->table('customer_address')->where(
             ['shop_id' => $shopId, 'customer_id' => $customerId, 'customer_address_id' => $addrId])->update($address);
+
+        return $addrId;
     }
 }

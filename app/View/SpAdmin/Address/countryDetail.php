@@ -5,7 +5,7 @@
         <form class="layui-form hd-margin-top-30" method="post" autocomplete="off">
             <div class="layui-form-item">
                 <label class="layui-form-label">国家</label>
-                <div class="layui-input-block">
+                <div class="layui-input-block hd-width-500">
                     <select name="country_id">
                         <option value="">请选择国家</option>
                         <?php

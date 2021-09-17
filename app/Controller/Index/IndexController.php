@@ -9,6 +9,7 @@ namespace App\Controller\Index;
 
 use App\Biz\BannerBiz;
 use App\Biz\ConfigBiz;
+use App\Biz\OrderBiz;
 use App\Biz\ProductBiz;
 use App\Controller\Controller;
 use App\Helper\OssHelper;
@@ -30,6 +31,20 @@ class IndexController extends Controller
             'index_bottom_text' => (new ConfigBiz())->getConfigByKey($this->shopId, 'INDEX_BOTTOM_TEXT')
         ];
         return $this->render($data);
+    }
+
+    public function orderTracking()
+    {
+        $orderInfo = [];
+        if ($this->request->isPost) {
+            $orderInfo = (new OrderBiz())->getOrderForTracking($this->shopId, $this->post('email'), $this->post('number'));
+        }
+
+        return $this->render([
+            'order_info' => $orderInfo,
+            'is_post' => $this->request->isPost,
+            'hash_tk' => (new SafeHelper($this->request, $this->response))->buildCsrfToken('IDX', 'ordertracking'),
+        ]);
     }
 
     public function login()

@@ -5,7 +5,7 @@
         <form class="layui-form hd-margin-top-30" method="post" autocomplete="off">
             <div class="layui-form-item">
                 <label class="layui-form-label">语言</label>
-                <div class="layui-input-block">
+                <div class="layui-input-block hd-width-500">
                     <select name="code">
                         <option value="">请选择语言</option>
                         <?php

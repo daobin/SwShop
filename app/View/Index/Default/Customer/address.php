@@ -9,7 +9,7 @@
         </ol>
     </div>
     <div class="container">
-        <ul class="nav nav-pills nav-justified">
+        <ul class="nav nav-pills nav-justified bg-info hd-border-radius-4">
             <li><a href="/account.html">My Profile</a></li>
             <li><a href="/password.html">Change Password</a></li>
             <li class="active"><a>Address Book</a></li>
@@ -22,7 +22,7 @@
                     <?php echo \App\Helper\LanguageHelper::get('max_10_shopping_address', $lange_code); ?>
                 </small>
                 <?php if (count($address_list) < 10) { ?>
-                    <a class="btn btn-info pull-right" href="/address/add.html">
+                    <a class="btn btn-info pull-right" href="/address/add.html<?php echo $from ?? ''; ?>">
                         &plus; Add
                     </a>
                 <?php } ?>
@@ -56,13 +56,21 @@
                                        value="<?php echo $address['customer_address_id']; ?>"/>
                                 <span>set as Default address</span>
                             </label>
-                            <a class="btn btn-sm" href="/address/<?php echo $address['customer_address_id']; ?>.html">
+                            <a class="btn btn-sm"
+                               href="/address/<?php echo $address['customer_address_id']; ?>.html<?php echo $from ?? ''; ?>">
                                 <i class="glyphicon glyphicon-edit"></i>
                             </a>
                             <a class="btn btn-sm" data-toggle="popover"
                                data-addr="<?php echo $address['customer_address_id']; ?>">
                                 <i class="glyphicon glyphicon-trash"></i>
                             </a>
+                            <?php if (!empty($from)) { ?>
+                                <a class="btn btn-sm btn-link"
+                                   href="/shopping/confirmation.html?shipping_address=<?php echo $address['customer_address_id']; ?>">
+                                    <i class="glyphicon glyphicon-ok"></i>
+                                    Select
+                                </a>
+                            <?php } ?>
                         </div>
                     </div>
                     <?php

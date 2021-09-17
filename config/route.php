@@ -29,6 +29,7 @@ RouteHelper::any('/address/add', 'Index.Customer.addressDetail');
 RouteHelper::any('/address/<addr_id>', 'Index.Customer.addressDetail', ['addr_id' => '\d+']);
 RouteHelper::get('/order', 'Index.Customer.order');
 RouteHelper::get('/order/<order_id>', 'Index.Customer.orderDetail', ['order_id' => '\d+']);
+RouteHelper::any('/order-tracking', 'Index.Index.orderTracking');
 RouteHelper::get('/<cate_name>-c<cate_id>', 'Index.Product.category', [
     'cate_name' => '[\w\-]+',
     'cate_id' => '\d+',
@@ -40,8 +41,10 @@ RouteHelper::get('/<prod_name>-p<prod_id>', 'Index.Product.detail', [
 RouteHelper::get('/shopping/cart', 'Index.Shopping.cart');
 RouteHelper::get('/shopping/confirmation', 'Index.Shopping.confirmation');
 RouteHelper::post('/shopping/payment', 'Index.Shopping.payment');
+RouteHelper::get('/shopping/payment-handler', 'Index.Shopping.paymentHandler');
 RouteHelper::get('/shopping/success', 'Index.Shopping.success');
 RouteHelper::get('/page-not-found', 'Index.Index.pageNotFound');
+
 
 // 店铺管理路由配置
 RouteHelper::get('/spadmin', 'SpAdmin.Index.index');
@@ -51,8 +54,8 @@ RouteHelper::post('/spadmin/login', 'SpAdmin.Index.loginProcess');
 RouteHelper::get('/spadmin/logout', 'SpAdmin.Index.logout');
 RouteHelper::get('/spadmin/upload-image', 'SpAdmin.Upload.image');
 RouteHelper::post('/spadmin/upload-image', 'SpAdmin.Upload.uploadImage');
-RouteHelper::get('/spadmin/config-<cfg_grp>', 'SpAdmin.Config.index', ['cfg_grp' => '\w+']);
-RouteHelper::any('/spadmin/config/<cfg_key>', 'SpAdmin.Config.detail', ['cfg_key' => '\w+']);
+RouteHelper::get('/spadmin/config-<cfg_grp>', 'SpAdmin.Config.index', ['cfg_grp' => '[\w\d]+']);
+RouteHelper::any('/spadmin/config/<cfg_key>', 'SpAdmin.Config.detail', ['cfg_key' => '[\w\d]+']);
 RouteHelper::get('/spadmin/country', 'SpAdmin.Address.country');
 RouteHelper::any('/spadmin/country/<addr_id>', 'SpAdmin.Address.countryDetail', ['addr_id' => '\d+']);
 RouteHelper::post('/spadmin/country/delete', 'SpAdmin.Address.countryDelete');
@@ -69,6 +72,11 @@ RouteHelper::get('/spadmin/currency', 'SpAdmin.Currency.index');
 RouteHelper::any('/spadmin/currency/<code>', 'SpAdmin.Currency.detail', ['code' => '[\w\d]+']);
 RouteHelper::post('/spadmin/currency/delete', 'SpAdmin.Currency.delete');
 RouteHelper::get('/spadmin/payment', 'SpAdmin.Payment.index');
+RouteHelper::any('/spadmin/payment/<code>', 'SpAdmin.Payment.detail', ['code' => '[\w\d]+']);
+RouteHelper::post('/spadmin/payment/delete', 'SpAdmin.Payment.delete');
+RouteHelper::get('/spadmin/shipping', 'SpAdmin.Shipping.index');
+RouteHelper::any('/spadmin/shipping/<code>', 'SpAdmin.Shipping.detail', ['code' => '[\w\d]+']);
+RouteHelper::post('/spadmin/shipping/delete', 'SpAdmin.Shipping.delete');
 RouteHelper::get('/spadmin/category', 'SpAdmin.Category.index');
 RouteHelper::any('/spadmin/category/<cate_id>', 'SpAdmin.Category.detail', ['cate_id' => '\d+']);
 RouteHelper::get('/spadmin/product', 'SpAdmin.Product.index');
@@ -80,7 +88,7 @@ RouteHelper::get('/spadmin/order/<order_number>', 'SpAdmin.Order.detail', ['orde
 RouteHelper::get('/spadmin/banner', 'SpAdmin.Banner.index');
 RouteHelper::any('/spadmin/banner/<banner_id>', 'SpAdmin.Banner.detail', ['banner_id' => '\d+']);
 RouteHelper::get('/spadmin/coupon', 'SpAdmin.Coupon.index');
-RouteHelper::any('/spadmin/coupon/<code>', 'SpaAdmin.Coupon.detail', ['code' => '\w+']);
+RouteHelper::any('/spadmin/coupon/<code>', 'SpaAdmin.Coupon.detail', ['code' => '[\w\d]+']);
 RouteHelper::get('/spadmin/time-limited', 'SpAdmin.TimeLimited.index');
 RouteHelper::any('/spadmin/time-limited/<limited_id>', 'SpaAdmin.TimeLimited.detail', ['limited_id' => '\d+']);
 

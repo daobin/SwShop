@@ -12,6 +12,7 @@ a, image, a:active, image:active{border: none !important;}
 .hd-cursor-pointer{cursor: pointer !important;}
 .hd-inline-block{display: inline-block !important; margin-left: 10px !important; margin-top: 10px !important;}
 .hd-width-150{width: 150px !important;}
+.hd-width-500{width: 500px !important;}
 .hd-margin-top-30{margin-top: 30px !important;}
 .hd-padding-top10{padding-top: 10px !important;}
 .hd-padding-top30{padding-top: 30px !important;}

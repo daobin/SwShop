@@ -71,7 +71,7 @@ class ShoppingBiz
     public function updateCart(int $shopId, int $customerId, array $cartList): array
     {
         if ($shopId <= 0 || $customerId <= 0) {
-            return [];
+            return $cartList;
         }
 
         $time = time();

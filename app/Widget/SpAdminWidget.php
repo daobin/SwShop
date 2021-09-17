@@ -40,11 +40,12 @@ class SpAdminWidget extends Widget
                     ['name' => '商城信息', 'icon' => 'layui-icon-tips', 'iframe' => 'config-web_info'],
                     ['name' => '邮件配置', 'icon' => 'layui-icon-email', 'iframe' => 'config-mail'],
                     ['name' => 'OSS 配置', 'icon' => 'layui-icon-file', 'iframe' => 'config-oss'],
-                    ['name' => '仓库配置', 'icon' => 'layui-icon-release', 'iframe' => 'warehouse'],
+                    ['name' => '仓库配置', 'icon' => 'layui-icon-location', 'iframe' => 'warehouse'],
                     ['name' => '语言配置', 'icon' => 'layui-icon-dialogue', 'iframe' => 'language'],
                     ['name' => '币种配置', 'icon' => 'layui-icon-dollar', 'iframe' => 'currency'],
                     ['name' => '国家地址', 'icon' => 'layui-icon-website', 'iframe' => 'country'],
                     ['name' => '支付方式', 'icon' => 'layui-icon-senior', 'iframe' => 'payment'],
+                    ['name' => '货运方式', 'icon' => 'layui-icon-release', 'iframe' => 'shipping'],
                 ]
             ],
         ];

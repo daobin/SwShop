@@ -7,11 +7,15 @@ declare(strict_types=1);
 
 namespace App\Controller\Index;
 
+use App\Biz\AddressBiz;
+use App\Biz\PaymentBiz;
 use App\Biz\ProductBiz;
+use App\Biz\ShippingBiz;
 use App\Biz\ShopBiz;
 use App\Biz\ShoppingBiz;
 use App\Controller\Controller;
 use App\Helper\LanguageHelper;
+use App\Helper\OrderHelper;
 use App\Helper\OssHelper;
 use App\Helper\SafeHelper;
 
@@ -71,12 +75,35 @@ class ShoppingController extends Controller
         return $this->render($data);
     }
 
-    public function confirm()
+    public function confirmation()
     {
-        return $this->render();
+        (new OrderHelper($this->request, $this->response))->buildOrderSummary($this->cartList, $this->customerId, $this->warehouseCode);
+        $orderSummary = $this->session->get('order_summary', '{}');
+        $orderSummary = json_decode($orderSummary, true);
+
+        $shippingMethodList = (new ShippingBiz())->getShippingList($this->shopId);
+        $paymentMethodList = (new PaymentBiz())->getPaymentList($this->shopId);
+
+        $shippingAddrId = (int)$this->get('shipping_address', 0);
+        $shippingAddrId = $shippingAddrId > 0 ? $shippingAddrId : $this->shippingAddressId;
+
+        $data = [
+            'oss_access_host' => (new OssHelper($this->shopId))->accessHost,
+            'shipping_address' => (new AddressBiz())->getAddressById($this->shopId, $this->customerId, $shippingAddrId),
+            'order_summary' => $orderSummary,
+            'shipping_list' => $shippingMethodList,
+            'payment_list' => $paymentMethodList,
+            'cart_tk' => (new SafeHelper($this->request, $this->response))->buildCsrfToken('IDX', 'payment')
+        ];
+        return $this->render($data);
     }
 
     public function payment()
+    {
+
+    }
+
+    public function paymentHandler()
     {
 
     }
