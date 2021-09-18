@@ -110,26 +110,31 @@ $widget_params['shopping_nav_img'] = 'step2.png';
             </tr>
             </tbody>
         </table>
-        <h3 class="hd-margin-top-30">Payment Method</h3>
-        <div id="hd-payment-list" class="hd-margin-top-10">
-            <?php
-            if (!empty($payment_list)) {
-                foreach ($payment_list as $idx => $payment) {
-                    echo '<div><label class="hd-font-weight-normal hd-cursor-pointer">';
-                    if ($idx === 0) {
-                        echo '<input type="radio" name="payment_method" checked value="', xss_text($payment['method_code']), '"/>';
-                    } else {
-                        echo '<input type="radio" name="payment_method" value="', xss_text($payment['method_code']), '"/>';
+        <form method="post" autocomplete="off" id="hd-form-place-order" action="/shopping/payment.html">
+            <h3 class="hd-margin-top-30">Payment Method</h3>
+            <div id="hd-payment-list" class="hd-margin-top-10">
+                <?php
+                if (!empty($payment_list)) {
+                    foreach ($payment_list as $idx => $payment) {
+                        echo '<div><label class="hd-font-weight-normal hd-cursor-pointer">';
+                        if ($idx === 0) {
+                            echo '<input type="radio" name="payment_method" checked value="', xss_text($payment['method_code']), '"/>';
+                        } else {
+                            echo '<input type="radio" name="payment_method" value="', xss_text($payment['method_code']), '"/>';
+                        }
+                        echo ' Checkout with ', xss_text($payment['method_name']);
+                        echo '</label></div>';
                     }
-                    echo ' Checkout with ', xss_text($payment['method_name']);
-                    echo '</label></div>';
                 }
-            }
-            ?>
-        </div>
-        <div class="hd-margin-top-60 text-right">
-            <input type="button" class="btn btn-lg btn-warning" id="hd-place-order" value="Place Order"/>
-        </div>
+                ?>
+            </div>
+            <div class="hd-margin-top-60 text-right">
+                <input type="hidden" name="address_id"
+                       value="<?php echo $shipping_address['customer_address_id'] ?? 0; ?>"/>
+                <input type="hidden" name="hash_tk" value="<?php echo $hash_tk ?? ''; ?>"/>
+                <input type="submit" class="btn btn-lg btn-warning" value="Place Order"/>
+            </div>
+        </form>
     </div>
 <?php
 \App\Helper\TemplateHelper::widget('index', 'footer', $widget_params);

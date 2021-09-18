@@ -1,9 +1,9 @@
 <?php
 /**
- * 订单助力
+ * 订单助手
  * User: dao bin
- * Date: 2021/9/16
- * Time: 16:26
+ * Date: 2021/9/18
+ * Time: 14:20
  */
 declare(strict_types=1);
 
@@ -28,12 +28,11 @@ class OrderHelper
         $this->session = new SessionHelper($request, $response);
     }
 
-    public function buildOrderSummary(array $cartList, int $customerId, string $warehouseCode)
+    public function buildOrderSummaryForError(array $cartList, int $customerId, string $warehouseCode): array
     {
-        $orderSummary = [];
         if (empty($cartList) || $customerId <= 0 || empty($warehouseCode)) {
-            $this->session->set('order_summary', json_encode($orderSummary));
-            return;
+            $this->session->set('order_summary', json_encode([]));
+            return ['invalid_order' => 1];
         }
 
         $prodBiz = new ProductBiz();
@@ -47,8 +46,9 @@ class OrderHelper
         $prodList = $prodBiz->getProductList(['shop_id' => $this->shopId, 'language_code' => $this->langCode, 'product_ids' => $prodIds], [], 1, count($prodIds));
         $prodNameList = $prodList ? array_column($prodList, 'product_name', 'product_id') : [];
 
-        $modified = false;
+        $error = [];
         $subtotal = 0;
+
         foreach ($cartList as $sku => $cartInfo) {
             $prodId = (int)$cartInfo['product_id'];
             $cartList[$sku]['product_name'] = $prodNameList[$prodId] ?? '';
@@ -56,14 +56,20 @@ class OrderHelper
 
             $prodQty = $skuQtyPriceList[$sku]['qty'] ?? 0;
             if ($cartInfo['qty'] > $prodQty) {
-                $modified = true;
+                $error['qty_price_modified'] = 1;
                 $cartList[$sku]['qty'] = (int)$prodQty;
+            }
+            if((int)$cartList[$sku]['qty'] <= 0){
+                $error['sold_out'] = 1;
             }
 
             $prodPrice = $skuQtyPriceList[$sku]['price'] ?? 0;
             if ($cartInfo['price'] != $prodPrice) {
-                $modified = true;
+                $error['qty_price_modified'] = 1;
                 $cartList[$sku]['price'] = (float)$prodPrice;
+            }
+            if((float)$cartList[$sku]['price'] <= 0){
+                $error['sold_out'] = 1;
             }
 
             $cartList[$sku]['price_text'] = format_price($cartList[$sku]['price'], $this->currency, 1, true);
@@ -72,10 +78,15 @@ class OrderHelper
             $subtotal += (float)format_price($cartList[$sku]['price'], $this->currency, $cartList[$sku]['qty']);
         }
 
-        $orderSummary['prod_list'] = $cartList;
-        if ($modified) {
-            (new ShoppingBiz())->updateCart($this->shopId, $customerId, $cartList);
+        if (isset($error['qty_price_modified'])) {
+            $cartList = (new ShoppingBiz())->updateCart($this->shopId, $customerId, $cartList);
+            $this->session->set('cart_list', json_encode($cartList));
         }
+
+        $orderSummary = [
+            'warehouse_code' => $warehouseCode,
+            'prod_list' => $cartList
+        ];
 
         $shippingFee = 0;
 
@@ -100,5 +111,8 @@ class OrderHelper
         ];
 
         $this->session->set('order_summary', json_encode($orderSummary));
+
+        unset($cartList, $orderSummary);
+        return $error;
     }
 }

@@ -37,4 +37,8 @@ return [
     'prod_qty_invalid' => '商品数量无效',
     'prod_sold_out' => '商品已缺货',
     'sold_out' => '缺货',
+    'invalid_payment' => '支付方式无效',
+    'invalid_order' => '订单无效',
+    'sold_out_for_shopping' => '存在缺货商品。 在结账前应排除缺货商品，点击此处将其全部删除。',
+    'modified_for_shopping' => '库存或价格有更新，请确认购物清单。',
 ];

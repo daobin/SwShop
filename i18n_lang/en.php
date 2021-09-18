@@ -37,4 +37,8 @@ return [
     'prod_qty_invalid' => 'Invalid item quantity',
     'prod_sold_out' => 'Product is out of stock',
     'sold_out' => 'Sold Out',
+    'invalid_payment' => 'Invalid payment method',
+    'invalid_order' => 'Invalid order',
+    'sold_out_for_shopping' => 'There are out-of-stock items. Out of stock items should be excluded before checkout, click here to delete them all.',
+    'modified_for_shopping' => 'The inventory or price is updated, please confirm the shopping list.',
 ];
