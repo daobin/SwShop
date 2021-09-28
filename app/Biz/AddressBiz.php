@@ -224,7 +224,7 @@ class AddressBiz
         }
 
         $fields = [
-            'customer_address_id', 'address_type', 'first_name', 'last_name', 'street_address', 'street_address_sub',
+            'customer_address_id', 'customer_id', 'address_type', 'first_name', 'last_name', 'street_address', 'street_address_sub',
             'postcode', 'city', 'zone_id', 'zone_name', 'country_id', 'country_name', 'telephone', 'updated_at', 'updated_by'
         ];
 
@@ -239,7 +239,7 @@ class AddressBiz
         }
 
         $fields = [
-            'customer_address_id', 'address_type', 'first_name', 'last_name', 'street_address', 'street_address_sub',
+            'customer_address_id', 'customer_id', 'address_type', 'first_name', 'last_name', 'street_address', 'street_address_sub',
             'postcode', 'city', 'zone_id', 'zone_name', 'country_id', 'country_name', 'telephone', 'updated_at', 'updated_by'
         ];
 

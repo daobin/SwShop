@@ -4,9 +4,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Biz\ConfigBiz;
-use App\Biz\CurrencyBiz;
 use App\Biz\WarehouseBiz;
-use App\Helper\ConfigHelper;
 use App\Helper\LanguageHelper;
 use App\Helper\SessionHelper;
 use App\Helper\TemplateHelper;
@@ -170,15 +168,15 @@ class Controller
     {
         if ($this->request->module === 'Index') {
             $tplTheme = 'Default';
-            $template ??= implode('/', [$this->request->module, $tplTheme, $this->request->controller, $this->request->action]);
+            $template = $template ?? implode('/', [$this->request->module, $tplTheme, $this->request->controller, $this->request->action]);
         } else {
-            $template ??= implode('/', [$this->request->module, $this->request->controller, $this->request->action]);
+            $template = $template ?? implode('/', [$this->request->module, $this->request->controller, $this->request->action]);
         }
 
         $timestamp = (new ConfigBiz())->getConfigByKey($this->shopId, 'TIMESTAMP');
         $data['timestamp'] = $timestamp['config_value'] ?? '?' . date('YmdH');
         $data['customer_id'] = $this->customerId;
-        $data['lange_code'] = $this->langCode;
+        $data['lang_code'] = $this->langCode;
         $data['currency'] = $this->currency;
 
         // Widget Params

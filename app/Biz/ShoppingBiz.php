@@ -20,6 +20,23 @@ class ShoppingBiz
         $this->dbHelper = new DbHelper();
     }
 
+    public function deleteCustomerCart(int $shopId, int $customerId): bool
+    {
+        if ($shopId <= 0 || $customerId <= 0) {
+            return true;
+        }
+
+        $cartSkuList = $this->getCartListByCustomerId($shopId, $customerId);
+        if (empty($cartSkuList)) {
+            return true;
+        }
+
+        $cnt = $this->dbHelper->table('shopping_cart')->where(
+            ['shop_id' => $shopId, 'customer_id' => $customerId])->delete();
+
+        return $cnt > 0 ? true : false;
+    }
+
     public function deleteCartSku(int $shopId, int $customerId, string $sku): bool
     {
         if ($shopId <= 0 || $customerId <= 0 || $sku === '') {

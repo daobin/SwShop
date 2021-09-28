@@ -59,7 +59,7 @@ class OrderHelper
                 $error['qty_price_modified'] = 1;
                 $cartList[$sku]['qty'] = (int)$prodQty;
             }
-            if((int)$cartList[$sku]['qty'] <= 0){
+            if ((int)$cartList[$sku]['qty'] <= 0) {
                 $error['sold_out'] = 1;
             }
 
@@ -68,7 +68,7 @@ class OrderHelper
                 $error['qty_price_modified'] = 1;
                 $cartList[$sku]['price'] = (float)$prodPrice;
             }
-            if((float)$cartList[$sku]['price'] <= 0){
+            if ((float)$cartList[$sku]['price'] <= 0) {
                 $error['sold_out'] = 1;
             }
 

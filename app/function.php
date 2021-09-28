@@ -59,7 +59,7 @@ function format_price_total(float $price, array $currency): string
 // XSS 防护
 function xss_text(string $text, string $langCode = ''): string
 {
-    $text ??= '';
+    $text = trim($text);
     if (!empty($langCode)) {
         $text = \App\Helper\LanguageHelper::get($text, $langCode);
     }
@@ -127,4 +127,61 @@ function chk_file_security_is_risk(string $filename): bool
     }
 
     return false;
+}
+
+// 获取订单状态值
+function get_order_status_id(string $status, string $langCode): int
+{
+    $statusIds = [
+        'en' => [
+            'waiting' => 1,
+            'pending' => 2,
+            'in_process' => 3,
+            'shipped' => 4,
+            'canceled' => 5
+        ],
+        'zh' => [
+            'waiting' => 1,
+            'pending' => 2,
+            'in_process' => 3,
+            'shipped' => 4,
+            'canceled' => 5
+        ]
+    ];
+
+    return $statusIds[$langCode][$status] ?? 0;
+}
+
+// 获取订单状态提示
+function get_order_status_note(int $statusId, string $langCode): string
+{
+    $statusNotes = [
+        1 => \App\Helper\LanguageHelper::get('order_waiting_note', $langCode),
+        2 => \App\Helper\LanguageHelper::get('order_pending_note', $langCode),
+        3 => \App\Helper\LanguageHelper::get('order_in_process_note', $langCode),
+        5 => \App\Helper\LanguageHelper::get('order_canceled_note', $langCode)
+    ];
+
+    return $statusNotes[$statusId] ?? '';
+}
+
+// 获取PP支付响应值
+function get_paypal_response_val($response, $field)
+{
+    if (isset($response[$field])) {
+        return $response[$field];
+    }
+
+    if (isset($response['purchase_units'])) {
+        $response = reset($response['purchase_units']);
+        if (stripos($field, 'payment_') !== false) {
+            $field = substr($field, 8);
+            if (isset($response['payments']['authorizations'])) {
+                $response = reset($response['payments']['authorizations']);
+                return $response[$field] ?? '';
+            }
+        }
+    }
+
+    return '';
 }

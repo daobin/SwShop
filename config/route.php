@@ -28,7 +28,7 @@ RouteHelper::get('/address', 'Index.Customer.address');
 RouteHelper::any('/address/add', 'Index.Customer.addressDetail');
 RouteHelper::any('/address/<addr_id>', 'Index.Customer.addressDetail', ['addr_id' => '\d+']);
 RouteHelper::get('/order', 'Index.Customer.order');
-RouteHelper::get('/order/<order_id>', 'Index.Customer.orderDetail', ['order_id' => '\d+']);
+RouteHelper::get('/order/<order_number>', 'Index.Customer.orderDetail', ['order_number' => '[\w\d]+']);
 RouteHelper::any('/order-tracking', 'Index.Index.orderTracking');
 RouteHelper::get('/<cate_name>-c<cate_id>', 'Index.Product.category', [
     'cate_name' => '[\w\-]+',
@@ -42,6 +42,7 @@ RouteHelper::get('/shopping/cart', 'Index.Shopping.cart');
 RouteHelper::get('/shopping/confirmation', 'Index.Shopping.confirmation');
 RouteHelper::post('/shopping/payment', 'Index.Shopping.payment');
 RouteHelper::get('/shopping/payment-handler', 'Index.Shopping.paymentHandler');
+RouteHelper::get('/shopping/payment-cancel', 'Index.Shopping.paymentCancel');
 RouteHelper::get('/shopping/success', 'Index.Shopping.success');
 RouteHelper::get('/page-not-found', 'Index.Index.pageNotFound');
 

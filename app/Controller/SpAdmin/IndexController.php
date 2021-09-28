@@ -62,7 +62,7 @@ class IndexController extends Controller
         $this->session->renameKey($this->request->domain);
         $this->session->set('sp_admin_info', json_encode($adminInfo));
         $this->session->remove('BGlogin');
-        return ['status' => 'success', 'url' => RouteHelper::buildUrl('SpAdmin.Index.index', ['suffix' => ''])];
+        return ['status' => 'success', 'url' => '/spadmin'];
     }
 
     public function logout()

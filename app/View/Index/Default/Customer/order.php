@@ -18,65 +18,91 @@
         <div class="page-header">
             <h2 class="hd-color-333">Order History</h2>
         </div>
-        <div class="hd-margin-top-30">
-            <div class="hd-order-one panel panel-default">
-                <div class="panel-heading">
-                    <div class="row">
-                        <div class="col-md-8 hd-font-weight-bold">
-                            Order #SP20210914
-                            |
-                            Date: 2021-09-14
-                            |
-                            Total: $29.99
-                        </div>
-                        <div class="col-md-4 text-right">
-                            Order Status: <b class="text-danger">Pending</b>
-                        </div>
-                    </div>
-                </div>
-                <div class="panel-body">
-                    <div class="row">
-                        <div class="col-md-10">
+        <?php if (empty($order_list)) { ?>
+        <?php } else { ?>
+            <div class="hd-margin-top-30">
+                <?php
+                foreach ($order_list as $order_id => $order_info) {
+                    $order_currency = $currency_list[$order_info['currency_code']] ?? [];
+                    ?>
+                    <div class="hd-order-one panel panel-default">
+                        <div class="panel-heading">
                             <div class="row">
-                                <div class="col-md-1">
-                                    <a href="/p-p1.html" title="GoodGuitar for">
-                                        <img src="https://sw-shop.oss-cn-hongkong.aliyuncs.com/sp_1/prod_img/def/83031e774a8cdf53a9c3e050bdaa593a_100_100.jpg?1629972257"
-                                             alt="GoodGuitar for"/>
-                                    </a>
+                                <div class="col-md-8 hd-font-weight-bold">
+                                    Order #<?php echo $order_info['order_number']; ?>
+                                    |
+                                    Date: <?php echo date('Y-m-d', $order_info['created_at']); ?>
+                                    |
+                                    Total: <?php echo format_price_total($order_info['order_total'], $order_currency); ?>
                                 </div>
-                                <div class="col-md-6 hd-prod-title">
-                                    <a href="/p-p1.html" title="GoodGuitar for">
-                                        GoodGuitar forGoodGuitar forGoodGuitar forGoodGuitar forGoodGuitar forGoodGuitar
-                                        for
-                                        GoodGuitar forGoodGuitar forGoodGuitar forGoodGuitar for
-                                        GoodGuitar forGoodGuitar forGoodGuitar forGoodGuitar forGoodGuitar for
-                                    </a>
-                                </div>
-                                <div class="col-md-2 col-md-offset-1 hd-v-center">
-                                    1
-                                </div>
-                                <div class="col-md-2 hd-v-center">
-                                    $19.99
+                                <div class="col-md-4 text-right">
+                                    Order Status: <b class="text-danger">
+                                        <?php echo $order_statuses[$order_info['order_status_id']] ?? ''; ?>
+                                    </b>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-2 text-right hd-v-center">
-                            <a href="/order/1.html" class="btn btn-info">Order Detail</a>
+                        <div class="panel-body">
+                            <div class="row">
+                                <div class="col-md-10">
+                                    <?php
+                                    $prod_idx = 0;
+                                    foreach ($order_info['prod_list'] as $sku => $prod_info) {
+                                        $prod_name = xss_text($prod_info['product_name']);
+                                        $prod_link = process_url_string($prod_name) . '-p' . $prod_info['product_id'] . '.html';
+                                        $prod_img = '';
+                                        if (!empty($prod_img_list[$sku])) {
+                                            $prod_img = $oss_access_host . $prod_img_list[$sku]['image_path'] . '/' . $prod_img_list[$sku]['image_name'] . '?' . $prod_img_list[$sku]['updated_at'];
+                                            $prod_img = str_replace('_d_d', '_100_100', $prod_img);
+                                        }
+                                        if ($prod_idx > 0) {
+                                            echo '<hr/>';
+                                        }
+                                        $prod_idx++;
+                                        ?>
+                                        <div class="row">
+                                            <div class="col-md-1">
+                                                <a href="/<?php echo $prod_link; ?>">
+                                                    <img src="<?php echo $prod_img; ?>"
+                                                         alt="<?php echo $prod_name; ?>"/>
+                                                </a>
+                                            </div>
+                                            <div class="col-md-6 hd-prod-title">
+                                                <a href="/<?php echo $prod_link; ?>">
+                                                    <?php echo $prod_name; ?>
+                                                </a>
+                                            </div>
+                                            <div class="col-md-2 col-md-offset-1 hd-v-center">
+                                                <?php echo $prod_info['qty']; ?>
+                                            </div>
+                                            <div class="col-md-2 hd-v-center">
+                                                <?php echo format_price_total($prod_info['price'], $order_currency); ?>
+                                            </div>
+                                        </div>
+                                    <?php } ?>
+                                </div>
+                                <div class="col-md-2 text-right hd-v-center">
+                                    <a href="/order/<?php echo $order_info['order_number']; ?>.html"
+                                       class="btn btn-info">Order Detail</a>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
+                <?php } ?>
             </div>
-        </div>
-        <div class="row hd-margin-top-60">
-            <ul class="pager">
-                <li class="previous">
-                    <a><span>&larr;</span> Previous</a>
-                </li>
-                <li class="next">
-                    <a>Next <span>&rarr;</span></a>
-                </li>
-            </ul>
-        </div>
+            <?php
+            if ($page_total > 1) {
+                echo '<div class="row hd-margin-top-60"><ul class="pager">';
+                if ($page > 1) {
+                    echo '<li class="previous"><a href="?page=', $page - 1, '"><span>&larr;</span> Previous</a></li>';
+                }
+                if ($page_total > $page) {
+                    echo '<li class="next"><a href="?page=', $page + 1, '">Next <span>&rarr;</span></a></li>';
+                }
+                echo '</ul></div>';
+            }
+        }
+        ?>
     </div>
 <?php
 \App\Helper\TemplateHelper::widget('index', 'footer', $widget_params ?? []);

@@ -19,7 +19,7 @@
             <h2 class="hd-color-333">
                 Address Book
                 <small class="hd-font-size-18 hd-margin-left-15 hidden-xs hidden-sm">
-                    <?php echo \App\Helper\LanguageHelper::get('max_10_shopping_address', $lange_code); ?>
+                    <?php echo xss_text('max_10_shopping_address', $lang_code); ?>
                 </small>
                 <?php if (count($address_list) < 10) { ?>
                     <a class="btn btn-info pull-right" href="/address/add.html<?php echo $from ?? ''; ?>">

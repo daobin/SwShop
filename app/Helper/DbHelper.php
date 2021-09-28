@@ -158,7 +158,7 @@ class DbHelper
             return $this;
         }
 
-        $this->sqlBuild['where'] ??= [];
+        $this->sqlBuild['where'] = $this->sqlBuild['where'] ?? [];
         $this->sqlBuild['where'] = array_merge($this->sqlBuild['where'], $where);
         return $this;
     }
@@ -169,7 +169,7 @@ class DbHelper
             return $this;
         }
 
-        $this->sqlBuild['where_or'] ??= [];
+        $this->sqlBuild['where_or'] = $this->sqlBuild['where_or'] ?? [];
         $this->sqlBuild['where_or'] = array_merge($this->sqlBuild['where_or'], $where);
         return $this;
     }
@@ -218,7 +218,8 @@ class DbHelper
         return $this->limit(($page - 1) * $pageSize, $pageSize);
     }
 
-    public function count(){
+    public function count()
+    {
         $this->sqlBuild['fields'] = 'count(*) as `cnt`';
         $preData = $this->buildSql('select');
         $this->stmt->execute($preData);
@@ -293,6 +294,11 @@ class DbHelper
                     }
                 }
 
+                $item['created_text'] = '';
+                if (!empty($item['created_at'])) {
+                    $item['created_text'] = date('Y-m-d H:i:s', $item['created_at']);
+                }
+
                 $lastOperation = [];
                 if (!empty($item['updated_at'])) {
                     $lastOperation[] = date('Y-m-d H:i', $item['updated_at']);
@@ -321,6 +327,11 @@ class DbHelper
                         }
                         break;
                 }
+            }
+
+            $result['created_text'] = '';
+            if (!empty($result['created_at'])) {
+                $result['created_text'] = date('Y-m-d H:i:s', $result['created_at']);
             }
 
             $lastOperation = [];

@@ -10,10 +10,13 @@ declare(strict_types=1);
 namespace App\Controller\Index;
 
 use App\Biz\AddressBiz;
+use App\Biz\CurrencyBiz;
 use App\Biz\CustomerBiz;
 use App\Biz\OrderBiz;
+use App\Biz\ProductBiz;
 use App\Controller\Controller;
 use App\Helper\LanguageHelper;
+use App\Helper\OssHelper;
 use App\Helper\SafeHelper;
 
 class CustomerController extends Controller
@@ -252,15 +255,75 @@ class CustomerController extends Controller
 
     public function order()
     {
-        $orderList = (new OrderBiz())->getOrderListByCustomerId($this->shopId, $this->customerId);
-        return $this->render();
+        $orderNumber = $this->get('order_number', '');
+        if ($orderNumber !== '') {
+            return $this->response->redirect('/order/' . $orderNumber . '.html');
+        }
+
+        $page = (int)$this->get('page', 1);
+        $page = $page >= 1 ? $page : 1;
+        $pageSize = 10;
+
+        $orderBiz = new OrderBiz();
+        $orderList = $orderBiz->getOrderList(['shop_id' => $this->shopId, 'customer_id' => $this->customerId], [], $page, $pageSize);
+
+        $pageTotal = (int)ceil($orderBiz->count / $pageSize);
+        $pageTotal = $pageTotal > 1 ? $pageTotal : 1;
+        $page = $page > $pageTotal ? $pageTotal : $page;
+
+        $skuArr = [];
+        if (!empty($orderList)) {
+            $orderList = array_column($orderList, null, 'order_id');
+
+            $orderProdList = $orderBiz->getProductListByOrderIds($this->shopId, array_keys($orderList));
+            if (!empty($orderProdList)) {
+                foreach ($orderProdList as $prodInfo) {
+                    $sku = $prodInfo['sku'];
+                    $skuArr[$sku] = $sku;
+
+                    $orderList[$prodInfo['order_id']]['prod_list'][$sku] = $prodInfo;
+                }
+            }
+        }
+
+        $prodImgList = (new ProductBiz())->getSkuImageListBySkuArr($this->shopId, $skuArr, true);
+
+        $currencyList = (new CurrencyBiz())->getCurrencyList($this->shopId);
+        $currencyList = $currencyList ? array_column($currencyList, null, 'currency_code') : [];
+
+        return $this->render([
+            'order_list' => $orderList,
+            'prod_img_list' => $prodImgList,
+            'currency_list' => $currencyList,
+            'order_statuses' => $orderBiz->getSysOrderStatuses($this->langCode),
+            'oss_access_host' => (new OssHelper($this->shopId))->accessHost,
+            'page' => $page,
+            'page_total' => $pageTotal
+        ]);
     }
 
     public function orderDetail()
     {
-        $orderId = $this->get('order_id', 0);
-        $orderInfo = (new OrderBiz())->getCustomerOrderById($this->shopId, $this->customerId, (int)$orderId);
+        $orderBiz = new OrderBiz();
 
-        return $this->render();
+        $orderNumber = $this->get('order_number', '');
+        $orderInfo = $orderBiz->getCustomerOrderByNumber($this->shopId, $this->customerId, $orderNumber);
+        if (empty($orderInfo)) {
+            return $this->response->redirect('/order.html');
+        }
+
+        $prodImgList = (new ProductBiz())->getSkuImageListBySkuArr($this->shopId, array_keys($orderInfo['prod_list']), true);
+        $orderCurrency = (new CurrencyBiz())->getCurrencyByCode($this->shopId, $orderInfo['currency_code']);
+
+        return $this->render([
+            'order_info' => $orderInfo,
+            'prod_img_list' => $prodImgList,
+            'order_currency' => $orderCurrency,
+            'order_statuses' => $orderBiz->getSysOrderStatuses($this->langCode),
+            'history_list' => $orderBiz->getHistoryListByOrderId($this->shopId, $orderInfo['order_id']),
+            'total_list' => $orderBiz->getTotalListByOrderId($this->shopId, $orderInfo['order_id']),
+            'order_address' => $orderBiz->getAddressByOrderId($this->shopId, $orderInfo['order_id']),
+            'oss_access_host' => (new OssHelper($this->shopId))->accessHost
+        ]);
     }
 }

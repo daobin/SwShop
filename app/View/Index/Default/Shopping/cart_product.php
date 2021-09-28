@@ -1,6 +1,6 @@
 <div class="container hd-display-none">
     <div class="page-header">
-        <h2 class="hd-color-333">Shopping Cart</h2>
+        <h2>Shopping Cart</h2>
     </div>
     <div class="row hidden-xs hidden-sm hd-margin-top-130">
         <div class="col-md-5 text-right">
@@ -38,6 +38,7 @@
     <div class="page-header hd-border-none">
         <h2 class="hd-color-333">Shopping Cart</h2>
     </div>
+    <?php include 'error.php';?>
     <table id="hd-cart-products" class="table hd-margin-top-30">
         <tr>
             <th style="max-width: 30%;" class="hidden-xs">Product</th>

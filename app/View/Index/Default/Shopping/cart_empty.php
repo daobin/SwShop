@@ -1,6 +1,6 @@
 <div class="container">
     <div class="page-header">
-        <h2 class="hd-color-333">Shopping Cart</h2>
+        <h2>Shopping Cart</h2>
     </div>
     <div class="row hidden-xs hidden-sm hd-margin-top-130">
         <div class="col-md-5 text-right">

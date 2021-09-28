@@ -56,7 +56,7 @@ $cate_name = xss_text($cate_info['description']['category_name'] ?? '');
                     <div class="col-md-3 hd-prod-box">
                         <div class="thumbnail">
                             <a href="/<?php echo $prod_link; ?>">
-                                <img alt="<?php echo xss_text($prod_info['product_name']); ?>"
+                                <img alt="<?php echo $prod_name; ?>"
                                      src="<?php echo $prod_img; ?>"/>
                             </a>
                             <div class="caption">

@@ -30,20 +30,30 @@
             <div class="panel-body">
                 <div class="row">
                     <div class="col-md-2">Order ID:</div>
-                    <div class="col-md-4">SP20210914</div>
+                    <div class="col-md-4"><?php echo $order_info['order_number']; ?></div>
                     <div class="col-md-2">Date:</div>
-                    <div class="col-md-4">2021-09-14</div>
+                    <div class="col-md-4"><?php echo date('Y-m-d', $order_info['created_at']); ?></div>
                 </div>
                 <div class="row">
                     <div class="col-md-2">Shipping Method:</div>
-                    <div class="col-md-4">Free Shipping</div>
+                    <div class="col-md-4"><?php echo $order_info['shipping_method']; ?></div>
                     <div class="col-md-2">Payment Method:</div>
-                    <div class="col-md-4">PayPal</div>
+                    <div class="col-md-4"><?php echo $order_info['payment_method']; ?></div>
                 </div>
                 <div class="row">
                     <div class="col-md-2">Shipping Address:</div>
                     <div class="col-md-10">
-                        Bertha RR, 699 Snider Street, Englewood, American Samoa, 80112, United States, 720-249-7522
+                        <?php
+                        echo xss_text($order_address['first_name'] . ' ' . $order_address['last_name']);
+                        echo ', ', xss_text($order_address['street_address']);
+                        if (!empty($order_address['street_address_sub'])) {
+                            echo ', ', xss_text($order_address['street_address_sub']);
+                        }
+                        echo ', ', xss_text($order_address['city']);
+                        echo ', ', xss_text($order_address['zone_name'] . ' ' . $order_address['postcode']);
+                        echo ', ', xss_text($order_address['country_name']);
+                        echo ', ', xss_text($order_address['telephone']);
+                        ?>
                     </div>
                 </div>
                 <div class="row">
@@ -56,7 +66,24 @@
         <div class="panel panel-default hd-margin-top-30" id="hd-order-sh">
             <div class="panel-heading">Order Status History</div>
             <div class="panel-body">
-                <div class="row"></div>
+                <?php
+                $status_idx = 0;
+                foreach ($history_list as $status_info) {
+                    if ($status_info['is_show'] == 0) {
+                        continue;
+                    }
+                    if ($status_idx > 0) {
+                        echo '<hr/>';
+                    }
+                    $status_idx++;
+                    ?>
+                    <div class="row">
+                        <div class="col-md-2 text-center"><?php echo date('Y-m-d H:i:s', $status_info['created_at']); ?></div>
+                        <div class="col-md-2 hd-color-666">
+                            <b><?php echo $order_statuses[$status_info['order_status_id']]; ?></b></div>
+                        <div class="col-md-8"><?php echo $status_info['comment']; ?></div>
+                    </div>
+                <?php } ?>
             </div>
         </div>
 
@@ -69,62 +96,49 @@
                 <th class="text-center">Quantity</th>
                 <th class="text-center hidden-xs">Total</th>
             </tr>
-            <tr>
-                <td class="product">
-                    <div class="hd-display-inline-block">
-                        <a href="/folk-pop-guitar-p1.html" title="My Guitar">
-                            <img src="https://sw-shop.oss-cn-hongkong.aliyuncs.com/sp_1/prod_img/gitar/5cca9f4f0701acbbe99de13236b249dc_100_100.jpg?1630302700">
-                        </a>
-                    </div>
-                    <div class="hd-display-inline-block">
-                        <p>SKU: GT0001</p>
-                        <p class="hidden-xs hidden-sm">
-                            <a href="/folk-pop-guitar-p1.html" title="My Guitar">
-                                My GuitarMy GuitarMy GuitarMy GuitarMy GuitarMy GuitarMy GuitarMy GuitarMy GuitarMy
-                                Guitar
-                                My GuitarMy GuitarMy GuitarMy GuitarMy GuitarMy Guitar
-                                My GuitarMy GuitarMy GuitarMy GuitarMy GuitarMy GuitarMy Guitar0000000
+            <?php
+            foreach ($order_info['prod_list'] as $sku => $prod_info) {
+                $prod_name = xss_text($prod_info['product_name']);
+                $prod_link = process_url_string($prod_name) . '-p' . $prod_info['product_id'] . '.html';
+                $prod_img = '';
+                if (!empty($prod_img_list[$sku])) {
+                    $prod_img = $oss_access_host . $prod_img_list[$sku]['image_path'] . '/' . $prod_img_list[$sku]['image_name'] . '?' . $prod_img_list[$sku]['updated_at'];
+                    $prod_img = str_replace('_d_d', '_100_100', $prod_img);
+                }
+                ?>
+                <tr>
+                    <td class="product">
+                        <div class="hd-display-inline-block">
+                            <a href="/<?php echo $prod_link; ?>">
+                                <img src="<?php echo $prod_img; ?>" alt="<?php echo $prod_name; ?>"/>
                             </a>
-                        </p>
-                    </div>
-                </td>
-                <td class="text-center">$2.00</td>
-                <td class="text-center">2</td>
-                <td class="text-center hidden-xs hd-prod-total">$4.00</td>
-            </tr>
-            <tr>
-                <td class="product">
-                    <div class="hd-display-inline-block">
-                        <a href="/folk-pop-guitar-p1.html" title="My Guitar">
-                            <img src="https://sw-shop.oss-cn-hongkong.aliyuncs.com/sp_1/prod_img/gitar/5cca9f4f0701acbbe99de13236b249dc_100_100.jpg?1630302700">
-                        </a>
-                    </div>
-                    <div class="hd-display-inline-block">
-                        <p>SKU: GT0001</p>
-                        <p class="hidden-xs hidden-sm">
-                            <a href="/folk-pop-guitar-p1.html" title="My Guitar">
-                                My GuitarMy GuitarMy GuitarMy GuitarMy GuitarMy GuitarMy GuitarMy GuitarMy GuitarMy
-                                Guitar
-                                My GuitarMy GuitarMy GuitarMy GuitarMy GuitarMy Guitar
-                                My GuitarMy GuitarMy GuitarMy GuitarMy GuitarMy GuitarMy Guitar0000000
-                            </a>
-                        </p>
-                    </div>
-                </td>
-                <td class="text-center">$2.00</td>
-                <td class="text-center">2</td>
-                <td class="text-center hidden-xs hd-prod-total">$4.00</td>
-            </tr>
+                        </div>
+                        <div class="hd-display-inline-block">
+                            <p>SKU: <?php echo $sku; ?></p>
+                            <p class="hidden-xs hidden-sm">
+                                <a href="/<?php echo $prod_link; ?>"><?php echo $prod_name; ?></a>
+                            </p>
+                        </div>
+                    </td>
+                    <td class="text-center"><?php echo format_price_total($prod_info['price'], $order_currency); ?></td>
+                    <td class="text-center"><?php echo $prod_info['qty']; ?></td>
+                    <td class="text-center hidden-xs hd-prod-total">
+                        <?php echo format_price_total($prod_info['price'] * $prod_info['qty'], $order_currency); ?>
+                    </td>
+                </tr>
+            <?php } ?>
             <tr>
                 <td colspan="4" class="text-right hd-font-size-18">
-                    <div class="hd-margin-top-15">Sub-total: <span
-                                class="hd-color-price hd-padding-left-15">$8.00</span></div>
-                    <div class="hd-margin-top-15">Shipping Fee: <span
-                                class="hd-color-price hd-padding-left-15">$0.00</span></div>
-                    <div class="hd-margin-top-15">Insurance Fee: <span
-                                class="hd-color-price hd-padding-left-15">$2.00</span></div>
-                    <div class="hd-font-weight-bold hd-margin-top-15">Total: <span
-                                class="hd-color-price hd-padding-left-15">$10.00</span></div>
+                    <?php
+                    foreach ($total_list as $class => $total) {
+                        if ($class == 'total') {
+                            echo '<div class="hd-margin-top-15 hd-font-weight-bold">', $total['ot_title'], ':';
+                        } else {
+                            echo '<div class="hd-margin-top-15">', $total['ot_title'], ':';
+                        }
+                        echo '<span class="hd-color-price hd-padding-left-15">', $total['ot_text'], '</span></div>';
+                    }
+                    ?>
                 </td>
             </tr>
             </tbody>

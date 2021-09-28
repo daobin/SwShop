@@ -4,8 +4,12 @@ $widget_params['shopping_nav_img'] = 'step2.png';
 ?>
     <div class="container">
         <div class="page-header">
-            <h2>Order Confirmation</h2>
+            <h2>
+                Order Confirmation
+                <a href="/shopping/cart.html" class="btn btn-link pull-right">&lt;&lt;&nbsp;Back to cart</a>
+            </h2>
         </div>
+        <?php include 'error.php';?>
         <h3 class="hd-margin-top-30">Shipping Address</h3>
         <div class="row">
             <div class="col-md-10" style="line-height: 30px;">

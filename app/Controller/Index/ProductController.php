@@ -70,11 +70,8 @@ class ProductController extends Controller
         $prodList = $prodBiz->getProductAllByList($this->shopId, $this->warehouseCode, $prodList);
 
         $pageTotal = (int)ceil($prodBiz->count / $pageSize);
-        if ($pageTotal > $page) {
-            $pageTotal = $page;
-        } else if ($pageTotal < $page) {
-            $page = $pageTotal;
-        }
+        $pageTotal = $pageTotal > 1 ? $pageTotal : 1;
+        $page = $page > $pageTotal ? $pageTotal : $page;
 
         $sortList = [
             'relevance' => [

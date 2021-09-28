@@ -62,7 +62,7 @@
     </script>
     <script>
         layui.use(['table', 'form'], function () {
-            let tableIns = layui.table.render({
+            var tableIns = layui.table.render({
                 elem: '#prod_list',
                 url: window.location.href,
                 cols: [
@@ -95,7 +95,7 @@
             layui.table.on('tool(opt)', function (obj) {
                 switch (obj.event) {
                     case 'edit':
-                        let layer_idx = layer.open({
+                        var layer_idx = layer.open({
                             type: 2,
                             title: '',
                             closeBtn: 0,

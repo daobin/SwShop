@@ -8,6 +8,9 @@ declare(strict_types=1);
 namespace App\Controller\Index;
 
 use App\Biz\AddressBiz;
+use App\Biz\CurrencyBiz;
+use App\Biz\CustomerBiz;
+use App\Biz\OrderBiz;
 use App\Biz\PaymentBiz;
 use App\Biz\ProductBiz;
 use App\Biz\ShippingBiz;
@@ -16,6 +19,8 @@ use App\Controller\Controller;
 use App\Helper\LanguageHelper;
 use App\Helper\OrderHelper;
 use App\Helper\OssHelper;
+use App\Helper\Payment\PaypalCcHelper;
+use App\Helper\Payment\PaypalHelper;
 use App\Helper\SafeHelper;
 
 class ShoppingController extends Controller
@@ -42,7 +47,7 @@ class ShoppingController extends Controller
                     $modified = true;
                     $this->cartList[$sku]['qty'] = (int)$prodQty;
                 }
-                if((int)$this->cartList[$sku]['qty'] <= 0){
+                if ((int)$this->cartList[$sku]['qty'] <= 0) {
                     $soldOutSkuArr[$sku] = $sku;
                 }
 
@@ -51,7 +56,7 @@ class ShoppingController extends Controller
                     $modified = true;
                     $this->cartList[$sku]['price'] = (float)$prodPrice;
                 }
-                if((float)$this->cartList[$sku]['price'] <= 0){
+                if ((float)$this->cartList[$sku]['price'] <= 0) {
                     $soldOutSkuArr[$sku] = $sku;
                 }
             }
@@ -60,9 +65,9 @@ class ShoppingController extends Controller
                 if ($this->customerId > 0) {
                     $this->cartList = (new ShoppingBiz())->updateCart($this->shopId, $this->customerId, $this->cartList);
                 }
-                if(empty($soldOutSkuArr)){
+                if (empty($soldOutSkuArr)) {
                     $this->session->set('shopping_error', LanguageHelper::get('sold_out_for_shopping', $this->langCode));
-                }else{
+                } else {
                     $this->session->set('shopping_error', LanguageHelper::get('modified_for_shopping', $this->langCode));
                 }
             }
@@ -164,7 +169,7 @@ class ShoppingController extends Controller
                 return $this->response->redirect('/shopping/cart.html');
                 $prodInfo['qty'] = (int)$prodQty;
             }
-            if((int)$prodInfo['qty'] <= 0){
+            if ((int)$prodInfo['qty'] <= 0) {
                 return $this->response->redirect('/shopping/cart.html');
             }
 
@@ -173,20 +178,99 @@ class ShoppingController extends Controller
                 return $this->response->redirect('/shopping/cart.html');
                 $prodInfo['price'] = (float)$prodPrice;
             }
-            if((float)$prodInfo['price'] <= 0){
+            if ((float)$prodInfo['price'] <= 0) {
                 return $this->response->redirect('/shopping/cart.html');
             }
         }
 
+        // 设置订单来源
+        $orderSummary['ip'] = $this->ip;
+        $orderSummary['ip_country_iso_code_2'] = $this->ipCountryIsoCode2;
+        $orderSummary['host_from'] = $this->host;
+        $orderSummary['device_from'] = $this->deviceFrom;
+        $this->session->set('order_summary', json_encode($orderSummary));
+
+        $payRes = [];
+        $customerInfo = (new CustomerBiz())->getCustomerById($this->shopId, $this->customerId);;
+        if ($paymentCode == 'paypal_cc') {
+            $payRes = (new PaypalCcHelper($this->request, $this->response))->orderProcess($customerInfo, $addressInfo, $paymentInfo);
+            if (isset($payRes['url'])) {
+                return $this->response->redirect($payRes['url']);
+            }
+        } else if ($paymentCode == 'paypal') {
+            $payRes = (new PaypalHelper($this->request, $this->response))->orderProcess($customerInfo, $addressInfo, $paymentInfo);
+            if (isset($payRes['url'])) {
+                return $this->response->redirect($payRes['url']);
+            }
+        }
+
+        $msg = $payRes['msg'] ?? LanguageHelper::get('order_failed_tip', $this->langCode);
+        $this->session->set('shopping_error', $msg);
+        return $this->response->redirect('/shopping/confirmation.html');
     }
 
     public function paymentHandler()
     {
+        $paymentCode = $this->get('pm');
+        $token = $this->get('token');
+        if (empty($token)) {
+            return $this->response->redirect('/shopping/confirmation.html');
+        }
 
+        if ($paymentCode == 'paypal_cc') {
+            $payRes = (new PaypalCcHelper($this->request, $this->response))->payProcess($token);
+        } else if ($paymentCode == 'paypal') {
+            $payRes = (new PaypalHelper($this->request, $this->response))->payProcess($token);
+        }
+
+        if (isset($payRes['url'])) {
+            return $this->response->redirect($payRes['url']);
+        }
+
+        if (isset($payRes['msg'])) {
+            $this->session->set('shopping_error', $payRes['msg']);
+        }
+
+        return $this->response->redirect('/shopping/confirmation.html');
+    }
+
+    public function paymentCancel()
+    {
+        $paymentCode = $this->get('pm');
+        $token = $this->get('token');
+        if (empty($token)) {
+            return $this->response->redirect('/shopping/confirmation.html');
+        }
+
+        if ($paymentCode == 'paypal_cc') {
+            $payRes = (new PaypalCcHelper($this->request, $this->response))->payCancel($token);
+        } else if ($paymentCode == 'paypal') {
+            $payRes = (new PaypalHelper($this->request, $this->response))->payCancel($token);
+        }
+
+        if (isset($payRes['url'])) {
+            return $this->response->redirect($payRes['url']);
+        }
+
+        if (isset($payRes['msg'])) {
+            $this->session->set('shopping_error', $payRes['msg']);
+        }
+
+        return $this->response->redirect('/shopping/confirmation.html');
     }
 
     public function success()
     {
-        return $this->render();
+        $orderBiz = new OrderBiz();
+
+        $orderNumber = $this->session->get('success_order_number', '');
+        $orderInfo = $orderBiz->getCustomerOrderByNumber($this->shopId, $this->customerId, $orderNumber);
+        if (empty($orderInfo)) {
+            $orderInfo = $orderBiz->getCustomerLastOne($this->shopId, $this->customerId);
+        }
+
+        $orderCurrency = (new CurrencyBiz())->getCurrencyByCode($this->shopId, $orderInfo['currency_code']);
+
+        return $this->render(['order_info' => $orderInfo, 'order_currency' => $orderCurrency]);
     }
 }

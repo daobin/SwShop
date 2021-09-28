@@ -135,7 +135,8 @@ class HttpServer
                     if (in_array(strtolower($request->controller), ['customer', 'shopping'])) {
                         $modCtrlAct = $request->module . '.' . $request->controller . '.';
                         $modCtrlAct .= str_replace('Detail', '', $request->action);
-                        $session->set('login_to', RouteHelper::buildUrl($modCtrlAct));
+                        $getParams = empty($request->get) ? [] : $request->get;
+                        $session->set('login_to', RouteHelper::buildUrl($modCtrlAct, $getParams));
 
                         if (empty($customerInfo) && $request->action != 'cart') {
                             if ($request->isAjax) {
