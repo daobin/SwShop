@@ -51,4 +51,5 @@ return [
     'pp_page_canceled_note' => '用户在Paypal页面主动取消支付。',
     'order_being_processed' => '订单正在处理中。',
     'item_delivered_time' => '商品将在 24 小时内送达，有时可能需要 48 小时。',
+    'email_no_match_order' => '抱歉，您提供的邮箱与订单号不符，请重新输入。',
 ];

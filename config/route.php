@@ -18,6 +18,7 @@ RouteHelper::post('/update-cart-product', 'Index.Ajax.updateCartProduct');
 RouteHelper::post('/delete-cart-product', 'Index.Ajax.deleteCartProduct');
 RouteHelper::post('/default-address', 'Index.Ajax.setDefaultAddress');
 RouteHelper::post('/delete-address', 'Index.Ajax.deleteAddress');
+RouteHelper::post('/customer-service', 'Index.Ajax.customerService');
 
 RouteHelper::get('/', 'Index.Index.index');
 RouteHelper::get('/login', 'Index.Index.login');
@@ -30,6 +31,7 @@ RouteHelper::any('/address/<addr_id>', 'Index.Customer.addressDetail', ['addr_id
 RouteHelper::get('/order', 'Index.Customer.order');
 RouteHelper::get('/order/<order_number>', 'Index.Customer.orderDetail', ['order_number' => '[\w\d]+']);
 RouteHelper::any('/order-tracking', 'Index.Index.orderTracking');
+RouteHelper::get('/customer-service', 'Index.Index.customerService');
 RouteHelper::get('/<cate_name>-c<cate_id>', 'Index.Product.category', [
     'cate_name' => '[\w\-]+',
     'cate_id' => '\d+',
@@ -38,6 +40,7 @@ RouteHelper::get('/<prod_name>-p<prod_id>', 'Index.Product.detail', [
     'prod_name' => '[\w\-]+',
     'prod_id' => '\d+',
 ]);
+
 RouteHelper::get('/shopping/cart', 'Index.Shopping.cart');
 RouteHelper::get('/shopping/confirmation', 'Index.Shopping.confirmation');
 RouteHelper::post('/shopping/payment', 'Index.Shopping.payment');

@@ -39,7 +39,6 @@ class OrderBiz
         $this->dbHelper->beginTransaction();
         try {
             $time = time();
-            $orderStatusId = $orderSummary['order_status_id'] ?? 1;
 
             $orderNumber = strtoupper(base64_encode($time . uniqid()));
             $orderNumber = substr($orderNumber, mt_rand(0, strlen($orderNumber) - 8), 4);
@@ -50,7 +49,7 @@ class OrderBiz
                 'customer_id' => $orderSummary['customer_info']['customer_id'],
                 'customer_email' => $orderSummary['customer_info']['email'],
                 'customer_name' => trim($orderSummary['customer_info']['first_name'] . ' ' . $orderSummary['customer_info']['last_name']),
-                'order_status_id' => $orderStatusId,
+                'order_status_id' => $orderSummary['order_status_id'],
                 'shipping_method' => $orderSummary['shipping_info']['method_name'],
                 'shipping_code' => $orderSummary['shipping_info']['method_code'],
                 'payment_method' => $orderSummary['payment_info']['method_name'],
@@ -109,9 +108,9 @@ class OrderBiz
             $this->dbHelper->table('order_status_history')->insert([
                 'shop_id' => $shopId,
                 'order_id' => $orderId,
-                'order_status_id' => $orderStatusId,
+                'order_status_id' => $orderSummary['order_status_id'],
                 'is_show' => 1,
-                'comment' => get_order_status_note((int)$orderStatusId),
+                'comment' => $orderSummary['status_comment'],
                 'created_at' => $time,
                 'created_by' => $operator
             ]);
@@ -140,15 +139,11 @@ class OrderBiz
         return true;
     }
 
-    public function updateOrderStatusById(int $shopId, int $orderId, int $orderStatusId, string $operator, bool $isShow = true, string $comment = ''): bool
+    public function updateOrderStatusById(int $shopId, int $orderId, int $orderStatusId, string $comment, bool $isShow = true, string $operator = ''): bool
     {
-        if ($shopId <= 0 || $orderId <= 0 || $orderStatusId <= 0) {
-            return false;
-        }
-
         $comment = trim($comment);
-        if ($comment === '') {
-            $comment = get_order_status_note($orderStatusId);
+        if ($shopId <= 0 || $orderId <= 0 || $orderStatusId <= 0 || $comment === '') {
+            return false;
         }
 
         $this->dbHelper->beginTransaction();
@@ -202,8 +197,27 @@ class OrderBiz
             return [];
         }
 
+        $where = ['shop_id' => $shopId, 'customer_email' => $email, 'order_number' => $orderNumber];
+        $fields = [
+            'order_id', 'order_number', 'customer_email', 'customer_name', 'order_status_id', 'order_type',
+            'shipping_method', 'shipping_code', 'payment_method', 'payment_code', 'currency_code', 'currency_value',
+            'order_total', 'default_currency_total', 'default_currency_code', 'created_at', 'pp_token'
+        ];
 
-        return [];
+        $orderInfo = $this->dbHelper->table('order')->where($where)->fields($fields)->find();
+        if (empty($orderInfo)) {
+            return [];
+        }
+
+        $fields = ['order_id', 'product_id', 'product_name', 'sku', 'qty', 'price', 'default_currency_price'];
+        $orderProductList = $this->dbHelper->table('order_product')->where(
+            ['shop_id' => $shopId, 'order_id' => $orderInfo['order_id']])->fields($fields)->select();
+        if (empty($orderProductList)) {
+            return [];
+        }
+
+        $orderInfo['prod_list'] = array_column($orderProductList, null, 'sku');
+        return $orderInfo;
     }
 
     public function getOrderList(array $condition, array $orderBy = [], int $page = 1, int $pageSize = 10): array

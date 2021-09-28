@@ -51,4 +51,5 @@ return [
     'pp_page_canceled_note' => 'The user actively cancels the payment on the Paypal page.',
     'order_being_processed' => 'The order is being processed.',
     'item_delivered_time' => 'Item(s) will be delivered within 24 hours, sometimes it may take 48 hours.',
+    'email_no_match_order' => 'Sorry, the email address you provided does not match the order number, please re-enter.',
 ];

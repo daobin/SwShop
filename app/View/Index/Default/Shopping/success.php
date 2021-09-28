@@ -5,7 +5,7 @@ $widget_params['shopping_nav_img'] = 'step3.png';
     <div class="container">
         <div class="page-header">
             <h2>
-                Payment Successful
+                Successful
             </h2>
         </div>
         <?php if (!empty($order_info)) { ?>
@@ -21,7 +21,9 @@ $widget_params['shopping_nav_img'] = 'step3.png';
             </div>
             <div class="row hd-margin-top-30">
                 <div class="col-xs-12">
-                    <a href="/order/<?php echo $order_info['order_id'];?>.html" class="btn btn-warning">Check Order</a>
+                    <a href="/order/<?php echo $order_info['order_number'];?>.html" class="btn btn-warning">Check Order</a>
+                    <span class="hd-padding-left-15"></span>
+                    <a class="btn btn-default" href="/">Continue Shopping</a>
                 </div>
             </div>
             <div class="row hd-margin-top-30">
@@ -42,7 +44,7 @@ $widget_params['shopping_nav_img'] = 'step3.png';
                     </div>
                 </div>
             </div>
-            <div class="row visible-xs visible-sm hd-margin-top-130">
+            <div class="row visible-xs visible-sm hd-margin-top-60">
                 <div class="col-md-5 text-center">
                     <img src="/static/index/default/cart.png"/>
                 </div>

@@ -52,7 +52,6 @@
                 </form>
             </div>
         </div>
-        <img src="https://www.glarrymusic.com/up/banner/20191104/960x380.jpg" style="width: 100%;"/>
     </div>
 <?php
 \App\Helper\TemplateHelper::widget('index', 'footer', $widget_params ?? []);

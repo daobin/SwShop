@@ -19,6 +19,28 @@
             <h2 class="hd-color-333">Order History</h2>
         </div>
         <?php if (empty($order_list)) { ?>
+            <div class="row hidden-xs hidden-sm hd-margin-top-130">
+                <div class="col-md-5 text-right">
+                    <img src="/static/index/default/cart.png"/>
+                </div>
+                <div class="col-md-7">
+                    <div class="text-danger hd-font-size-24">You have no orders</div>
+                    <div class="hd-margin-top-15">
+                        Go to <a href="/" class="text-warning">Home Page</a> and select items.
+                    </div>
+                </div>
+            </div>
+            <div class="row visible-xs visible-sm hd-margin-top-60">
+                <div class="col-md-5 text-center">
+                    <img src="/static/index/default/cart.png"/>
+                </div>
+                <div class="col-md-7 text-center">
+                    <div class="text-danger hd-font-size-24">You have no orders</div>
+                    <div class="hd-margin-top-15">
+                        Go to <a href="/" class="text-warning">Home Page</a> and select items.
+                    </div>
+                </div>
+            </div>
         <?php } else { ?>
             <div class="hd-margin-top-30">
                 <?php

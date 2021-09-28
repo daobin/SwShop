@@ -81,7 +81,13 @@
                         <div class="col-md-2 text-center"><?php echo date('Y-m-d H:i:s', $status_info['created_at']); ?></div>
                         <div class="col-md-2 hd-color-666">
                             <b><?php echo $order_statuses[$status_info['order_status_id']]; ?></b></div>
-                        <div class="col-md-8"><?php echo $status_info['comment']; ?></div>
+                        <div class="col-md-8">
+                            <?php
+                            $search = 'customer service center';
+                            $replace = '<a href="/customer-service.html" class="btn-link">customer service center</a>';
+                            echo str_replace($search, $replace, $status_info['comment']);
+                            ?>
+                        </div>
                     </div>
                 <?php } ?>
             </div>

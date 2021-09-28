@@ -34,10 +34,10 @@ class PaymentBiz
         try {
             if (!empty($payment['cfg_list']) && is_array($payment['cfg_list'])) {
                 foreach ($payment['cfg_list'] as $key => $val) {
-                    if(in_array($key, ['API_CLIENT_ID', 'API_SECRET'])){
+                    if (in_array($key, ['PAYPAL_CC_API_CLIENT_ID', 'PAYPAL_CC_API_SECRET', 'PAYPAL_API_CLIENT_ID', 'PAYPAL_API_SECRET'])) {
                         $val = SafeHelper::encodeString($val);
                     }
-                    if(empty($val)){
+                    if (empty($val)) {
                         continue;
                     }
 

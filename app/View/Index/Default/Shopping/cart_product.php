@@ -8,25 +8,29 @@
         </div>
         <div class="col-md-7">
             <div class="text-danger hd-font-size-24">Your shopping cart is empty</div>
-            <div class="hd-margin-top-30">
-                <a href="/login.html" class="text-warning">Sign In</a> to see what you left in shopping cart
-                last time.
-            </div>
+            <?php if (empty($customer_id)) { ?>
+                <div class="hd-margin-top-30">
+                    <a href="/login.html" class="text-warning">Sign In</a> to see what you left in shopping cart
+                    last time.
+                </div>
+            <?php } ?>
             <div class="hd-margin-top-15">
                 Go to <a href="/" class="text-warning">Home Page</a> and select items.
             </div>
         </div>
     </div>
-    <div class="row visible-xs visible-sm hd-margin-top-130">
+    <div class="row visible-xs visible-sm hd-margin-top-60">
         <div class="col-md-5 text-center">
             <img src="/static/index/default/cart.png"/>
         </div>
         <div class="col-md-7 text-center">
             <div class="text-danger hd-font-size-24">Your shopping cart is empty</div>
-            <div class="hd-margin-top-30">
-                <a href="/login.html" class="text-warning">Sign In</a> to see what you left in shopping cart
-                last time.
-            </div>
+            <?php if (empty($customer_id)) { ?>
+                <div class="hd-margin-top-30">
+                    <a href="/login.html" class="text-warning">Sign In</a> to see what you left in shopping cart
+                    last time.
+                </div>
+            <?php } ?>
             <div class="hd-margin-top-15">
                 Go to <a href="/" class="text-warning">Home Page</a> and select items.
             </div>
@@ -111,8 +115,9 @@
             </tr>
         <?php } ?>
     </table>
+    <hr/>
     <div class="row hd-margin-top-bottom-60 clearfix">
-        <div class="col-md-6 hd-font-size-18 text-success">
+        <div class="col-md-6 hd-font-size-18 text-success hidden-xs hidden-sm">
             <i class="fa fa-lock hd-font-size-24"></i>
             <span>Shopping is Safe and Secure</span>
         </div>
@@ -133,7 +138,7 @@
         <div class="col-xs-6 text-right visible-xs visible-sm">
             <a class="btn btn-lg btn-warning" href="/shopping/confirmation.html">Checkout</a>
         </div>
-        <div class="col-xs-12 text-right visible-xs visible-sm">
+        <div class="col-xs-12 visible-xs visible-sm">
             <img class="hd-display-inline-block hd-margin-top-bottom-15 hd-btn-pp"
                  src="/static/index/default/buy-now-with-paypal.png"/>
         </div>

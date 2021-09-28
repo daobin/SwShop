@@ -82,7 +82,7 @@ class CurrencyBiz
 
     public function getCurrencyByCode(int $shopId, string $code): array
     {
-        if ($shopId <= 0) {
+        if ($shopId <= 0 || empty($code)) {
             return [];
         }
 

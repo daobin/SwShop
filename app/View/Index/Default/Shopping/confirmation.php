@@ -5,7 +5,7 @@ $widget_params['shopping_nav_img'] = 'step2.png';
     <div class="container">
         <div class="page-header">
             <h2>
-                Order Confirmation
+                Confirmation
                 <a href="/shopping/cart.html" class="btn btn-link pull-right">&lt;&lt;&nbsp;Back to cart</a>
             </h2>
         </div>

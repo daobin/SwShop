@@ -22,7 +22,7 @@ class PaypalBiz
 
     public function add(array $paypal): int
     {
-        if((int)$paypal['shop_id'] <= 0){
+        if ((int)$paypal['shop_id'] <= 0) {
             return 0;
         }
 
@@ -37,10 +37,28 @@ class PaypalBiz
             'txn_id' => $paypal['txn_id'] ?? '',
             'currency_code' => $paypal['currency_code'] ?? '',
             'amount' => $paypal['amount'] ?? 0,
+            'payer_email' => $paypal['payer_email'] ?? '',
+            'payer_id' => $paypal['payer_id'] ?? '',
             'created_at' => time()
         ];
 
         return $this->dbHelper->table('paypal')->insert($save);
+    }
+
+    public function getAuthorizationByOrderId(int $shopId, int $orderId): array
+    {
+        if ($shopId <= 0 || $orderId <= 0) {
+            return [];
+        }
+
+        $where = [
+            'shop_id' => $shopId,
+            'order_id' => $orderId,
+            'ack' => 'success',
+            'payment_status' => 'Authorization'
+        ];
+        $fields = ['order_id', 'operation', 'ack', 'payment_code', 'payment_status', 'payment_date', 'txn_id', 'payer_email'];
+        return $this->dbHelper->table('paypal')->where($where)->fields($fields)->find();
     }
 
     public function getByTxnId(int $shopId, string $txnId): array
@@ -49,7 +67,7 @@ class PaypalBiz
             return [];
         }
 
-        $fields = ['order_id', 'operation', 'ack', 'payment_code', 'payment_status', 'payment_date', 'txn_id'];
+        $fields = ['order_id', 'operation', 'ack', 'payment_code', 'payment_status', 'payment_date', 'txn_id', 'payer_email'];
         return $this->dbHelper->table('paypal')->where(
             ['shop_id' => $shopId, 'txn_id' => $txnId])->fields($fields)->find();
     }

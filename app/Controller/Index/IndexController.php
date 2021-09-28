@@ -9,6 +9,7 @@ namespace App\Controller\Index;
 
 use App\Biz\BannerBiz;
 use App\Biz\ConfigBiz;
+use App\Biz\CurrencyBiz;
 use App\Biz\OrderBiz;
 use App\Biz\ProductBiz;
 use App\Controller\Controller;
@@ -33,15 +34,40 @@ class IndexController extends Controller
         return $this->render($data);
     }
 
+    public function customerService(){
+        return $this->render();
+    }
+
     public function orderTracking()
     {
+        $email = $this->post('email');
+        $number = $this->post('number');
+
+        $orderBiz = new OrderBiz();
+
         $orderInfo = [];
+        $skuArr = [];
+        $orderId = 0;
         if ($this->request->isPost) {
-            $orderInfo = (new OrderBiz())->getOrderForTracking($this->shopId, $this->post('email'), $this->post('number'));
+            $orderInfo = $orderBiz->getOrderForTracking($this->shopId, $email, $number);
+            $skuArr = $orderInfo ? array_keys($orderInfo['prod_list']) : [];
+            $orderId = $orderInfo['order_id'] ?? 0;
         }
 
+        $prodImgList = (new ProductBiz())->getSkuImageListBySkuArr($this->shopId, $skuArr, true);
+        $orderCurrency = (new CurrencyBiz())->getCurrencyByCode($this->shopId, ($orderInfo['currency_code'] ?? ''));
+
         return $this->render([
+            'email' => $email,
+            'number' => $number,
             'order_info' => $orderInfo,
+            'prod_img_list' => $prodImgList,
+            'order_currency' => $orderCurrency,
+            'order_statuses' => $orderBiz->getSysOrderStatuses($this->langCode),
+            'history_list' => $orderBiz->getHistoryListByOrderId($this->shopId, $orderId),
+            'total_list' => $orderBiz->getTotalListByOrderId($this->shopId, $orderId),
+            'order_address' => $orderBiz->getAddressByOrderId($this->shopId, $orderId),
+            'oss_access_host' => (new OssHelper($this->shopId))->accessHost,
             'is_post' => $this->request->isPost,
             'hash_tk' => (new SafeHelper($this->request, $this->response))->buildCsrfToken('IDX', 'ordertracking'),
         ]);

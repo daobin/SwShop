@@ -16,6 +16,10 @@ use App\Helper\LanguageHelper;
 
 class AjaxController extends Controller
 {
+    public function customerService(){
+        return ['status' => 'success'];
+    }
+
     public function loginProcess()
     {
         $email = $this->post('email');

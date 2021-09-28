@@ -130,26 +130,17 @@ function chk_file_security_is_risk(string $filename): bool
 }
 
 // 获取订单状态值
-function get_order_status_id(string $status, string $langCode): int
+function get_order_status_id(string $status): int
 {
     $statusIds = [
-        'en' => [
-            'waiting' => 1,
-            'pending' => 2,
-            'in_process' => 3,
-            'shipped' => 4,
-            'canceled' => 5
-        ],
-        'zh' => [
-            'waiting' => 1,
-            'pending' => 2,
-            'in_process' => 3,
-            'shipped' => 4,
-            'canceled' => 5
-        ]
+        'waiting' => 1,
+        'pending' => 2,
+        'in_process' => 3,
+        'shipped' => 4,
+        'canceled' => 5
     ];
 
-    return $statusIds[$langCode][$status] ?? 0;
+    return $statusIds[$status] ?? 0;
 }
 
 // 获取订单状态提示

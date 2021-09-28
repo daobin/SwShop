@@ -53,25 +53,26 @@ class PaypalCcHelper
             return ['msg' => LanguageHelper::get('invalid_order', $this->langCode)];
         }
 
-        $canceledId = get_order_status_id('canceled', $this->langCode);
+        $canceledId = get_order_status_id('canceled');
         if ($orderInfo['order_status_id'] == $canceledId) {
             return [];
         }
 
         $successStatusIds = [
-            get_order_status_id('pending', $this->langCode),
-            get_order_status_id('in_process', $this->langCode),
-            get_order_status_id('shipped', $this->langCode),
+            get_order_status_id('pending'),
+            get_order_status_id('in_process'),
+            get_order_status_id('shipped'),
         ];
         if (in_array($orderInfo['order_status_id'], $successStatusIds)) {
             $this->session->set('success_order_number', $orderInfo['order_number']);
             return ['url' => '/shopping/success.html'];
         }
 
-        $orderBiz->updateOrderStatusById($this->shopId, $orderInfo['order_id'], $canceledId, '');
+        $comment = get_order_status_note($canceledId, $this->langCode);
+        $orderBiz->updateOrderStatusById($this->shopId, $orderInfo['order_id'], $canceledId, $comment);
 
         $comment = LanguageHelper::get('pp_page_canceled_note', $this->langCode);
-        $orderBiz->updateOrderStatusById($this->shopId, $orderInfo['order_id'], $canceledId, '', false, $comment);
+        $orderBiz->updateOrderStatusById($this->shopId, $orderInfo['order_id'], $canceledId, $comment, false);
 
         return ['msg' => LanguageHelper::get('pp_page_canceled_note', $this->langCode)];
     }
@@ -104,16 +105,6 @@ class PaypalCcHelper
             'amount' => $paymentAmountInfo['value'] ?? 0
         ]);
 
-        $pendingId = get_order_status_id('pending', $this->langCode);
-        $orderBiz->updateOrderStatusById($this->shopId, $orderInfo['order_id'], $pendingId, '');
-
-        $comment = 'Txn ID: ' . $paymentId;
-        $comment .= '<br/>Timestamp: ' . $paymentCreateTime;
-        $comment .= '<br/>Payment Status: Authorization Created';
-        $comment .= '<br/>Currency: ' . ($paymentAmountInfo['currency_code'] ?? '');
-        $comment .= '<br/>Amount: ' . ($paymentAmountInfo['value'] ?? '0.00');
-        $orderBiz->updateOrderStatusById($this->shopId, $orderInfo['order_id'], $pendingId, '', false, $comment);
-
         $success = false;
         if (isset($payRes['status']) && $payRes['status'] == 'success') {
             $success = true;
@@ -122,6 +113,17 @@ class PaypalCcHelper
         }
 
         if ($success) {
+            $pendingId = get_order_status_id('pending');
+            $comment = get_order_status_note($pendingId, $this->langCode);
+            $orderBiz->updateOrderStatusById($this->shopId, $orderInfo['order_id'], $pendingId, $comment);
+
+            $comment = 'Txn ID: ' . $paymentId;
+            $comment .= '<br/>Timestamp: ' . $paymentCreateTime;
+            $comment .= '<br/>Payment Status: Authorization Created';
+            $comment .= '<br/>Currency: ' . ($paymentAmountInfo['currency_code'] ?? '');
+            $comment .= '<br/>Amount: ' . ($paymentAmountInfo['value'] ?? '0.00');
+            $orderBiz->updateOrderStatusById($this->shopId, $orderInfo['order_id'], $pendingId, $comment, false);
+
             (new ShoppingBiz())->deleteCustomerCart($this->shopId, (int)$orderInfo['customer_id']);
             $this->session->set('cart_list', '[]');
             $this->session->set('order_summary', '{}');
@@ -129,6 +131,12 @@ class PaypalCcHelper
             $this->session->set('success_order_number', $orderInfo['order_number']);
             return ['url' => '/shopping/success.html'];
         }
+
+        $canceledId = get_order_status_id('canceled');
+        $comment = get_order_status_note($canceledId, $this->langCode);
+        $orderBiz->updateOrderStatusById($this->shopId, $orderInfo['order_id'], $canceledId, $comment);
+
+        $orderBiz->updateOrderStatusById($this->shopId, $orderInfo['order_id'], $canceledId, $payRes['data'], false);
 
         return ['msg' => $payRes['data'] ?? LanguageHelper::get('payment_rejected_tip', $this->langCode)];
     }
@@ -231,22 +239,76 @@ class PaypalCcHelper
         $orderSummary['currency_info'] = $this->currency;
         $orderSummary['default_currency_info'] = (new CurrencyBiz())->getDefaultCurrency($this->shopId);
 
-        $orderSummary['order_status_id'] = get_order_status_id('waiting', $this->langCode);
+        $orderSummary['order_status_id'] = get_order_status_id('waiting');
+        $orderSummary['status_comment'] = get_order_status_note($orderSummary['order_status_id'], $this->langCode);
 
         $add = (new OrderBiz())->createOrder($this->shopId, $orderSummary);
         if ($add) {
-            return ['url' => $this->paymentInfo['cfg_list']['CHECKOUT_URL'] . '?token=' . $token];
+            return ['url' => $this->paymentInfo['cfg_list']['PAYPAL_CC_CHECKOUT_URL'] . '?token=' . $token];
         }
 
         return ['msg' => LanguageHelper::get('order_generation_failed', $this->langCode)];
     }
 
+    public function approve(int $shopId, int $orderId): array
+    {
+        $paypal = (new PaypalBiz())->getAuthorizationByOrderId($shopId, $orderId);
+        if (empty($paypal['txn_id'])) {
+            return ['status' => 'fail', 'msg' => '找不到订单支付信息'];
+        }
+
+        $payRes = $this->doRequest('authorize_capture', $paypal['txn_id']);
+        if (!isset($payRes['status']) || $payRes['status'] != 'success') {
+            return ['status' => 'fail', 'msg' => $payRes['data'] ?? ''];
+        }
+
+        $orderBiz = new OrderBiz();
+
+        $inProcessId = get_order_status_id('in_process');
+        $comment = get_order_status_note($inProcessId, $this->langCode);
+        $orderBiz->updateOrderStatusById($this->shopId, $orderId, $inProcessId, $comment);
+
+        $response = $payRes['data'] ?? [];
+        $comment = '系统预授权确认成功';
+        $comment .= '<br/>预授权交易号: ' . $paypal['txn_id'];
+        $comment .= '<br/>收款交易号: ' . get_paypal_response_val($response, 'id');
+        $comment .= '<br/>收款状态: ' . get_paypal_response_val($response, 'status');
+        $orderBiz->updateOrderStatusById($this->shopId, $orderId, $inProcessId, $comment, false);
+
+        return ['status' => 'success'];
+    }
+
+    public function reject(int $shopId, int $orderId): array
+    {
+        $paypal = (new PaypalBiz())->getAuthorizationByOrderId($shopId, $orderId);
+        if (empty($paypal['txn_id'])) {
+            return ['status' => 'fail', 'msg' => '找不到订单支付信息'];
+        }
+
+        $payRes = $this->doRequest('authorize_void', $paypal['txn_id']);
+        if (!isset($payRes['status']) || $payRes['status'] != 'success') {
+            return ['status' => 'fail', 'msg' => $payRes['data'] ?? ''];
+        }
+
+        $orderBiz = new OrderBiz();
+
+        $canceledId = get_order_status_id('canceled');
+        $comment = get_order_status_note($canceledId, $this->langCode);
+        $orderBiz->updateOrderStatusById($this->shopId, $orderId, $canceledId, $comment);
+
+        $comment = '系统预授权撤销成功';
+        $comment .= '<br/>预授权交易号: ' . $paypal['txn_id'];
+        $orderBiz->updateOrderStatusById($this->shopId, $orderId, $canceledId, $comment, false);
+
+        return ['status' => 'success'];
+    }
+
     private function doRequest($service, $request): array
     {
-        $basicAuth = $this->paymentInfo['cfg_list']['API_CLIENT_ID'] . ':' . $this->paymentInfo['cfg_list']['API_SECRET'];
+        $basicAuth = $this->paymentInfo['cfg_list']['PAYPAL_CC_API_CLIENT_ID'] . ':' . $this->paymentInfo['cfg_list']['PAYPAL_CC_API_SECRET'];
 
         $chOptions = [
-            CURLOPT_URL => $this->paymentInfo['cfg_list']['API_URL'],
+            CURLOPT_URL => $this->paymentInfo['cfg_list']['PAYPAL_CC_API_URL'],
             CURLOPT_HTTPHEADER => [
                 'Content-Type: application/json',
                 'Authorization: Basic ' . base64_encode($basicAuth)

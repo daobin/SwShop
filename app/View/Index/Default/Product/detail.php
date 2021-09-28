@@ -170,7 +170,15 @@ $first_img_src = '';
                 });
             });
         }
-
+    </script>
+<?php } else { ?>
+    <script>
+        function init_zoom_sku_img_list() {
+            // Nothing
+        }
+    </script>
+<?php } ?>
+    <script>
         var first_img_src = '<?php echo $first_img_src;?>';
         var img_list = <?php echo json_encode($sku_img_list);?>;
         var qty_price_list = <?php echo json_encode($sku_qty_price_list);?>;
@@ -225,6 +233,5 @@ $first_img_src = '';
 
         init_zoom_sku_img_list();
     </script>
-    <?php
-}
+<?php
 \App\Helper\TemplateHelper::widget('index', 'footer', $widget_params ?? []);
