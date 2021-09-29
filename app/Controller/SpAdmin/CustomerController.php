@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace App\Controller\SpAdmin;
 
+use App\Biz\CustomerBiz;
 use App\Controller\Controller;
 use App\Helper\LanguageHelper;
 use App\Helper\SafeHelper;
@@ -18,11 +19,12 @@ class CustomerController extends Controller
     public function index()
     {
         if ($this->request->isAjax) {
+            $customerBiz = new CustomerBiz();
             $customerList = [];
 
             return [
                 'code' => 0,
-                'count' => count($customerList),
+                'count' => $customerBiz->count,
                 'data' => $customerList
             ];
         }

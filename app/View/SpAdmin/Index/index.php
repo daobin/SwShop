@@ -28,7 +28,6 @@
             $('a').click(function () {
                 if ($(this).attr('to-iframe') != undefined) {
                     $('a[iframe=' + $(this).attr('to-iframe') + ']').click();
-                    $(this).find('span').remove();
                     return;
                 }
 
@@ -55,10 +54,10 @@
             });
 
             element.on('tab(iframe)', function (data) {
-                if(iframe_reload){
-                    if(iframe_reload === true){
+                if (iframe_reload) {
+                    if (iframe_reload === true) {
                         $('#hd-main .layui-tab-content iframe').get()[data.index].contentWindow.location.reload(true);
-                    }else{
+                    } else {
                         $('#hd-main .layui-tab-content iframe').get()[data.index].contentWindow.location.href = iframe_reload;
                     }
                     iframe_reload = false;
@@ -83,13 +82,23 @@
             </div>
             <ul class="layui-nav layui-layout-left">
                 <li class="layui-nav-item">
-                    <a to-iframe="customer">今日用户<span class="layui-badge">99</span></a>
+                    <a to-iframe="customer">今日用户<span class="layui-badge"><?php echo $today_customer_cnt ?? 0; ?></span></a>
                 </li>
-                <li class="layui-nav-item">
-                    <a to-iframe="order">今日订单<span class="layui-badge">99</span></a>
+                <li class="layui-nav-item hd-margin-left-30">
+                    <a to-iframe="order">今日订单<span class="layui-badge"><?php echo $today_order_cnt ?? 0; ?></span></a>
                 </li>
-                <li class="layui-nav-item">
-                    <a to-iframe="order">待处理订单<span class="layui-badge-dot"></span></a>
+                <li class="layui-nav-item hd-margin-left-30"></li>
+                <li class="layui-nav-item hd-margin-left-30">
+                    <span>北京</span>
+                    <span><?php echo $cn_time ?? '--'; ?></span>
+                </li>
+                <li class="layui-nav-item hd-margin-left-30">
+                    <span>纽约</span>
+                    <span><?php echo $us_time ?? '--'; ?></span>
+                </li>
+                <li class="layui-nav-item hd-margin-left-30">
+                    <span>伦敦</span>
+                    <span><?php echo $uk_time ?? '--'; ?></span>
                 </li>
             </ul>
             <ul class="layui-nav layui-layout-right">

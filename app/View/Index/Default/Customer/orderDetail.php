@@ -149,6 +149,11 @@
             </tr>
             </tbody>
         </table>
+        <div>
+            <a class="btn btn-info pull-right" href="/order.html">
+                &lt;&lt; Back
+            </a>
+        </div>
     </div>
 <?php
 \App\Helper\TemplateHelper::widget('index', 'footer', $widget_params ?? []);

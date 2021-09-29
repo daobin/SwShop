@@ -15,10 +15,12 @@ use App\Helper\LanguageHelper;
 class CustomerBiz
 {
     private $dbHelper;
+    public $count;
 
     public function __construct()
     {
         $this->dbHelper = new DbHelper();
+        $this->count = 0;
     }
 
     public function updateName(int $shopId, int $customerId, string $firstName, string $lastName, string $operator): int

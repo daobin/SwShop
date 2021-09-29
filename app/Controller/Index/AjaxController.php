@@ -16,8 +16,18 @@ use App\Helper\LanguageHelper;
 
 class AjaxController extends Controller
 {
-    public function customerService(){
-        return ['status' => 'success'];
+    public function customerService()
+    {
+        $res = ['status' => 'fail', 'msg' => LanguageHelper::get('invalid_request', $this->langCode)];
+
+        $service = $this->post('service', '', 'trim,strtolower');
+        if ($service === 'pre') {
+
+        } else if ($service === 'after') {
+
+        }
+
+        return $res;
     }
 
     public function loginProcess()
@@ -248,9 +258,10 @@ class AjaxController extends Controller
         return ['status' => 'fail', 'msg' => LanguageHelper::get('remove_failed', $this->langCode)];
     }
 
-    public function setDefaultAddress(){
+    public function setDefaultAddress()
+    {
         $addrId = $this->post('addr', 0);
-        if((new CustomerBiz())->setShippingAddress($this->shopId, $this->customerId, (int)$addrId)){
+        if ((new CustomerBiz())->setShippingAddress($this->shopId, $this->customerId, (int)$addrId)) {
             return ['status' => 'success'];
         }
 

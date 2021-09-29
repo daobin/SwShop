@@ -430,6 +430,14 @@ $(document).on('focus', '.hd-password', function () {
     $(this).prop('type', 'password');
 });
 
+$('li.hd-nav-tag').click(function () {
+    $('li.hd-nav-tag').removeClass('active');
+    $(this).parent('ul').siblings('form.hd-form').hide();
+
+    $(this).addClass('active');
+    $(this).parent('ul').siblings('form.hd-form').eq($('li.hd-nav-tag').index($(this))).show();
+});
+
 // Form Submit
 $('.hd-form').submit(function () {
     $(this).ajaxSubmit({

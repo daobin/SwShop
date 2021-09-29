@@ -13,7 +13,10 @@ a, image, a:active, image:active{border: none !important;}
 .hd-inline-block{display: inline-block !important; margin-left: 10px !important; margin-top: 10px !important;}
 .hd-width-150{width: 150px !important;}
 .hd-width-500{width: 500px !important;}
+.hd-margin-left-30{margin-left: 30px !important;}
+.hd-margin-top-10{margin-top: 10px !important;}
 .hd-margin-top-30{margin-top: 30px !important;}
+.hd-margin-top-60{margin-top: 60px !important;}
 .hd-padding-top10{padding-top: 10px !important;}
 .hd-padding-top30{padding-top: 30px !important;}
 .hd-padding-top60{padding-top: 60px !important;}
@@ -37,6 +40,9 @@ a, image, a:active, image:active{border: none !important;}
 .layui-icon-edit:hover, .layui-icon-delete:hover, .layui-icon-release:hover{font-size: 22px;}
 .layui-icon-edit{color: #009688;}
 .layui-icon-delete{color: #FF5722;}
+
+.layui-card{box-shadow: none; border: 1px solid #efefef;}
+.layui-card .layui-card-header{border-bottom: 1px solid #efefef;}
 
 .layui-form-label{width: 100px !important;}
 .layui-input-block{margin-left: 130px !important;}

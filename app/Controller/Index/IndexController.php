@@ -35,7 +35,7 @@ class IndexController extends Controller
     }
 
     public function customerService(){
-        return $this->render();
+        return $this->render(['hash_tk' => (new SafeHelper($this->request, $this->response))->buildCsrfToken('IDX', 'ordertracking')]);
     }
 
     public function orderTracking()
