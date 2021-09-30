@@ -86,9 +86,9 @@ RouteHelper::any('/spadmin/category/<cate_id>', 'SpAdmin.Category.detail', ['cat
 RouteHelper::get('/spadmin/product', 'SpAdmin.Product.index');
 RouteHelper::any('/spadmin/product/<prod_id>', 'SpAdmin.Product.detail', ['prod_id' => '\d+']);
 RouteHelper::get('/spadmin/customer', 'SpAdmin.Customer.index');
-RouteHelper::get('/spadmin/customer/<customer_id>', 'SpAdmin.Customer.detail', ['customer_id' => '\d+']);
+RouteHelper::any('/spadmin/customer/<customer_id>', 'SpAdmin.Customer.detail', ['customer_id' => '\d+']);
 RouteHelper::get('/spadmin/order', 'SpAdmin.Order.index');
-RouteHelper::get('/spadmin/order/<order_number>', 'SpAdmin.Order.detail', ['order_number' => '[\w\d]+']);
+RouteHelper::any('/spadmin/order/<order_number>', 'SpAdmin.Order.detail', ['order_number' => '[\w\d]+']);
 RouteHelper::get('/spadmin/banner', 'SpAdmin.Banner.index');
 RouteHelper::any('/spadmin/banner/<banner_id>', 'SpAdmin.Banner.detail', ['banner_id' => '\d+']);
 RouteHelper::get('/spadmin/coupon', 'SpAdmin.Coupon.index');

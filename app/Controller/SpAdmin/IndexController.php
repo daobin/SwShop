@@ -23,7 +23,7 @@ class IndexController extends Controller
         $todayTime = strtotime(date('Y-m-d'));
 
         $customerBiz = new CustomerBiz();
-
+        $customerBiz->getCustomerList(['shop_id' => $this->shopId, 'start_register_at' => $todayTime], [], 1, 1);
 
         $orderBiz = new OrderBiz();
         $orderBiz->getOrderList(['shop_id' => $this->shopId, 'start_created_at' => $todayTime], [], 1, 1);

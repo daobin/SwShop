@@ -65,7 +65,7 @@
                 </div>
                 <div class="layui-inline">
                     <div class="layui-input-inline">
-                        <input class="layui-btn layui-btn-normal" type="submit" lay-submit lay-filter="order_search"
+                        <input class="layui-btn layui-btn-normal" type="submit" lay-submit lay-filter="search"
                                value="搜索"/>
                     </div>
                 </div>
@@ -86,7 +86,7 @@
                 </div>
                 <div class="layui-inline">
                     <div class="layui-input-inline">
-                        <input class="layui-btn layui-btn-normal" type="submit" lay-submit lay-filter="order_search2"
+                        <input class="layui-btn layui-btn-normal" type="submit" lay-submit lay-filter="search2"
                                value="查询"/>
                     </div>
                 </div>
@@ -156,7 +156,7 @@
                 }
             });
 
-            layui.form.on('submit(order_search)', function (formObj) {
+            layui.form.on('submit(search)', function (formObj) {
                 tableIns.reload({
                     where: formObj.field,
                     page: {curr: 1}
@@ -164,7 +164,7 @@
                 return false;
             });
 
-            layui.form.on('submit(order_search2)', function (formObj) {
+            layui.form.on('submit(search2)', function (formObj) {
                 tableIns.reload({
                     where: formObj.field,
                     page: {curr: 1}

@@ -16,14 +16,13 @@
                         <h3>Create Account</h3>
                     </div>
                     <div class="form-group">
-                        <input type="text" class="form-control" name="email" placeholder="Email Address"/>
+                        <input type="text" class="form-control" maxlength="100" name="email" placeholder="Email Address"/>
                     </div>
                     <div class="form-group">
-                        <input type="text" class="form-control hd-password" name="password" placeholder="Password"/>
+                        <input type="text" class="form-control hd-password" maxlength="50" name="password" placeholder="Password"/>
                     </div>
                     <div class="form-group">
-                        <input type="text" class="form-control hd-password" name="password2"
-                               placeholder="Confirm Password"/>
+                        <input type="text" class="form-control hd-password" maxlength="50" name="password2" placeholder="Confirm Password"/>
                     </div>
                     <div class="form-group">
                         <input type="hidden" name="hash_tk" value="<?php echo $register_tk; ?>"/>

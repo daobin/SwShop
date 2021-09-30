@@ -273,13 +273,8 @@ class OrderBiz
             'order_total', 'default_currency_total', 'default_currency_code', 'created_at', 'pp_token'
         ];
 
-        $orderList = $this->dbHelper->table('order')->where($where)->fields($fields)
+        return $this->dbHelper->table('order')->where($where)->fields($fields)
             ->orderBy($orderBy)->page($page, $pageSize)->select();
-        if (empty($orderList)) {
-            return [];
-        }
-
-        return $orderList;
     }
 
     public function getProductListByOrderIds(int $shopId, array $orderIds): array

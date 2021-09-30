@@ -299,6 +299,11 @@ class DbHelper
                     $item['created_text'] = date('Y-m-d H:i:s', $item['created_at']);
                 }
 
+                $item['registered_text'] = '';
+                if (!empty($item['registered_at'])) {
+                    $item['registered_text'] = date('Y-m-d H:i:s', $item['registered_at']);
+                }
+
                 $lastOperation = [];
                 if (!empty($item['updated_at'])) {
                     $lastOperation[] = date('Y-m-d H:i', $item['updated_at']);
@@ -332,6 +337,11 @@ class DbHelper
             $result['created_text'] = '';
             if (!empty($result['created_at'])) {
                 $result['created_text'] = date('Y-m-d H:i:s', $result['created_at']);
+            }
+
+            $result['registered_text'] = '';
+            if (!empty($result['registered_at'])) {
+                $result['registered_text'] = date('Y-m-d H:i:s', $result['registered_at']);
             }
 
             $lastOperation = [];
