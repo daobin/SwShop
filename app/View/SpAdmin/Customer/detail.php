@@ -5,7 +5,7 @@
         <div class="layui-card hd-margin-top-30">
             <div class="layui-card-header layui-font-16">用户信息</div>
             <div class="layui-card-body">
-                <div class="layui-row">
+                <div class="layui-row hd-margin-top-10">
                     <div class="layui-col-xs3">
                         用户国家：<?php echo $customer_info['ip_country_iso_code2'] ?? '--'; ?>
                     </div>
@@ -20,7 +20,7 @@
                         <?php echo empty($customer_info['logined_at']) ? '--' : date('Y-m-d H:i:s', $customer_info['logined_at']); ?>
                     </div>
                 </div>
-                <div class="layui-row hd-margin-top-30">
+                <div class="layui-row hd-margin-top-10">
                     <div class="layui-col-xs3">
                         订单总数：0
                     </div>
@@ -62,7 +62,7 @@
         <div class="layui-card hd-margin-top-30">
             <div class="layui-card-header layui-font-16">信息变更</div>
             <div class="layui-card-body">
-                <form class="layui-form" method="post" autocomplete="off">
+                <form class="layui-form hd-margin-top-10" method="post" autocomplete="off">
                     <div class="layui-form-item">
                         <label class="layui-form-label">First Name</label>
                         <div class="layui-input-inline hd-width-500">

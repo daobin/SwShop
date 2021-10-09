@@ -46,6 +46,15 @@
             'reference' => '0925f10b259679b5d8ca58f3a2add9255ffcda45',
             'dev_requirement' => false,
         ),
+        'ip2location/ip2location-php' => array(
+            'pretty_version' => '9.2.1',
+            'version' => '9.2.1.0',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../ip2location/ip2location-php',
+            'aliases' => array(),
+            'reference' => 'eb4cbe3801694961663e63d109dd56458614740d',
+            'dev_requirement' => false,
+        ),
         'psr/container' => array(
             'pretty_version' => '2.0.1',
             'version' => '2.0.1.0',

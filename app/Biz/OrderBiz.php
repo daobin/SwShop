@@ -14,12 +14,19 @@ use App\Helper\DbHelper;
 class OrderBiz
 {
     private $dbHelper;
+    private $orderFields;
     public $count;
 
     public function __construct()
     {
         $this->dbHelper = new DbHelper();
         $this->count = 0;
+        $this->orderFields = [
+            'order_id', 'order_number', 'customer_id', 'customer_email', 'customer_name', 'order_status_id', 'order_type',
+            'shipping_method', 'shipping_code', 'payment_method', 'payment_code', 'currency_code', 'currency_value',
+            'order_total', 'default_currency_total', 'default_currency_code', 'created_by', 'pp_token',
+            'ip_number', 'ip_country_iso_code_2', 'host_from', 'device_from'
+        ];
     }
 
     public function createOrder(int $shopId, array $orderSummary, string $operator = ''): bool
@@ -182,13 +189,7 @@ class OrderBiz
         }
 
         $where = ['shop_id' => $shopId, 'pp_token' => $token];
-        $fields = [
-            'order_id', 'order_number', 'customer_id', 'customer_email', 'customer_name', 'order_status_id', 'order_type',
-            'shipping_method', 'shipping_code', 'payment_method', 'payment_code', 'currency_code', 'currency_value',
-            'order_total', 'default_currency_total', 'default_currency_code', 'created_by', 'pp_token'
-        ];
-
-        return $this->dbHelper->table('order')->where($where)->fields($fields)->find();
+        return $this->dbHelper->table('order')->where($where)->fields($this->orderFields)->find();
     }
 
     public function getOrderForTracking(int $shopId, string $email, string $orderNumber): array
@@ -198,13 +199,7 @@ class OrderBiz
         }
 
         $where = ['shop_id' => $shopId, 'customer_email' => $email, 'order_number' => $orderNumber];
-        $fields = [
-            'order_id', 'order_number', 'customer_email', 'customer_name', 'order_status_id', 'order_type',
-            'shipping_method', 'shipping_code', 'payment_method', 'payment_code', 'currency_code', 'currency_value',
-            'order_total', 'default_currency_total', 'default_currency_code', 'created_at', 'pp_token'
-        ];
-
-        $orderInfo = $this->dbHelper->table('order')->where($where)->fields($fields)->find();
+        $orderInfo = $this->dbHelper->table('order')->where($where)->fields($this->orderFields)->find();
         if (empty($orderInfo)) {
             return [];
         }
@@ -267,13 +262,7 @@ class OrderBiz
         $pageTotal = (int)ceil($this->count / $pageSize);
         $page = $page > $pageTotal ? $pageTotal : $page;
 
-        $fields = [
-            'order_id', 'order_number', 'customer_email', 'customer_name', 'order_status_id', 'order_type',
-            'shipping_method', 'shipping_code', 'payment_method', 'payment_code', 'currency_code', 'currency_value',
-            'order_total', 'default_currency_total', 'default_currency_code', 'created_at', 'pp_token'
-        ];
-
-        return $this->dbHelper->table('order')->where($where)->fields($fields)
+        return $this->dbHelper->table('order')->where($where)->fields($this->orderFields)
             ->orderBy($orderBy)->page($page, $pageSize)->select();
     }
 
@@ -288,6 +277,29 @@ class OrderBiz
             ['shop_id' => $shopId, 'order_id' => ['in', $orderIds]])->fields($fields)->select();
     }
 
+    public function getOrderByNumber(int $shopId, string $orderNumber): array
+    {
+        if ($shopId <= 0 || empty($orderNumber)) {
+            return [];
+        }
+
+        $where = ['shop_id' => $shopId, 'order_number' => $orderNumber];
+        $orderInfo = $this->dbHelper->table('order')->where($where)->fields($this->orderFields)->find();
+        if (empty($orderInfo)) {
+            return [];
+        }
+
+        $fields = ['order_id', 'product_id', 'product_name', 'sku', 'qty', 'price', 'default_currency_price'];
+        $orderProductList = $this->dbHelper->table('order_product')->where(
+            ['shop_id' => $shopId, 'order_id' => $orderInfo['order_id']])->fields($fields)->select();
+        if (empty($orderProductList)) {
+            return [];
+        }
+
+        $orderInfo['prod_list'] = array_column($orderProductList, null, 'sku');
+        return $orderInfo;
+    }
+
     public function getCustomerOrderByNumber(int $shopId, int $customerId, string $orderNumber): array
     {
         if ($shopId <= 0 || $customerId <= 0 || empty($orderNumber)) {
@@ -295,13 +307,7 @@ class OrderBiz
         }
 
         $where = ['shop_id' => $shopId, 'customer_id' => $customerId, 'order_number' => $orderNumber];
-        $fields = [
-            'order_id', 'order_number', 'customer_email', 'customer_name', 'order_status_id', 'order_type',
-            'shipping_method', 'shipping_code', 'payment_method', 'payment_code', 'currency_code', 'currency_value',
-            'order_total', 'default_currency_total', 'default_currency_code', 'created_at', 'pp_token'
-        ];
-
-        $orderInfo = $this->dbHelper->table('order')->where($where)->fields($fields)->find();
+        $orderInfo = $this->dbHelper->table('order')->where($where)->fields($this->orderFields)->find();
         if (empty($orderInfo)) {
             return [];
         }
@@ -324,13 +330,7 @@ class OrderBiz
         }
 
         $where = ['shop_id' => $shopId, 'customer_id' => $customerId];
-        $fields = [
-            'order_id', 'order_number', 'customer_email', 'customer_name', 'order_status_id', 'order_type',
-            'shipping_method', 'shipping_code', 'payment_method', 'payment_code', 'currency_code', 'currency_value',
-            'order_total', 'default_currency_total', 'default_currency_code', 'created_at', 'pp_token'
-        ];
-
-        $orderInfo = $this->dbHelper->table('order')->where($where)->fields($fields)
+        $orderInfo = $this->dbHelper->table('order')->where($where)->fields($this->orderFields)
             ->orderBy(['order_id' => 'desc'])->limit(0, 1)->find();
         if (empty($orderInfo)) {
             return [];

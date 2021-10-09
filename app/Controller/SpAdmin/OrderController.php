@@ -9,11 +9,14 @@ declare(strict_types=1);
 
 namespace App\Controller\SpAdmin;
 
+use App\Biz\CurrencyBiz;
 use App\Biz\OrderBiz;
 use App\Biz\PaymentBiz;
 use App\Biz\PaypalBiz;
+use App\Biz\ProductBiz;
 use App\Controller\Controller;
 use App\Helper\LanguageHelper;
+use App\Helper\OssHelper;
 use App\Helper\SafeHelper;
 
 class OrderController extends Controller
@@ -102,7 +105,25 @@ class OrderController extends Controller
             return LanguageHelper::get('invalid_request');
         }
 
+        $orderBiz = new OrderBiz();
+        $orderInfo = $orderBiz->getOrderByNumber($this->shopId, $orderNumber);
+        if (empty($orderInfo)) {
+            return LanguageHelper::get('invalid_order', $this->langCode);
+        }
+
+        $prodImgList = (new ProductBiz())->getSkuImageListBySkuArr($this->shopId, array_keys($orderInfo['prod_list']), true);
+        $orderCurrency = (new CurrencyBiz())->getCurrencyByCode($this->shopId, $orderInfo['currency_code']);
+
         return $this->render([
+            'order_info' => $orderInfo,
+            'prod_img_list' => $prodImgList,
+            'order_currency' => $orderCurrency,
+            'order_statuses' => $orderBiz->getSysOrderStatuses('zh'),
+            'history_list' => $orderBiz->getHistoryListByOrderId($this->shopId, $orderInfo['order_id']),
+            'total_list' => $orderBiz->getTotalListByOrderId($this->shopId, $orderInfo['order_id']),
+            'order_address' => $orderBiz->getAddressByOrderId($this->shopId, $orderInfo['order_id']),
+            'paypal_info' => (new PaypalBiz())->getByOrderId($this->shopId, $orderInfo['order_id']),
+            'oss_access_host' => (new OssHelper($this->shopId))->accessHost,
             'csrf_token' => (new SafeHelper($this->request, $this->response))->buildCsrfToken('BG', 'order_' . $orderNumber)
         ]);
     }

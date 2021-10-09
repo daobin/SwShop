@@ -26,6 +26,7 @@ class ComposerStaticInitac96ecb4cab02b367f677877656be9b5
         'I' => 
         array (
             'Intervention\\Image\\' => 19,
+            'IP2Location\\' => 12,
         ),
         'G' => 
         array (
@@ -58,6 +59,10 @@ class ComposerStaticInitac96ecb4cab02b367f677877656be9b5
         'Intervention\\Image\\' => 
         array (
             0 => __DIR__ . '/..' . '/intervention/image/src/Intervention/Image',
+        ),
+        'IP2Location\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/ip2location/ip2location-php/src',
         ),
         'GuzzleHttp\\Psr7\\' => 
         array (

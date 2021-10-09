@@ -61,6 +61,21 @@ class PaypalBiz
         return $this->dbHelper->table('paypal')->where($where)->fields($fields)->find();
     }
 
+    public function getByOrderId(int $shopId, int $orderId): array
+    {
+        if ($shopId <= 0 || $orderId <= 0) {
+            return [];
+        }
+
+        $where = [
+            'shop_id' => $shopId,
+            'order_id' => $orderId,
+            'ack' => 'success'
+        ];
+        $fields = ['order_id', 'operation', 'ack', 'payment_code', 'payment_status', 'payment_date', 'txn_id', 'payer_email'];
+        return $this->dbHelper->table('paypal')->where($where)->fields($fields)->orderBy(['paypal_id' => 'desc'])->find();
+    }
+
     public function getByTxnId(int $shopId, string $txnId): array
     {
         if ($shopId <= 0 || empty($txnId)) {

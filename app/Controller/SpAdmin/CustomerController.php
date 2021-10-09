@@ -81,7 +81,7 @@ class CustomerController extends Controller
         $customerId = (int)$customerId;
         $customerInfo = $customerBiz->getCustomerById($this->shopId, $customerId);
         if (empty($customerInfo)) {
-            return $this->response->redirect('/spadmin/customer.html');
+            return LanguageHelper::get('invalid_customer', $this->langCode);
         }
 
         return $this->render([

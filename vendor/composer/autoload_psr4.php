@@ -11,6 +11,7 @@ return array(
     'Psr\\Container\\' => array($vendorDir . '/psr/container/src'),
     'OSS\\' => array($vendorDir . '/aliyuncs/oss-sdk-php/src/OSS'),
     'Intervention\\Image\\' => array($vendorDir . '/intervention/image/src/Intervention/Image'),
+    'IP2Location\\' => array($vendorDir . '/ip2location/ip2location-php/src'),
     'GuzzleHttp\\Psr7\\' => array($vendorDir . '/guzzlehttp/psr7/src'),
     'App\\' => array($baseDir . '/app'),
 );

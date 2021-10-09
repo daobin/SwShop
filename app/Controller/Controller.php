@@ -8,6 +8,7 @@ use App\Biz\WarehouseBiz;
 use App\Helper\LanguageHelper;
 use App\Helper\SessionHelper;
 use App\Helper\TemplateHelper;
+use IP2Location\Database;
 
 class Controller
 {
@@ -92,8 +93,17 @@ class Controller
 
     private function chkClientIp()
     {
+        $ipDb = new Database(ROOT_DIR . 'upload/IP-COUNTRY-SAMPLE.BIN');
+        $ipParse = $ipDb->lookup($this->request->ip);
+
         $this->ip = $this->request->ipLong ?? 0;
-        $this->ipCountryIsoCode2 = '';
+        $this->ipCountryIsoCode2 = $ipParse['countryCode'] ?? '';
+        $this->ipCountryIsoCode2 = strtoupper($this->ipCountryIsoCode2);
+        $this->ipCountryIsoCode2 = trim($this->ipCountryIsoCode2, '-');
+        if ($this->ipCountryIsoCode2 === 'UK') {
+            $this->ipCountryIsoCode2 = 'GB';
+        }
+//        print_r('ISO_Code_2 >> ' . $this->ipCountryIsoCode2 . PHP_EOL);
     }
 
     private function getCartList()
