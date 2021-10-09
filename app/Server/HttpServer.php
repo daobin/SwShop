@@ -52,6 +52,10 @@ class HttpServer
     public function requestHandler($request, $response)
     {
         $invalidRequest = 'Invalid request.';
+        $charset = ConfigHelper::get('app.charset', 'UTF-8');
+
+        // 判断是否为异步请求
+        $request->isAjax = isset($request->header['x-requested-with']) && strtoupper($request->header['x-requested-with']) == 'XMLHTTPREQUEST';
 
         try {
             if (empty($request->header['host'])) {
@@ -78,7 +82,6 @@ class HttpServer
                 return;
             }
 
-            $charset = ConfigHelper::get('app.charset', 'UTF-8');
             // 店铺检验合法，初始化店铺相关配置至 Request 对象
             $request->shopId = (int)$shopInfo['shop_id'];
             $request->domain = $domain;
@@ -91,8 +94,6 @@ class HttpServer
                 $request->isGet = false;
                 $request->isPost = true;
             }
-            // 判断是否为异步请求
-            $request->isAjax = isset($request->header['x-requested-with']) && strtoupper($request->header['x-requested-with']) == 'XMLHTTPREQUEST';
 
             // 时区设置
             $timezone = (new ConfigBiz())->getConfigByKey($request->shopId, 'TIMEZONE');

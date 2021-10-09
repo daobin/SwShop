@@ -11,6 +11,8 @@ return [
     'enter_account' => '请输入账号',
     'enter_password' => '请输入密码',
     'enter_valid_account_password' => '请输入一个有效的账号或密码',
+    'email_invalid' => '邮箱无效',
+    'pwd_invalid' => '邮箱或密码无效',
     'email_or_pwd_invalid' => '邮箱或密码无效',
     'unknown_refresh_try_again' => '未知错误，请稍候刷新页面重试！',
     'save' => '保存',
@@ -52,5 +54,5 @@ return [
     'order_being_processed' => '订单正在处理中。',
     'item_delivered_time' => '商品将在 24 小时内送达，有时可能需要 48 小时。',
     'email_no_match_order' => '抱歉，您提供的邮箱与订单号不符，请重新输入。',
-    'invalid_customer' => '无效用户',
+    'invalid_customer' => '用户无效',
 ];

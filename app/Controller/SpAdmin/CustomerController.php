@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace App\Controller\SpAdmin;
 
+use App\Biz\AddressBiz;
 use App\Biz\CustomerBiz;
 use App\Controller\Controller;
 use App\Helper\LanguageHelper;
@@ -55,7 +56,7 @@ class CustomerController extends Controller
             $page = $this->request->get['page'] ?? 1;
             $pageSize = $this->request->get['limit'] ?? 10;
 
-            $customerBiz = new CustomerBiz();
+            $customerBiz = new CustomerBiz($this->langCode);
             $customerList = $customerBiz->getCustomerList($condition, [], (int)$page, (int)$pageSize);
 
             return [
@@ -70,34 +71,41 @@ class CustomerController extends Controller
 
     public function detail()
     {
-        if($this->request->isPost){
+        if ($this->request->isPost) {
             return $this->save();
         }
 
-        $customerBiz = new CustomerBiz();
+        $customerBiz = new CustomerBiz($this->langCode);
 
         $customerId = $this->get('customer_id', 0);
-        $customerInfo = $customerBiz->getCustomerById($this->shopId, (int)$customerId);
+        $customerId = (int)$customerId;
+        $customerInfo = $customerBiz->getCustomerById($this->shopId, $customerId);
         if (empty($customerInfo)) {
             return $this->response->redirect('/spadmin/customer.html');
         }
 
         return $this->render([
             'customer_info' => $customerInfo,
+            'address_list' => (new AddressBiz())->getAddressListByCustomerId($this->shopId, $customerId),
             'csrf_token' => (new SafeHelper($this->request, $this->response))->buildCsrfToken('BG', 'customer_' . $customerId)
         ]);
     }
 
-    private function save(){
-        $customerBiz = new CustomerBiz();
-
+    private function save()
+    {
         $customerId = $this->get('customer_id', 0);
-        $customerInfo = $customerBiz->getCustomerById($this->shopId, (int)$customerId);
-
-        $firstName = $this->post('first_name');
-        $lastName = $this->post('last_name');
-        $email = $this->post('email');
-        $password = $this->post('pwd');
+        $save = (new CustomerBiz($this->langCode))->updateBaseInfo([
+            'shop_id' => $this->shopId,
+            'customer_id' => $customerId,
+            'first_name' => $this->post('first_name'),
+            'last_name' => $this->post('last_name'),
+            'email' => $this->post('email'),
+            'password' => $this->post('pwd'),
+            'operator' => $this->operator
+        ]);
+        if (!isset($save['status']) || $save['status'] != 'success') {
+            return $save;
+        }
 
         return ['status' => 'success', 'msg' => '保存成功'];
     }

@@ -1,7 +1,7 @@
 <?php
 \App\Helper\TemplateHelper::widget('sp_admin', 'header', ['show_top_line' => false, 'timestamp' => $timestamp ?? '']);
 ?>
-    <div class="layui-fluid">
+    <div class="layui-fluid hd-padding-bottom30">
         <div class="layui-card hd-margin-top-30">
             <div class="layui-card-header layui-font-16">用户信息</div>
             <div class="layui-card-body">
@@ -34,6 +34,29 @@
                         付款订单额：<?php echo format_price_total(0, $currency); ?>
                     </div>
                 </div>
+            </div>
+        </div>
+        <div class="layui-card hd-margin-top-30">
+            <div class="layui-card-header layui-font-16">用户地址</div>
+            <div class="layui-card-body">
+                <?php
+                foreach($address_list as $address){
+                    if($address['address_type'] != 'shipping'){
+                        continue;
+                    }
+                    echo '<div class="layui-row hd-margin-top-10"><i class="layui-icon layui-icon-ok"></i>&nbsp;&nbsp;';
+                    echo xss_text($address['first_name'] . ' ' . $address['last_name']);
+                    echo ', ', xss_text($address['street_address']);
+                    if (!empty($address['street_address_sub'])) {
+                        echo ', ', xss_text($address['street_address_sub']);
+                    }
+                    echo ', ', xss_text($address['city']);
+                    echo ', ', xss_text($address['zone_name'] . ' ' . $address['postcode']);
+                    echo ', ', xss_text($address['country_name']);
+                    echo ', ', xss_text($address['telephone']);
+                    echo '</div>';
+                }
+                ?>
             </div>
         </div>
         <div class="layui-card hd-margin-top-30">
@@ -74,7 +97,7 @@
                     <div class="layui-form-item hd-margin-top-30">
                         <div class="layui-input-block">
                             <input type="hidden" name="hash_tk" value="<?php echo $csrf_token ?? ''; ?>"/>
-                            <input class="layui-btn" type="submit" lay-submit lay-filter="prod_edit"
+                            <input class="layui-btn" type="submit" lay-submit lay-filter="customer_edit"
                                    value="<?php echo xss_text('save', true); ?>"/>
                             <input class="layui-btn layui-btn-primary hd-layer-close" type="button"
                                    value="<?php echo xss_text('cancel', true); ?>"/>
@@ -84,5 +107,14 @@
             </div>
         </div>
     </div>
+    <script>
+        layui.use(['form'], function () {
+            layui.form.on('submit(customer_edit)', function (formObj) {
+                form_submit(window.location.href, formObj.field);
+
+                return false;
+            });
+        });
+    </script>
 <?php
 \App\Helper\TemplateHelper::widget('sp_admin', 'footer');

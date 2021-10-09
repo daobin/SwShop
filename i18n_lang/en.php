@@ -11,6 +11,8 @@ return [
     'enter_account' => 'Please enter your account.',
     'enter_password' => 'Please enter your password.',
     'enter_valid_account_password' => 'Please enter a valid login account or password.',
+    'email_invalid' => 'Invalid email',
+    'pwd_invalid' => 'Invalid password',
     'email_or_pwd_invalid' => 'Invalid email or password',
     'unknown_refresh_try_again' => 'Unknown error, please refresh the page later and try again!',
     'save' => 'Save',

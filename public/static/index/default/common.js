@@ -443,9 +443,10 @@ $('.hd-form').submit(function () {
     $(this).ajaxSubmit({
         dataType: 'json',
         success: function (res) {
-            alert(res.msg);
             if (res.url != undefined && res.url != '') {
                 window.location.href = res.url;
+            }else{
+                alert(res.msg);
             }
         },
         error: function () {

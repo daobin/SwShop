@@ -29,26 +29,69 @@ class CustomerBiz
     {
         $shopId = $customerData['shop_id'] ?? 0;
         $customerId = $customerData['customer_id'] ?? 0;
+        $operator = $customerData['operator'] ?? '';
+
+        $shopId = (int)$shopId;
+        $customerId = (int)$customerId;
         $customerInfo = $this->getCustomerById($shopId, $customerId);
         if (empty($customerInfo)) {
             return ['status' => 'fail', 'msg' => LanguageHelper::get('invalid_customer', $this->langCode)];
         }
+
+        $firstName = $customerData['first_name'] ?? '';
+        $lastName = $customerData['last_name'] ?? '';
+        if($this->updateName($shopId, $customerId, $firstName, $lastName, $operator) <= 0){
+            return ['status' => 'fail', 'msg' => LanguageHelper::get('invalid_name', $this->langCode)];
+        }
+
+        $email = $customerData['email'] ?? '';
+        $emailCustomerInfo = $this->getCustomerByEmail($shopId, $email);
+        if($emailCustomerInfo && $customerId != (int)$emailCustomerInfo['customer_id']){
+            return ['status' => 'fail', 'msg' => 'Email has been registered'];
+        }
+        if ($this->updateEmail($shopId, $customerId, $email, $operator) <= 0) {
+            return ['status' => 'fail', 'msg' => LanguageHelper::get('email_invalid', $this->langCode)];
+        }
+
+        $password = $customerData['password'] ?? '';
+        if ($password != '' && $this->updatePassword($shopId, $customerId, $password, $operator) <= 0) {
+            return ['status' => 'fail', 'msg' => LanguageHelper::get('pwd_invalid', $this->langCode)];
+        }
+
+        return ['status' => 'success'];
     }
 
-    public function updateEmail(int $shopId, int $customerId, string $email): int
+    public function updateEmail(int $shopId, int $customerId, string $email, string $operator): int
     {
         if ($shopId <= 0 || $customerId <= 0 || empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
             return 0;
         }
 
-        return $this->dbHelper->table('customer')->where(
-            ['shop_id' => $shopId, 'customer_id' => $customerId])->update(
-            [
-                'first_name' => $firstName,
-                'last_name' => $lastName,
-                'updated_at' => time(),
-                'updated_by' => $operator
-            ]);
+        $this->dbHelper->beginTransaction();
+
+        try {
+            $where = ['shop_id' => $shopId, 'customer_id' => $customerId];
+            $this->dbHelper->table('customer')->where($where)->update(
+                [
+                    'email' => $email,
+                    'updated_at' => time(),
+                    'updated_by' => $operator
+                ]);
+            if ($this->dbHelper->table('order')->where($where)->count() > 0) {
+                $this->dbHelper->table('order')->where($where)->update([
+                    'customer_email' => $email,
+                    'updated_at' => time(),
+                    'updated_by' => $operator
+                ]);
+            }
+            $res = 1;
+            $this->dbHelper->commit();
+        } catch (\Throwable $e) {
+            $res = 0;
+            $this->dbHelper->rollBack();
+        }
+
+        return $res;
     }
 
     public function updateName(int $shopId, int $customerId, string $firstName, string $lastName, string $operator): int
@@ -76,7 +119,7 @@ class CustomerBiz
         return $this->dbHelper->table('customer')->where(
             ['shop_id' => $shopId, 'customer_id' => $customerId])->update(
             [
-                'password' => $password,
+                'password' => password_hash($password, PASSWORD_DEFAULT),
                 'updated_at' => time(),
                 'updated_by' => $operator
             ]);

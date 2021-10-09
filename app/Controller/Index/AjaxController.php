@@ -34,7 +34,7 @@ class AjaxController extends Controller
     {
         $email = $this->post('email');
         $password = $this->post('password');
-        $customerInfo = (new CustomerBiz())->getCustomerByEmail($this->shopId, $email);
+        $customerInfo = (new CustomerBiz($this->langCode))->getCustomerByEmail($this->shopId, $email);
         if (empty($customerInfo)) {
             return ['status' => 'fail', 'msg' => LanguageHelper::get('email_or_pwd_invalid', $this->langCode)];
         }
@@ -67,7 +67,7 @@ class AjaxController extends Controller
         }
 
         $time = time();
-        $register = (new CustomerBiz())->register([
+        $register = (new CustomerBiz($this->langCode))->register([
             'email' => $this->post('email'),
             'password' => $this->post('password'),
             'password2' => $this->post('password2'),
@@ -261,7 +261,7 @@ class AjaxController extends Controller
     public function setDefaultAddress()
     {
         $addrId = $this->post('addr', 0);
-        if ((new CustomerBiz())->setShippingAddress($this->shopId, $this->customerId, (int)$addrId)) {
+        if ((new CustomerBiz($this->langCode))->setShippingAddress($this->shopId, $this->customerId, (int)$addrId)) {
             return ['status' => 'success'];
         }
 

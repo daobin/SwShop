@@ -30,7 +30,7 @@ class CustomerController extends Controller
                 return ['status' => 'fail', 'msg' => LanguageHelper::get('invalid_name', $this->langCode)];
             }
 
-            $updated = (new CustomerBiz())->updateName($this->shopId, $this->customerId, $firstName, $lastName, $this->operator);
+            $updated = (new CustomerBiz($this->langCode))->updateName($this->shopId, $this->customerId, $firstName, $lastName, $this->operator);
             if ($updated) {
                 $customerInfo = $this->session->get('sp_customer_info');
                 if (empty($customerInfo)) {
@@ -48,7 +48,7 @@ class CustomerController extends Controller
             return ['status' => 'fail', 'msg' => LanguageHelper::get('update_failed', $this->langCode)];
         }
 
-        $customerInfo = (new CustomerBiz())->getCustomerById($this->shopId, $this->customerId);
+        $customerInfo = (new CustomerBiz($this->langCode))->getCustomerById($this->shopId, $this->customerId);
         if (empty($customerInfo)) {
             $this->response->redirect('/logout.html');
         }
@@ -70,7 +70,7 @@ class CustomerController extends Controller
                 return ['status' => 'fail', 'msg' => LanguageHelper::get('invalid_password', $this->langCode)];
             }
 
-            $customerBiz = new CustomerBiz();
+            $customerBiz = new CustomerBiz($this->langCode);
             $customerInfo = $customerBiz->getCustomerById($this->shopId, $this->customerId);
             if (empty($customerInfo)) {
                 return ['status' => 'fail', 'url' => '/logout.html'];
@@ -79,7 +79,6 @@ class CustomerController extends Controller
                 return ['status' => 'fail', 'msg' => LanguageHelper::get('invalid_password', $this->langCode)];
             }
 
-            $newPwd = password_hash($newPwd, PASSWORD_DEFAULT);
             $updated = $customerBiz->updatePassword($this->shopId, $this->customerId, $newPwd, $this->operator);
             if ($updated) {
                 return [
@@ -100,7 +99,7 @@ class CustomerController extends Controller
 
     public function address()
     {
-        $customerInfo = (new CustomerBiz())->getCustomerById($this->shopId, $this->customerId);
+        $customerInfo = (new CustomerBiz($this->langCode))->getCustomerById($this->shopId, $this->customerId);
 
         $from = $this->get('from');
         $from = !empty($from) ? '?from=' . $from : '';
@@ -125,7 +124,7 @@ class CustomerController extends Controller
         $addrId = (int)$this->get('addr_id', 0);
         $addrInfo = $addrBiz->getAddressById($this->shopId, $this->customerId, $addrId);
         $countryList = $addrBiz->getCountryList($this->shopId, 1, 1000);
-        $customerInfo = (new CustomerBiz())->getCustomerById($this->shopId, $this->customerId);
+        $customerInfo = (new CustomerBiz($this->langCode))->getCustomerById($this->shopId, $this->customerId);
 
         $from = $this->get('from');
         $from = !empty($from) ? '?from=' . $from : '';

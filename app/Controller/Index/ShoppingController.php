@@ -191,7 +191,7 @@ class ShoppingController extends Controller
         $this->session->set('order_summary', json_encode($orderSummary));
 
         $payRes = [];
-        $customerInfo = (new CustomerBiz())->getCustomerById($this->shopId, $this->customerId);;
+        $customerInfo = (new CustomerBiz($this->langCode))->getCustomerById($this->shopId, $this->customerId);;
         if ($paymentCode == 'paypal_cc') {
             $payRes = (new PaypalCcHelper($this->request, $this->response))->orderProcess($customerInfo, $addressInfo, $paymentInfo);
             if (isset($payRes['url'])) {
