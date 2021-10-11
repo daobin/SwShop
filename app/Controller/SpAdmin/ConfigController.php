@@ -53,12 +53,12 @@ class ConfigController extends Controller
         $cfgKey = $this->request->get['cfg_key'] ?? '';
         $cfgKey = strtoupper($cfgKey);
         if (empty($cfgKey)) {
-            return LanguageHelper::get('invalid_request');
+            return LanguageHelper::get('invalid_request', $this->langCode);
         }
 
         $cfgInfo = (new ConfigBiz())->getConfigByKey($this->shopId, $cfgKey);
         if (empty($cfgInfo)) {
-            return LanguageHelper::get('invalid_request');
+            return LanguageHelper::get('invalid_request', $this->langCode);
         }
 
         $cfgInfo['csrf_token'] = (new SafeHelper($this->request, $this->response))->buildCsrfToken('BG', $cfgKey);
@@ -70,7 +70,7 @@ class ConfigController extends Controller
         $cfgKey = $this->request->get['cfg_key'] ?? '';
         $cfgKey = strtoupper($cfgKey);
         if (empty($cfgKey)) {
-            return ['status' => 'fail', 'msg' => LanguageHelper::get('invalid_request')];
+            return ['status' => 'fail', 'msg' => LanguageHelper::get('invalid_request', $this->langCode)];
         }
 
         $cfgBiz = new ConfigBiz();
@@ -92,7 +92,7 @@ class ConfigController extends Controller
                         $theme = strtolower($theme);
                         $cssPath = ROOT_DIR . 'public/static/index/' . $theme;
                         if (!is_dir($cssPath) && !mkdir($cssPath, 0775)) {
-                            return ['status' => 'fail', 'msg' => LanguageHelper::get('invalid_request')];
+                            return ['status' => 'fail', 'msg' => LanguageHelper::get('invalid_request', $this->langCode)];
                         }
 
                         $name = strtolower($name);
@@ -170,6 +170,6 @@ class ConfigController extends Controller
             return ['status' => 'success', 'msg' => '保存成功'];
         }
 
-        return ['status' => 'fail', 'msg' => LanguageHelper::get('invalid_request')];
+        return ['status' => 'fail', 'msg' => LanguageHelper::get('invalid_request', $this->langCode)];
     }
 }

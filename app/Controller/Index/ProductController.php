@@ -103,6 +103,84 @@ class ProductController extends Controller
         return $this->render($data);
     }
 
+    public function search()
+    {
+        $prodBiz = new ProductBiz();
+
+        $keywords = $this->get('keywords', '--');
+        $where = [
+            'shop_id' => $this->shopId,
+            'product_status' => 1,
+            'language_code' => $this->langCode,
+            'keywords' => $keywords
+        ];
+        $keywords = trim($keywords, '-');
+
+        $sort = strtolower($this->get('sort', ''));
+        $orderBy = ['is_sold_out' => 'asc', 'sort' => 'asc', 'product_id' => 'desc'];
+        $pageLink = '/search.html?keywords=' . $keywords . '&';
+        switch ($sort) {
+            case 'price2low':
+                $orderBy = ['is_sold_out' => 'asc', 'price' => 'desc', 'sort' => 'asc', 'product_id' => 'desc'];
+                $pageLink .= 'sort=price2low&';
+                break;
+            case 'price2high':
+                $orderBy = ['is_sold_out' => 'asc', 'price' => 'asc', 'sort' => 'asc', 'product_id' => 'desc'];
+                $pageLink .= 'sort=price2high&';
+                break;
+            default:
+                $sort = 'relevance';
+                break;
+        }
+
+        $page = (int)$this->get('page', 1);
+        $pageSize = 20;
+
+        $prodList = $prodBiz->getProductList($where, $orderBy, $page, $pageSize);
+        if (empty($prodList)) {
+            $data = [
+                'keywords' => $keywords,
+                'prod_list' => $prodList
+            ];
+
+            return $this->render($data, 'Index/Default/Product/category');
+        }
+
+        $prodList = $prodBiz->getProductAllByList($this->shopId, $this->warehouseCode, $prodList);
+
+        $pageTotal = (int)ceil($prodBiz->count / $pageSize);
+        $pageTotal = $pageTotal > 1 ? $pageTotal : 1;
+        $page = $page > $pageTotal ? $pageTotal : $page;
+
+        $sortList = [
+            'relevance' => [
+                'icon' => 'fa fa-thumbs-o-up',
+                'text' => 'Relevance'
+            ],
+            'price2low' => [
+                'icon' => 'fa fa-dollar',
+                'text' => 'High to Low'
+            ],
+            'price2high' => [
+                'icon' => 'fa fa-dollar',
+                'text' => 'Low to High'
+            ],
+        ];
+
+        $data = [
+            'oss_access_host' => (new OssHelper($this->shopId))->accessHost,
+            'sort' => $sort,
+            'sort_list' => $sortList,
+            'keywords' => $keywords,
+            'prod_list' => $prodList,
+            'page' => $page,
+            'page_total' => $pageTotal,
+            'page_link' => $pageLink
+        ];
+
+        return $this->render($data, 'Index/Default/Product/category');
+    }
+
     public function detail()
     {
         $prodId = $this->get('prod_id', 0);
@@ -126,9 +204,9 @@ class ProductController extends Controller
                 $listPrice = (float)$qtyPrice['list_price'];
                 $listPriceText = format_price($listPrice, $this->currency, 1, true);
                 $priceOff = '';
-                if($listPrice > $price){
+                if ($listPrice > $price) {
                     $priceOff = ($listPrice - $price) / $listPrice * 100;
-                    $priceOff = number_format($priceOff, 2, '.', '').'% OFF';
+                    $priceOff = number_format($priceOff, 2, '.', '') . '% OFF';
                 }
                 $skuQtyPriceList[$sku]['price_text'] = $priceText;
                 $skuQtyPriceList[$sku]['list_price_text'] = $listPriceText;

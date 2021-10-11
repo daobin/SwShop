@@ -159,21 +159,21 @@ class IndexController extends Controller
     public function loginProcess()
     {
         if (!$this->request->isPost) {
-            return ['status' => 'fail', 'msg' => LanguageHelper::get('invalid_request')];
+            return ['status' => 'fail', 'msg' => LanguageHelper::get('invalid_request', $this->langCode)];
         }
 
         $account = $this->post('account');
         $password = $this->post('password');
         if ($account == '') {
-            return ['status' => 'fail', 'msg' => LanguageHelper::get('enter_account')];
+            return ['status' => 'fail', 'msg' => LanguageHelper::get('enter_account', $this->langCode)];
         }
         if ($password == '') {
-            return ['status' => 'fail', 'msg' => LanguageHelper::get('enter_password')];
+            return ['status' => 'fail', 'msg' => LanguageHelper::get('enter_password', $this->langCode)];
         }
 
         $adminInfo = (new AdminBiz())->getAdminByAccount($this->shopId, $account);
         if (empty($adminInfo) || !password_verify($password, $adminInfo['password'])) {
-            return ['status' => 'fail', 'msg' => LanguageHelper::get('enter_valid_account_password')];
+            return ['status' => 'fail', 'msg' => LanguageHelper::get('enter_valid_account_password', $this->langCode)];
         }
 
         $this->session->renameKey($this->request->domain);

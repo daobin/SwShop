@@ -100,9 +100,13 @@ class OrderController extends Controller
 
     public function detail()
     {
+        if ($this->request->isPost) {
+            return $this->save();
+        }
+
         $orderNumber = $this->request->get['order_number'] ?? '';
         if (empty($orderNumber)) {
-            return LanguageHelper::get('invalid_request');
+            return LanguageHelper::get('invalid_request', $this->langCode);
         }
 
         $orderBiz = new OrderBiz();
@@ -114,6 +118,13 @@ class OrderController extends Controller
         $prodImgList = (new ProductBiz())->getSkuImageListBySkuArr($this->shopId, array_keys($orderInfo['prod_list']), true);
         $orderCurrency = (new CurrencyBiz())->getCurrencyByCode($this->shopId, $orderInfo['currency_code']);
 
+        $condition = [
+            'shop_id' => $this->shopId,
+            'customer_id' => $orderInfo['customer_id'],
+        ];
+        $orderList = $orderBiz->getOrderList($condition, [], 1, 500);
+        $orderListCnt = $orderBiz->count;
+
         return $this->render([
             'order_info' => $orderInfo,
             'prod_img_list' => $prodImgList,
@@ -123,8 +134,41 @@ class OrderController extends Controller
             'total_list' => $orderBiz->getTotalListByOrderId($this->shopId, $orderInfo['order_id']),
             'order_address' => $orderBiz->getAddressByOrderId($this->shopId, $orderInfo['order_id']),
             'paypal_info' => (new PaypalBiz())->getByOrderId($this->shopId, $orderInfo['order_id']),
+            'order_list' => $orderList,
+            'order_list_count' => $orderListCnt,
             'oss_access_host' => (new OssHelper($this->shopId))->accessHost,
-            'csrf_token' => (new SafeHelper($this->request, $this->response))->buildCsrfToken('BG', 'order_' . $orderNumber)
+            'csrf_token' => (new SafeHelper($this->request, $this->response))->buildCsrfToken('BG', 'order_' . $orderNumber),
+            'to_fixed' => $this->get('to_fixed'),
+            'status_notes' => get_order_status_notes($this->langCode)
         ]);
+    }
+
+    private function save()
+    {
+        $orderNumber = $this->request->get['order_number'] ?? '';
+        if (empty($orderNumber)) {
+            return ['status' => 'fail', 'msg' => LanguageHelper::get('invalid_request', $this->langCode)];
+        }
+
+        $orderBiz = new OrderBiz();
+        $orderInfo = $orderBiz->getOrderByNumber($this->shopId, $orderNumber);
+        if (empty($orderInfo)) {
+            return ['status' => 'fail', 'msg' => LanguageHelper::get('invalid_order', $this->langCode)];
+        }
+
+        $statusId = $this->post('status_id', 0);
+        $isShow = $this->post('is_show', 0) == 1;
+        $comment = $this->post('comment');
+        $comment = $comment != '' ? $comment : get_order_status_note((int)$statusId, $this->langCode);
+
+        $save = $orderBiz->updateOrderStatusById($this->shopId, $orderInfo['order_id'], (int)$statusId, $comment, $isShow, $this->operator);
+        if ($save) {
+            return [
+                'status' => 'success',
+                'msg' => LanguageHelper::get('save_successfully', $this->langCode),
+                'url' => '/spadmin/order/' . $orderNumber . '?to_fixed=hd-status-history'
+            ];
+        }
+        return ['status' => 'fail', 'msg' => LanguageHelper::get('save_failed', $this->langCode)];
     }
 }

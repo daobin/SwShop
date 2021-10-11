@@ -33,6 +33,6 @@ class TimeLimitedController extends Controller
         $limitedId = $this->request->get['limited_id'] ?? 0;
         $limitedId = (int)$limitedId;
 
-        return ['status' => 'fail', 'msg' => LanguageHelper::get('invalid_request')];
+        return ['status' => 'fail', 'msg' => LanguageHelper::get('invalid_request', $this->langCode)];
     }
 }

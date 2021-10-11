@@ -131,16 +131,16 @@
             <a class="btn btn-lg btn-default" href="/">Continue Shopping</a>
         </div>
         <div class="col-md-9 text-right hidden-xs hidden-sm">
-            <img class="hd-display-inline-block hd-margin-right-15 hd-btn-pp"
-                 src="/static/index/default/buy-now-with-paypal.png"/>
+            <!--img class="hd-display-inline-block hd-margin-right-15 hd-btn-pp"
+                 src="/static/index/default/buy-now-with-paypal.png"/-->
             <a class="btn btn-lg btn-warning" href="/shopping/confirmation.html">Checkout</a>
         </div>
         <div class="col-xs-6 text-right visible-xs visible-sm">
             <a class="btn btn-lg btn-warning" href="/shopping/confirmation.html">Checkout</a>
         </div>
         <div class="col-xs-12 visible-xs visible-sm">
-            <img class="hd-display-inline-block hd-margin-top-bottom-15 hd-btn-pp"
-                 src="/static/index/default/buy-now-with-paypal.png"/>
+            <!--img class="hd-display-inline-block hd-margin-top-bottom-15 hd-btn-pp"
+                 src="/static/index/default/buy-now-with-paypal.png"/-->
         </div>
     </div>
 </div>

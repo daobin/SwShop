@@ -39,12 +39,12 @@ class BannerController extends Controller
         $bannerId = $this->request->get['banner_id'] ?? 0;
         $bannerId = (int)$bannerId;
         if ($bannerId <= 0) {
-            return LanguageHelper::get('invalid_request');
+            return LanguageHelper::get('invalid_request', $this->langCode);
         }
 
         $bannerInfo = (new BannerBiz())->getBannerById($this->shopId, $bannerId);
         if (empty($bannerInfo)) {
-            return LanguageHelper::get('invalid_request');
+            return LanguageHelper::get('invalid_request', $this->langCode);
         }
 
         $data = [
@@ -62,14 +62,14 @@ class BannerController extends Controller
         $bannerId = $this->request->get['banner_id'] ?? 0;
         $bannerId = (int)$bannerId;
         if ($bannerId <= 0) {
-            return ['status' => 'fail', 'msg' => LanguageHelper::get('invalid_request')];
+            return ['status' => 'fail', 'msg' => LanguageHelper::get('invalid_request', $this->langCode)];
         }
 
         $bannerBiz = new BannerBiz();
 
         $bannerInfo = $bannerBiz->getBannerById($this->shopId, $bannerId);
         if (empty($bannerInfo)) {
-            return ['status' => 'fail', 'msg' => LanguageHelper::get('invalid_request')];
+            return ['status' => 'fail', 'msg' => LanguageHelper::get('invalid_request', $this->langCode)];
         }
 
         $time = time();
@@ -118,6 +118,6 @@ class BannerController extends Controller
             return ['status' => 'success', 'msg' => '保存成功'];
         }
 
-        return ['status' => 'fail', 'msg' => LanguageHelper::get('invalid_request')];
+        return ['status' => 'fail', 'msg' => LanguageHelper::get('invalid_request', $this->langCode)];
     }
 }

@@ -34,9 +34,11 @@
             <div class="col-md-5">
                 <div class="form-group">
                     <div class="input-group">
-                        <input type="text" class="hd-search form-control" placeholder="Search for ..."/>
-                        <span class="btn input-group-addon"><i
-                                    class="glyphicon glyphicon-search hd-font-size-24"></i></span>
+                        <input type="text" class="hd-search form-control" placeholder="Search for ..."
+                               value="<?php echo $keywords ?? ''; ?>"/>
+                        <span class="btn input-group-addon hd-btn-search">
+                            <i class="glyphicon glyphicon-search hd-font-size-24"></i>
+                        </span>
                     </div>
                 </div>
             </div>

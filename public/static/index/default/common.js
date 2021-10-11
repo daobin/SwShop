@@ -191,7 +191,15 @@ function upCartProd(eleObj) {
     });
 }
 
-$(document).on('keyup', '.hd-prod-qty-val', function () {
+$(document).on('click', '.hd-btn-search', function () {
+    var keywords = $.trim($(this).siblings('input.hd-search').val());
+    if (keywords == '') {
+        return false;
+    }
+
+    window.location.href = '/search.html?keywords=' + encodeURIComponent(keywords);
+
+}).on('keyup', '.hd-prod-qty-val', function () {
     var qty = $(this).val().replace(/[^\d]+/, '');
     if (qty == '') {
         return;
@@ -445,7 +453,7 @@ $('.hd-form').submit(function () {
         success: function (res) {
             if (res.url != undefined && res.url != '') {
                 window.location.href = res.url;
-            }else{
+            } else {
                 alert(res.msg);
             }
         },

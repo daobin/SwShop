@@ -160,7 +160,7 @@
                     <input type="text" class="layui-input hd-int-only" name="prod_size" maxlength="5"
                            value="<?php echo $cate_info['product_show_size'] ?? '';?>"/>
                 </div>
-                <div class="layui-form-mid layui-word-aux">每页列表展示产品个数，不填则默认为0</div>
+                <div class="layui-form-mid layui-word-aux">每页列表展示产品个数，不填或填0则默认为20</div>
             </div>
             <div class="layui-form-item">
                 <label class="layui-form-label">评论个数</label>

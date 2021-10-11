@@ -86,11 +86,14 @@ class PaypalCcHelper
         }
 
         $payRes = $this->doRequest('authorize_order', $token);
+//        print_r('PP CC >>' . PHP_EOL);
+//        print_r($payRes);
 
         $response = $payRes['data'] ?? [];
         $paymentId = get_paypal_response_val($response, 'payment_id');
         $paymentCreateTime = get_paypal_response_val($response, 'payment_create_time');
         $paymentAmountInfo = get_paypal_response_val($response, 'payment_amount');
+        $payer = get_paypal_response_val($response, 'payer');
 
         (new PaypalBiz())->add([
             'shop_id' => $this->shopId,
@@ -102,7 +105,9 @@ class PaypalCcHelper
             'payment_date' => $paymentCreateTime,
             'txn_id' => $paymentId,
             'currency_code' => $paymentAmountInfo['currency_code'] ?? '',
-            'amount' => $paymentAmountInfo['value'] ?? 0
+            'amount' => $paymentAmountInfo['value'] ?? 0,
+            'payer_email' => $payer['email_address'] ?? '',
+            'payer_id' => $payer['payer_id'] ?? ''
         ]);
 
         $success = false;
@@ -195,21 +200,21 @@ class PaypalCcHelper
         }
         reset($orderSummary['prod_list']);
 
-        $countryInfo = (new AddressBiz())->getCountryById($this->shopId, (int)$addressInfo['country_id']);
-        $purchaseUnit['shipping'] = [
-            'name' => [
-                'full_name' => $addressInfo['first_name'] . ' ' . $addressInfo['last_name']
-            ],
-            'type' => 'SHIPPING',
-            'address' => [
-                'address_line_1' => $addressInfo['street_address'],
-                'address_line_2' => $addressInfo['street_address_sub'],
-                'admin_area_2' => $addressInfo['city'],
-                'admin_area_1' => $addressInfo['zone_name'],
-                'postal_code' => $addressInfo['postcode'],
-                'country_code' => $countryInfo['iso_code_2'] ?? '',
-            ]
-        ];
+//        $countryInfo = (new AddressBiz())->getCountryById($this->shopId, (int)$addressInfo['country_id']);
+//        $purchaseUnit['shipping'] = [
+//            'name' => [
+//                'full_name' => $addressInfo['first_name'] . ' ' . $addressInfo['last_name']
+//            ],
+//            'type' => 'SHIPPING',
+//            'address' => [
+//                'address_line_1' => $addressInfo['street_address'],
+//                'address_line_2' => $addressInfo['street_address_sub'],
+//                'admin_area_2' => $addressInfo['city'],
+//                'admin_area_1' => $addressInfo['zone_name'],
+//                'postal_code' => $addressInfo['postcode'],
+//                'country_code' => $countryInfo['iso_code_2'] ?? '',
+//            ]
+//        ];
 
         $request = [
             'intent' => 'AUTHORIZE',

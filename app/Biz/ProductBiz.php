@@ -135,6 +135,23 @@ class ProductBiz
             }
         }
 
+        $prodIds = [];
+        if (isset($condition['keywords'])) {
+            $keywordsData = $this->getProdSkuListBySkuArr($shopId, [$condition['keywords']]);
+            if (!empty($keywordsData)) {
+                $keywordsData = reset($keywordsData);
+                $prodIds[] = $keywordsData['product_id'];
+            }
+
+            $keywordsData = $this->getProdIdsByName($shopId, $condition['keywords'], $langCode);
+            if (!empty($keywordsData)) {
+                $prodIds += $keywordsData;
+            }
+
+            $prodIds = $prodIds ? $prodIds : [0];
+            $where['product_id'] = ['in', $prodIds];
+        }
+
         if (empty($orderBy)) {
             $orderBy = ['product_id' => 'desc'];
         }
@@ -194,6 +211,33 @@ class ProductBiz
 
         unset($prodList, $descList);
         return $ret;
+    }
+
+    private function getProdIdsByName(int $shopId, string $prodName, string $langCode): array
+    {
+        $prodName = trim($prodName);
+        if ($shopId <= 0 || empty($prodName)) {
+            return [];
+        }
+
+        $prodName = preg_replace('/[\s]+/', ',', $prodName);
+        $prodName = explode(',', $prodName);
+
+        $where = [
+            'shop_id' => $shopId,
+            'language_code' => $langCode
+        ];
+        $whereOr = [
+            'product_name' => ['like in', $prodName]
+        ];
+        $prodIds = $this->dbHelper->table('product_description')->where($where)->whereOr($whereOr)
+            ->fields(['product_id'])->select();
+        if (empty($prodIds)) {
+            return [];
+        }
+
+        $prodIds = array_column($prodIds, null, 'product_id');
+        return array_keys($prodIds);
     }
 
     public function getProductById(int $shopId, int $prodId): array

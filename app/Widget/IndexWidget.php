@@ -17,7 +17,8 @@ class IndexWidget extends Widget
             'customer_id' => $params['customer_id'] ?? 0,
             'cart_qty' => $params['cart_qty'] ?? 0,
             'shopping_nav_img' => $params['shopping_nav_img'] ?? '',
-            'cate_list' => $cateList
+            'cate_list' => $cateList,
+            'keywords' => $params['keywords'] ?? ''
         ];
 
         if(!empty($data['shopping_nav_img'])){

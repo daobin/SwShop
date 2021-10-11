@@ -40,6 +40,7 @@ RouteHelper::get('/<prod_name>-p<prod_id>', 'Index.Product.detail', [
     'prod_name' => '[\w\-]+',
     'prod_id' => '\d+',
 ]);
+RouteHelper::get('/search', 'Index.Product.search');
 
 RouteHelper::get('/shopping/cart', 'Index.Shopping.cart');
 RouteHelper::get('/shopping/confirmation', 'Index.Shopping.confirmation');

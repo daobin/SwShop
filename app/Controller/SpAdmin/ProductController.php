@@ -111,7 +111,7 @@ class ProductController extends Controller
         $prodId = $this->request->get['prod_id'] ?? 0;
         $prodId = (int)$prodId;
         if ($prodId < 0) {
-            return ['status' => 'fail', 'msg' => LanguageHelper::get('invalid_request')];
+            return ['status' => 'fail', 'msg' => LanguageHelper::get('invalid_request', $this->langCode)];
         }
 
         // 商品基础信息

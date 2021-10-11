@@ -378,6 +378,9 @@ class DbHelper
                                 $where[] = sprintf($inSql, implode(', ', array_fill(0, count($value), '?')));
                             }
                             break;
+                        case 'like in':
+                            $this->sqlBuild['where_or'][$field] = [$opt, $value];
+                            continue;
                         default:
                             $where[] = '`' . $field . '` ' . $opt . ' ?';
                     }
@@ -407,12 +410,42 @@ class DbHelper
                 if (is_array($value)) {
                     $opt = trim(reset($value));
                     $value = end($value);
-                    $where[] = '`' . $field . '` ' . $opt . ' ?';
+                    switch (strtolower($opt)) {
+                        case 'in':
+                            $inSql = '`' . $field . '` in (%s)';
+                            if (empty($value)) {
+                                $where[] = sprintf($inSql, '?');
+                            } else {
+                                $where[] = sprintf($inSql, implode(', ', array_fill(0, count($value), '?')));
+                            }
+                            break;
+                        case 'like in':
+                            if (is_array($value)) {
+                                foreach ($value as &$valItem) {
+                                    $valItem = '%' . $valItem . '%';
+                                    $where[] = '`' . $field . '` like ?';
+                                }
+                                reset($value);
+                            }
+                            break;
+                        default:
+                            $where[] = '`' . $field . '` ' . $opt . ' ?';
+                    }
                 } else {
                     $where[] = '`' . $field . '` = ?';
                 }
 
-                $preData[] = $value;
+                if (is_array($value)) {
+                    if (empty($value)) {
+                        $preData[] = '0';
+                    } else {
+                        foreach ($value as $val) {
+                            $preData[] = $val;
+                        }
+                    }
+                } else {
+                    $preData[] = $value;
+                }
             }
             if ($preSql) {
                 $preSql .= ' AND (' . implode(' OR ', $where) . ')';

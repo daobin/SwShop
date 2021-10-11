@@ -131,7 +131,7 @@
                             }
                         },
                         {field: 'order_status_text', title: '订单状态', align: 'center'},
-                        {field: 'default_currency_total', title: '订单金额', align: 'center'},
+                        {field: 'order_total', title: '订单金额', align: 'center'},
                         {field: 'currency_code', title: '交易货币', align: 'center'},
                         {field: 'created_text', title: '生成时间', align: 'center'},
                         {fixed: 'right', width: '100', align: 'center', toolbar: '#operate'}

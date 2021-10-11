@@ -24,7 +24,7 @@ class OrderBiz
         $this->orderFields = [
             'order_id', 'order_number', 'customer_id', 'customer_email', 'customer_name', 'order_status_id', 'order_type',
             'shipping_method', 'shipping_code', 'payment_method', 'payment_code', 'currency_code', 'currency_value',
-            'order_total', 'default_currency_total', 'default_currency_code', 'created_by', 'pp_token',
+            'order_total', 'default_currency_total', 'default_currency_code', 'created_at', 'pp_token',
             'ip_number', 'ip_country_iso_code_2', 'host_from', 'device_from'
         ];
     }

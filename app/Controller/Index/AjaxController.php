@@ -122,7 +122,7 @@ class AjaxController extends Controller
         $skuInfo = $skuInfo[$sku][$this->warehouseCode] ?? [];
         if (empty($skuInfo)) {
             $this->session->remove($idempotentField);
-            return ['status' => 'fail', 'msg' => LanguageHelper::get('invalid_request')];
+            return ['status' => 'fail', 'msg' => LanguageHelper::get('invalid_request', $this->langCode)];
         }
 
         if ((int)$skuInfo['qty'] <= 0) {
@@ -188,7 +188,7 @@ class AjaxController extends Controller
         $skuInfo = $skuInfo[$sku][$this->warehouseCode] ?? [];
         if (empty($skuInfo)) {
             $this->session->remove($idempotentField);
-            return ['status' => 'fail', 'msg' => LanguageHelper::get('invalid_request')];
+            return ['status' => 'fail', 'msg' => LanguageHelper::get('invalid_request', $this->langCode)];
         }
 
         if ((int)$skuInfo['qty'] <= 0) {

@@ -131,7 +131,7 @@ class Controller
 
     private function input($method, $name, $default = '', $filter = 'trim')
     {
-        if (!isset($this->request->$method[$name])) {
+        if (!isset($this->request->$method[$name]) || $this->request->$method[$name] === '') {
             return $default;
         }
 
@@ -210,6 +210,6 @@ class Controller
         print_r(sprintf('Class::Method [%s::%s] Not Found', get_class($this), $name));
 
         $this->response->status(404);
-        return LanguageHelper::get('invalid_request');
+        return LanguageHelper::get('invalid_request', $this->langCode);
     }
 }

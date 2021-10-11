@@ -84,7 +84,7 @@ class CategoryController extends Controller
         $cateId = $this->get('cate_id', 0);
         $cateId = (int)$cateId;
         if ($cateId < 0) {
-            return ['status' => 'fail', 'msg' => LanguageHelper::get('invalid_request')];
+            return ['status' => 'fail', 'msg' => LanguageHelper::get('invalid_request', $this->langCode)];
         }
 
         $parentId = $this->post('parent_id', -1);
@@ -95,7 +95,7 @@ class CategoryController extends Controller
         $cateUrl = empty($this->request->post['cate_url']) ? '' : trim($this->request->post['cate_url']);
         $redirectLink = empty($this->request->post['redirect_link']) ? '' : trim($this->request->post['redirect_link']);
         $prodSize = empty($this->request->post['prod_size']) ? 0 : (int)$this->request->post['prod_size'];
-        $prodSize = $prodSize > 0 ? $prodSize : 0;
+        $prodSize = $prodSize > 0 ? $prodSize : 20;
         $reviewSize = empty($this->request->post['review_size']) ? 0 : (int)$this->request->post['review_size'];
         $reviewSize = $reviewSize > 0 ? $reviewSize : 0;
 

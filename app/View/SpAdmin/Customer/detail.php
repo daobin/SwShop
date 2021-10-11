@@ -44,7 +44,7 @@
                     if($address['address_type'] != 'shipping'){
                         continue;
                     }
-                    echo '<div class="layui-row hd-margin-top-10"><i class="layui-icon layui-icon-ok"></i>&nbsp;&nbsp;';
+                    echo '<div class="layui-row hd-margin-top-10"><i class="layui-icon layui-icon-location"></i>&nbsp;&nbsp;';
                     echo xss_text($address['first_name'] . ' ' . $address['last_name']);
                     echo ', ', xss_text($address['street_address']);
                     if (!empty($address['street_address_sub'])) {

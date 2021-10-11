@@ -144,14 +144,20 @@ function get_order_status_id(string $status): int
 }
 
 // 获取订单状态提示
-function get_order_status_note(int $statusId, string $langCode): string
+function get_order_status_notes(string $langCode): array
 {
-    $statusNotes = [
+    return [
         1 => \App\Helper\LanguageHelper::get('order_waiting_note', $langCode),
         2 => \App\Helper\LanguageHelper::get('order_pending_note', $langCode),
         3 => \App\Helper\LanguageHelper::get('order_in_process_note', $langCode),
+        4 => '',
         5 => \App\Helper\LanguageHelper::get('order_canceled_note', $langCode)
     ];
+}
+
+function get_order_status_note(int $statusId, string $langCode): string
+{
+    $statusNotes = get_order_status_notes($langCode);
 
     return $statusNotes[$statusId] ?? '';
 }
@@ -169,6 +175,10 @@ function get_paypal_response_val($response, $field)
             $field = substr($field, 8);
             if (isset($response['payments']['authorizations'])) {
                 $response = reset($response['payments']['authorizations']);
+                return $response[$field] ?? '';
+            }
+            if (isset($response['payments']['captures'])) {
+                $response = reset($response['payments']['captures']);
                 return $response[$field] ?? '';
             }
         }

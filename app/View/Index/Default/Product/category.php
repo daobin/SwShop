@@ -1,6 +1,8 @@
 <?php
-\App\Helper\TemplateHelper::widget('index', 'header', $widget_params ?? []);
+$widget_params['keywords'] = $keywords ?? '';
 $cate_name = xss_text($cate_info['description']['category_name'] ?? '');
+
+\App\Helper\TemplateHelper::widget('index', 'header', $widget_params ?? []);
 ?>
     <div class="hd-height-15">&nbsp;</div>
     <div id="hd-crumb" class="container">
@@ -17,14 +19,27 @@ $cate_name = xss_text($cate_info['description']['category_name'] ?? '');
                     $cate_link = $level_info['category_url'] . '-c' . $level_info['product_category_id'] . '.html';
                     echo '<li><a href="/', $cate_link, '">', $level_name, '</a></li>';
                 }
+                echo '<li class="active">', $cate_name, '</li>';
+            } else if (isset($keywords)) {
+                $keywords = xss_text($keywords);
+                echo '<li class="active">Search</li>';
             }
             ?>
-            <li class="active"><?php echo $cate_name; ?></li>
         </ol>
     </div>
     <div class="container">
         <h2>
-            <?php echo $cate_name; ?>
+            <?php
+            if (isset($keywords)) {
+                echo 'Search for "', mb_substr($keywords, 0, 16);
+                if (mb_strlen($keywords) > 16) {
+                    echo '...';
+                }
+                echo '"';
+            } else {
+                echo $cate_name;
+            }
+            ?>
             <?php if (!empty($sort_list)) { ?>
                 <div class="btn-group pull-right">
                     <button class="btn btn-default dropdown-toggle" data-toggle="dropdown">
@@ -37,14 +52,43 @@ $cate_name = xss_text($cate_info['description']['category_name'] ?? '');
                             if ($sk == $sort) {
                                 continue;
                             }
-                            echo '<li><a href="?sort=', $sk, '"><i class="', $sv['icon'], ' text-danger"></i> ', $sv['text'], '</a></li>';
+                            if (isset($keywords)) {
+                                echo '<li><a href="?keywords=', $keywords, '&sort=', $sk, '"><i class="', $sv['icon'], ' text-danger"></i> ', $sv['text'], '</a></li>';
+                            } else {
+                                echo '<li><a href="?sort=', $sk, '"><i class="', $sv['icon'], ' text-danger"></i> ', $sv['text'], '</a></li>';
+                            }
                         }
                         ?>
                     </ul>
                 </div>
             <?php } ?>
         </h2>
-        <?php if (!empty($prod_list)) { ?>
+        <?php
+        if (empty($prod_list)) {
+            if (isset($keywords)) {
+                ?>
+                <div class="row hd-margin-top-bottom-60">
+                    <div class="col-md-12">
+                        <div class="hd-font-size-24">Sorry, no results were found for the keyword</div>
+                        <hr/>
+                        <div>
+                            <p class="hd-font-size-18">Suggestions:</p>
+                            <ul>
+                                <li class="hd-margin-top-10">Make sure all words are spelled correctly.</li>
+                                <li class="hd-margin-top-10">Try again with other keywords.</li>
+                                <li class="hd-margin-top-10 text-danger">
+                                    <a href="/customer-service.html">Tell us what products you need.</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <?php
+            } else {
+                // Nothing
+            }
+        } else {
+            ?>
             <div class="row hd-margin-top-bottom-60">
                 <?php
                 foreach ($prod_list as $prod_info) {
