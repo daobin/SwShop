@@ -24,7 +24,7 @@
                     <div class="form-group">
                         <input type="text" class="form-control hd-password" maxlength="50" name="password2" placeholder="Confirm Password"/>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group text-right">
                         <input type="hidden" name="hash_tk" value="<?php echo $register_tk; ?>"/>
                         <input type="submit" class="btn btn-warning" value="Create Account"/>
                     </div>
@@ -41,10 +41,10 @@
                     <div class="form-group">
                         <input type="text" class="form-control hd-password" name="password" placeholder="Password"/>
                     </div>
-                    <div class="form-group text-right">
-                        <a href="/">Forgot your password ?</a>
-                    </div>
                     <div class="form-group">
+                        <a class="btn-link" href="/">Forgot your password ?</a>
+                    </div>
+                    <div class="form-group text-right">
                         <input type="hidden" name="hash_tk" value="<?php echo $login_tk; ?>"/>
                         <input type="submit" class="btn btn-primary" value="Sign In"/>
                     </div>

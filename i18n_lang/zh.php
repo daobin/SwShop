@@ -42,7 +42,7 @@ return [
     'invalid_payment' => '支付方式无效',
     'invalid_order' => '订单无效',
     'order_generation_failed' => '订单生成失败',
-    'sold_out_for_shopping' => '存在缺货商品。 在结账前应排除缺货商品，点击此处将其全部删除。',
+    'sold_out_for_shopping' => '存在缺货商品。 在结账前应排除缺货商品，<a href="/shopping/cart.html?delete=%s">点击此处</a>将其全部删除。',
     'modified_for_shopping' => '库存或价格有更新，请确认购物清单。',
     'payment_rejected_tip' => '您的付款被拒绝，建议仔细核对您的订单和付款信息。',
     'order_failed_tip' => '下单失败，请检查订单重新下单。',

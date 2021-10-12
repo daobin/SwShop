@@ -20,22 +20,16 @@ class IndexController extends Controller
 {
     public function index()
     {
-        $todayTime = strtotime(date('Y-m-d'));
+        $start = strtotime(date('Y-m-d 00:00:00'));
+        $end = strtotime(date('-m-d 23:59:59'));
 
         $customerBiz = new CustomerBiz($this->langCode);
-        $customerBiz->getCustomerList(['shop_id' => $this->shopId, 'start_register_at' => $todayTime], [], 1, 1);
+        $customerBiz->getCustomerList(['shop_id' => $this->shopId, 'register_at_between' => [$start, $end]], [], 1, 1);
 
         $orderBiz = new OrderBiz();
-        $orderBiz->getOrderList(['shop_id' => $this->shopId, 'start_created_at' => $todayTime], [], 1, 1);
+        $orderBiz->getOrderList(['shop_id' => $this->shopId, 'created_at_between' => [$start, $end]], [], 1, 1);
 
-        $defaultTime = date_default_timezone_get();
-        date_default_timezone_set('Asia/Shanghai');
-        $cnTime = date('Y-m-d H:i');
-        date_default_timezone_set('America/New_York');
-        $usTime = date('Y-m-d H:i');
-        date_default_timezone_set('Europe/London');
-        $ukTime = date('Y-m-d H:i');
-        date_default_timezone_set($defaultTime);
+        list($cnTime, $usTime, $ukTime) = get_world_times();
 
         return $this->render([
             'admin_name' => $this->operator,
@@ -49,6 +43,9 @@ class IndexController extends Controller
 
     public function dashboard()
     {
+        $customerBiz = new CustomerBiz($this->langCode);
+        $orderBiz = new OrderBiz();
+
         $customerCounts = [];
         $orderCounts = [];
 
@@ -56,23 +53,86 @@ class IndexController extends Controller
         $customerPrices = [];
 
         $days = [];
-        $start = strtotime('-1 month');
+        $start = date('Y-m-d 00:00:00', strtotime('-1 month'));
+        $start = strtotime($start);
         $end = time();
-        for ($idx = 0; $start <= $end; $idx++) {
-            $days[$idx] = date('Y.m.d', $start);
-            $customerCounts[$idx] = $customerCounts[$idx - 1] ?? 0;
-            $customerCounts[$idx] += mt_rand(10, 30);
-            $orderCounts[$idx] = $orderCounts[$idx - 1] ?? 0;
-            $orderCounts[$idx] += mt_rand(0, 50);
-            $orderTotals[$idx] = mt_rand(150, 1000);
-            $customerPrices[$idx] = mt_rand(10, 150);
-            $start += 86400;
+
+        $customerList = $customerBiz->getNewCustomerListByTime($this->shopId, $start, $end);
+        if (!empty($customerList)) {
+            foreach ($customerList as $idx => $customer) {
+                $date = date('Y.m.d', $customer['registered_at']);
+                if (isset($customerList[$date])) {
+                    $customerList[$date]++;
+                } else {
+                    $customerList[$date] = 1;
+                }
+                unset($customerList[$idx]);
+            }
         }
 
-        $countMin = min($customerCounts);
-        if ($countMin > min($orderCounts)) {
-            $countMin = min($orderCounts);
+        $orderList = $orderBiz->getNewOrderListByTime($this->shopId, $start, $end);
+        if (!empty($orderList)) {
+            foreach ($orderList as $idx => $order) {
+                $date = date('Y.m.d', $order['created_at']);
+                if (isset($orderList[$date])) {
+                    $orderList[$date]['count']++;
+                    $orderList[$date]['total'] += (float)$order['default_currency_total'];
+                } else {
+                    $orderList[$date] = [
+                        'count' => 1,
+                        'total' => (float)$order['default_currency_total']
+                    ];
+                }
+                unset($orderList[$idx]);
+            }
         }
+
+        $historyEnd = strtotime('-1 day', $start);
+        $historyWhere = ['shop_id' => $this->shopId, 'register_at_between' => [0, $historyEnd]];
+        $customerBiz->getCustomerList($historyWhere, [], 1, 1);
+
+        $historyWhere = ['shop_id' => $this->shopId, 'created_at_between' => [0, $historyEnd]];
+        $orderBiz->getOrderList($historyWhere, [], 1, 1);
+
+        $todayDate = date('Y.m.d');
+        $todayStatistics = [
+            'register_customer' => 0,
+            'order_customer' => 0,
+            'order_count' => 0,
+            'order_total' => 0,
+            'payment_order_count' => 0,
+            'payment_order_total' => 0,
+        ];
+        for ($idx = 0; $start <= $end; $idx++) {
+            $days[$idx] = date('Y.m.d', $start);
+
+            $customerCounts[$idx] = $customerCounts[$idx - 1] ?? $customerBiz->count;
+            $customerCounts[$idx] += $customerList[$days[$idx]] ?? 0;
+
+            $orderCounts[$idx] = $orderCounts[$idx - 1] ?? $orderBiz->count;
+            $orderTotals[$idx] = 0;
+            $customerPrices[$idx] = 0;
+            if (!empty($orderList[$days[$idx]])) {
+                $orderCounts[$idx] += $orderList[$days[$idx]]['count'];
+                $orderTotals[$idx] = $orderList[$days[$idx]]['total'];
+                $customerPrices[$idx] = $orderList[$days[$idx]]['total'] / $orderList[$days[$idx]]['count'];
+            }
+
+            if ($todayDate == $days[$idx]) {
+                $todayStatistics = [
+                    'register_customer' => $customerList[$days[$idx]] ?? 0,
+                    'order_customer' => 0,
+                    'order_count' => $orderList[$days[$idx]]['count'] ?? 0,
+                    'order_total' => $orderList[$days[$idx]]['total'] ?? 0,
+                    'payment_order_count' => 0,
+                    'payment_order_total' => 0,
+                ];
+            }
+
+            $start += 86400;
+        }
+        unset($customerList, $orderList);
+
         $countMax = max($customerCounts);
         if ($countMax < max($orderCounts)) {
             $countMax = max($orderCounts);
@@ -93,18 +153,18 @@ class IndexController extends Controller
                 ]
             ],
             'yAxis' => [
-                'min' => $countMin,
+                'min' => 0,
                 'max' => $countMax
             ],
             'series' => [
                 [
-                    'name' => '用户',
+                    'name' => '用户累计数',
                     'type' => 'line',
                     'smooth' => true,
                     'data' => $customerCounts
                 ],
                 [
-                    'name' => '订单',
+                    'name' => '订单累计数',
                     'type' => 'line',
                     'smooth' => true,
                     'data' => $orderCounts
@@ -127,8 +187,8 @@ class IndexController extends Controller
                 ]
             ],
             'yAxis' => [
-                'min' => min($customerPrices),
-                'max' => max($orderTotals)
+                'min' => floor(min($customerPrices)),
+                'max' => ceil(max($orderTotals))
             ],
             'series' => [
                 [
@@ -144,9 +204,16 @@ class IndexController extends Controller
             ]
         ];
 
+        $currencySymbol = '';
+        if ($this->currency) {
+            $currencySymbol = $this->currency['symbol_left'] . $this->currency['symbol_right'];
+        }
+
         return $this->render([
+            'today_statistics' => $todayStatistics,
             'count_option' => $countOption,
-            'amount_option' => $amountOption
+            'amount_option' => $amountOption,
+            'currency_symbol' => $currencySymbol
         ]);
     }
 

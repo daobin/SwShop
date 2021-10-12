@@ -31,7 +31,7 @@ $widget_params['shopping_nav_img'] = 'step2.png';
                 <a class="btn btn-sm btn-primary" href="/address.html?from=confirmation">Edit address</a>
             </div>
         </div>
-        <h3 class="hd-margin-top-30">Order Summary</h3>
+        <h3 class="hd-margin-top-60">Order Summary</h3>
         <table id="hd-cart-products" class="table">
             <tbody>
             <tr>

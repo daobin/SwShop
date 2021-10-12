@@ -42,7 +42,7 @@ return [
     'invalid_payment' => 'Invalid payment method',
     'invalid_order' => 'Invalid order',
     'order_generation_failed' => 'Order generation failed',
-    'sold_out_for_shopping' => 'There are out-of-stock items. Out of stock items should be excluded before checkout, click here to delete them all.',
+    'sold_out_for_shopping' => 'There are out-of-stock items. Out of stock items should be excluded before checkout, <a href="/shopping/cart.html?delete=%s">click here</a> to delete them all.',
     'modified_for_shopping' => 'The inventory or price is updated, please confirm the shopping list.',
     'payment_rejected_tip' => 'Your payment was rejected. It is recommended to check your order and payment information carefully.',
     'order_failed_tip' => 'Order failed, please check the order and place an order again.',

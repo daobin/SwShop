@@ -82,7 +82,13 @@
                         </p>
                     </div>
                 </td>
-                <td class="text-center"><?php echo format_price($price, $currency, 1, true); ?></td>
+                <td class="text-center">
+                    <?php
+                    if ($prod_qty > 0) {
+                        echo format_price($price, $currency, 1, true);
+                    }
+                    ?>
+                </td>
                 <td class="text-center">
                     <?php
                     if ($prod_qty <= 0) {
@@ -133,10 +139,22 @@
         <div class="col-md-9 text-right hidden-xs hidden-sm">
             <!--img class="hd-display-inline-block hd-margin-right-15 hd-btn-pp"
                  src="/static/index/default/buy-now-with-paypal.png"/-->
-            <a class="btn btn-lg btn-warning" href="/shopping/confirmation.html">Checkout</a>
+            <?php
+            if(empty($sold_out_sku)){
+                echo '<a class="btn btn-lg btn-warning" href="/shopping/confirmation.html">Checkout</a>';
+            }else{
+                echo '<a class="btn btn-lg btn-warning" disabled="" href="javascript:void(0);">Checkout</a>';
+            }
+            ?>
         </div>
         <div class="col-xs-6 text-right visible-xs visible-sm">
-            <a class="btn btn-lg btn-warning" href="/shopping/confirmation.html">Checkout</a>
+            <?php
+            if(empty($sold_out_sku)){
+                echo '<a class="btn btn-lg btn-warning" href="/shopping/confirmation.html">Checkout</a>';
+            }else{
+                echo '<a class="btn btn-lg btn-warning" disabled="" href="javascript:void(0);">Checkout</a>';
+            }
+            ?>
         </div>
         <div class="col-xs-12 visible-xs visible-sm">
             <!--img class="hd-display-inline-block hd-margin-top-bottom-15 hd-btn-pp"

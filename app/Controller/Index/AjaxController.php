@@ -12,6 +12,7 @@ use App\Biz\CustomerBiz;
 use App\Biz\ProductBiz;
 use App\Biz\ShoppingBiz;
 use App\Controller\Controller;
+use App\Helper\EmailHelper;
 use App\Helper\LanguageHelper;
 
 class AjaxController extends Controller
@@ -94,6 +95,10 @@ class AjaxController extends Controller
 
             $this->cartList = (new ShoppingBiz())->updateCart($this->shopId, $register['customer_info']['customer_id'], $this->cartList);
             $this->session->set('cart_list', json_encode($this->cartList));
+
+            \Swoole\Event::defer(function () use ($register) {
+                (new EmailHelper($this->shopId, $this->langCode))->sendMail(['template' => 'welcome', 'to_address' => $register['customer_info']['email']]);
+            });
         }
 
         return $register;

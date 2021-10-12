@@ -37,12 +37,17 @@ class CustomerController extends Controller
             } else {
                 $startTime = $this->get('start_time', '');
                 if ($startTime !== '') {
-                    $condition['start_register_at'] = strtotime(date('Y-m-d 00：00：00', strtotime($startTime)));
+                    $startTime = strtotime(date('Y-m-d 00:00:00', strtotime($startTime)));
+                }else{
+                    $startTime = 0;
                 }
                 $endTime = $this->get('end_time', '');
                 if ($endTime !== '') {
-                    $condition['end_register_at'] = strtotime(date('Y-m-d 23:59:59', strtotime($endTime)));
+                    $endTime = strtotime(date('Y-m-d 23:59:59', strtotime($endTime)));
+                }else{
+                    $endTime = time();
                 }
+                $condition['register_at_between'] = [$startTime, $endTime];
                 $customerFrom = $this->get('customer_from', '');
                 if ($customerFrom !== '') {
                     $condition['device_from'] = $customerFrom;

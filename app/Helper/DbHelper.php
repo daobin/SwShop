@@ -380,7 +380,10 @@ class DbHelper
                             break;
                         case 'like in':
                             $this->sqlBuild['where_or'][$field] = [$opt, $value];
-                            continue;
+                            continue 2;
+                        case 'between':
+                            $where[] = '`' . $field . '` between ? and ?';
+                            break;
                         default:
                             $where[] = '`' . $field . '` ' . $opt . ' ?';
                     }
@@ -427,6 +430,9 @@ class DbHelper
                                 }
                                 reset($value);
                             }
+                            break;
+                        case 'between':
+                            $where[] = '`' . $field . '` between ? and ?';
                             break;
                         default:
                             $where[] = '`' . $field . '` ' . $opt . ' ?';

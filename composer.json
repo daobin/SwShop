@@ -22,7 +22,8 @@
     "psr/container": "^2.0",
     "aliyuncs/oss-sdk-php": "^2.4",
     "intervention/image": "^2.6",
-    "ip2location/ip2location-php": "^9.2"
+    "ip2location/ip2location-php": "^9.2",
+    "phpmailer/phpmailer": "^6.5"
   },
   "autoload": {
     "psr-4": {

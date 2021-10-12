@@ -53,12 +53,17 @@ class OrderController extends Controller
             } else {
                 $startTime = $this->get('start_time', '');
                 if ($startTime !== '') {
-                    $condition['start_created_at'] = strtotime(date('Y-m-d 00：00：00', strtotime($startTime)));
+                    $startTime = strtotime(date('Y-m-d 00:00:00', strtotime($startTime)));
+                }else{
+                    $startTime = 0;
                 }
                 $endTime = $this->get('end_time', '');
                 if ($endTime !== '') {
-                    $condition['end_created_at'] = strtotime(date('Y-m-d 23:59:59', strtotime($endTime)));
+                    $endTime = strtotime(date('Y-m-d 23:59:59', strtotime($endTime)));
+                }else{
+                    $endTime = time();
                 }
+                $condition['created_at_between'] = [$startTime, $endTime];
                 $orderFrom = $this->get('order_from', '');
                 if ($orderFrom !== '') {
                     $condition['device_from'] = $orderFrom;

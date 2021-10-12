@@ -27,6 +27,21 @@ class ShoppingController extends Controller
 {
     public function cart()
     {
+        $shoppingBiz = new ShoppingBiz();
+
+        $delete = $this->get('delete');
+        if ($delete !== '') {
+            $delete = explode(',', $delete);
+            if ($shoppingBiz->deleteCartSkuArr($this->shopId, $this->customerId, $delete)) {
+                foreach ($delete as $sku) {
+                    unset($this->cartList[$sku]);
+                    $this->session->set('cart_list', json_encode($this->cartList));
+                }
+            }
+
+            return $this->response->redirect('/shopping/cart.html');
+        }
+
         $skuQtyPriceList = [];
         $skuImgList = [];
         $prodNameList = [];
@@ -43,33 +58,32 @@ class ShoppingController extends Controller
             foreach ($this->cartList as $sku => $cartInfo) {
                 $prodIds[$cartInfo['product_id']] = $cartInfo['product_id'];
                 $prodQty = $skuQtyPriceList[$sku]['qty'] ?? 0;
-                if ($cartInfo['qty'] > $prodQty) {
+                if ($prodQty <= 0) {
+                    $soldOutSkuArr[$sku] = $sku;
+                } else if ($cartInfo['qty'] > $prodQty) {
                     $modified = true;
                     $this->cartList[$sku]['qty'] = (int)$prodQty;
                 }
-                if ((int)$this->cartList[$sku]['qty'] <= 0) {
-                    $soldOutSkuArr[$sku] = $sku;
-                }
 
                 $prodPrice = $skuQtyPriceList[$sku]['price'] ?? 0;
-                if ($cartInfo['price'] != $prodPrice) {
+                if ($prodPrice <= 0) {
+                    $soldOutSkuArr[$sku] = $sku;
+                } else if ($cartInfo['price'] != $prodPrice) {
                     $modified = true;
                     $this->cartList[$sku]['price'] = (float)$prodPrice;
-                }
-                if ((float)$this->cartList[$sku]['price'] <= 0) {
-                    $soldOutSkuArr[$sku] = $sku;
                 }
             }
 
             if ($modified) {
-                if ($this->customerId > 0) {
-                    $this->cartList = (new ShoppingBiz())->updateCart($this->shopId, $this->customerId, $this->cartList);
-                }
-                if (empty($soldOutSkuArr)) {
-                    $this->session->set('shopping_error', LanguageHelper::get('sold_out_for_shopping', $this->langCode));
-                } else {
-                    $this->session->set('shopping_error', LanguageHelper::get('modified_for_shopping', $this->langCode));
-                }
+                $this->cartList = $shoppingBiz->updateCart($this->shopId, $this->customerId, $this->cartList);
+            }
+
+            if (!empty($soldOutSkuArr)) {
+                $soldOutTip = LanguageHelper::get('sold_out_for_shopping', $this->langCode);
+                $soldOutTip = sprintf($soldOutTip, implode(',', $soldOutSkuArr));
+                $this->session->set('shopping_error', $soldOutTip);
+            } else if ($modified) {
+                $this->session->set('shopping_error', LanguageHelper::get('modified_for_shopping', $this->langCode));
             }
 
             $prodList = $prodBiz->getProductList(
@@ -100,7 +114,6 @@ class ShoppingController extends Controller
     {
         $orderError = (new OrderHelper($this->request, $this->response))->buildOrderSummaryForError($this->cartList, $this->customerId, $this->warehouseCode);
         if (isset($orderError['sold_out'])) {
-            $this->session->set('shopping_error', LanguageHelper::get('sold_out_for_shopping', $this->langCode));
             return $this->response->redirect('/shopping/cart.html');
         }
         if (isset($orderError['qty_price_modified'])) {

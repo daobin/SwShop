@@ -215,6 +215,17 @@ class OrderBiz
         return $orderInfo;
     }
 
+    public function getNewOrderListByTime(int $shopId, int $start, int $end): array
+    {
+        if ($shopId <= 0 || $start <= 0 || $end < $start) {
+            return [];
+        }
+
+        return $this->dbHelper->table('order')->where(
+            ['shop_id' => $shopId, 'created_at' => ['between', [$start, $end]]])
+            ->fields(['created_at', 'default_currency_total'])->select();
+    }
+
     public function getOrderList(array $condition, array $orderBy = [], int $page = 1, int $pageSize = 10): array
     {
         if (empty($condition['shop_id'])) {
@@ -241,11 +252,8 @@ class OrderBiz
                 case 'customer_name_like':
                     $where['customer_name'] = ['like', '%' . $value . '%'];
                     break;
-                case 'start_created_at':
-                    $where['created_at'] = ['>=', (int)$value];
-                    break;
-                case 'end_created_at':
-                    $where['created_at'] = ['<=', (int)$value];
+                case 'created_at_between':
+                    $where['created_at'] = ['between', $value];
                     break;
             }
         }

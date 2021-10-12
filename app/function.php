@@ -7,6 +7,21 @@
  */
 declare(strict_types=1);
 
+// 获取世界时间
+function get_world_times(): array
+{
+    $defaultTime = date_default_timezone_get();
+    date_default_timezone_set('Asia/Shanghai');
+    $cnTime = date('Y-m-d H:i');
+    date_default_timezone_set('America/New_York');
+    $usTime = date('Y-m-d H:i');
+    date_default_timezone_set('Europe/London');
+    $ukTime = date('Y-m-d H:i');
+    date_default_timezone_set($defaultTime);
+
+    return [$cnTime, $usTime, $ukTime];
+}
+
 // URL 字串处理
 function process_url_string(string $url): string
 {

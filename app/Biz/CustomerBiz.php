@@ -40,13 +40,13 @@ class CustomerBiz
 
         $firstName = $customerData['first_name'] ?? '';
         $lastName = $customerData['last_name'] ?? '';
-        if($this->updateName($shopId, $customerId, $firstName, $lastName, $operator) <= 0){
+        if ($this->updateName($shopId, $customerId, $firstName, $lastName, $operator) <= 0) {
             return ['status' => 'fail', 'msg' => LanguageHelper::get('invalid_name', $this->langCode)];
         }
 
         $email = $customerData['email'] ?? '';
         $emailCustomerInfo = $this->getCustomerByEmail($shopId, $email);
-        if($emailCustomerInfo && $customerId != (int)$emailCustomerInfo['customer_id']){
+        if ($emailCustomerInfo && $customerId != (int)$emailCustomerInfo['customer_id']) {
             return ['status' => 'fail', 'msg' => 'Email has been registered'];
         }
         if ($this->updateEmail($shopId, $customerId, $email, $operator) <= 0) {
@@ -168,6 +168,17 @@ class CustomerBiz
             ['shop_id' => $shopId, 'customer_id' => $customerId])->update(['shipping_address_id' => $addrId]);
     }
 
+    public function getNewCustomerListByTime(int $shopId, int $start, int $end): array
+    {
+        if ($shopId <= 0 || $start <= 0 || $end < $start) {
+            return [];
+        }
+
+        return $this->dbHelper->table('customer')->where(
+            ['shop_id' => $shopId, 'registered_at' => ['between', [$start, $end]]])
+            ->fields(['registered_at'])->select();
+    }
+
     public function getCustomerList(array $condition, array $orderBy = [], int $page = 1, int $pageSize = 10): array
     {
         if (empty($condition['shop_id'])) {
@@ -189,11 +200,8 @@ class CustomerBiz
                     $whereOr['first_name'] = ['like', '%' . $value . '%'];
                     $whereOr['last_name'] = ['like', '%' . $value . '%'];
                     break;
-                case 'start_register_at':
-                    $where['registered_at'] = ['>=', (int)$value];
-                    break;
-                case 'end_register_at':
-                    $where['registered_at'] = ['<=', (int)$value];
+                case 'register_at_between':
+                    $where['registered_at'] = ['between', $value];
                     break;
             }
         }

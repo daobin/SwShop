@@ -41,6 +41,7 @@ body .hd-margin-left-right-auto{margin-right: auto; margin-left: auto;}
 body .hd-border-none{border: none;}
 body .hd-border-radius-4{border-radius: 4px;}
 body .hd-cursor-pointer{cursor: pointer;}
+body .hd-error-tip a{color: #1ea1ea; font-weight: bold;}
 
 #hd-header.shopping{border-bottom: 5px solid #bb7047;}
 #hd-header img.logo{width: 160px; height: 80px;}

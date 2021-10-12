@@ -54,6 +54,24 @@ class ShoppingBiz
         return $cnt > 0 ? true : false;
     }
 
+    public function deleteCartSkuArr(int $shopId, int $customerId, array $skuArr): bool
+    {
+        if ($shopId <= 0 || $customerId <= 0 || empty($skuArr)) {
+            return true;
+        }
+
+        try {
+            $this->dbHelper->table('shopping_cart')->where(
+                ['shop_id' => $shopId, 'customer_id' => $customerId, 'sku' => ['in', $skuArr]])
+                ->delete();
+
+        } catch (\Throwable $e) {
+            return false;
+        }
+
+        return true;
+    }
+
     public function getCartListByCustomerId(int $shopId, int $customerId, ?string $sku = null): array
     {
         if ($shopId <= 0 || $customerId <= 0 || $sku !== null && empty($sku)) {

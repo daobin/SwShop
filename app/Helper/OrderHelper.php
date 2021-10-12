@@ -55,21 +55,19 @@ class OrderHelper
             $cartList[$sku]['product_img'] = $skuImgList[$sku] ?? '';
 
             $prodQty = $skuQtyPriceList[$sku]['qty'] ?? 0;
-            if ($cartInfo['qty'] > $prodQty) {
+            if ($prodQty <= 0) {
+                $error['sold_out'] = 1;
+            } else if ($cartInfo['qty'] > $prodQty) {
                 $error['qty_price_modified'] = 1;
                 $cartList[$sku]['qty'] = (int)$prodQty;
             }
-            if ((int)$cartList[$sku]['qty'] <= 0) {
-                $error['sold_out'] = 1;
-            }
 
             $prodPrice = $skuQtyPriceList[$sku]['price'] ?? 0;
-            if ($cartInfo['price'] != $prodPrice) {
+            if ($prodPrice <= 0) {
+                $error['sold_out'] = 1;
+            } else if ($cartInfo['price'] != $prodPrice) {
                 $error['qty_price_modified'] = 1;
                 $cartList[$sku]['price'] = (float)$prodPrice;
-            }
-            if ((float)$cartList[$sku]['price'] <= 0) {
-                $error['sold_out'] = 1;
             }
 
             $cartList[$sku]['price_text'] = format_price($cartList[$sku]['price'], $this->currency, 1, true);

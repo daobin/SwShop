@@ -42,6 +42,7 @@
                         $config_value = json_encode([]);
                         echo '<input type="hidden" name="config_value" value="{}"/>';
                     } else {
+                        $config_value = $config_value ?? '';
                         switch (strtolower($value_type)) {
                             case 'password':
                                 echo '<textarea class="layui-textarea" name="config_value" placeholder="' . hide_chars($config_value) . '"></textarea>';
