@@ -70,19 +70,34 @@ class IndexController extends Controller
             }
         }
 
+        $paymentOrderStatusIds = [
+            get_order_status_id('pending'),
+            get_order_status_id('in_process'),
+            get_order_status_id('shipped')
+        ];
         $orderList = $orderBiz->getNewOrderListByTime($this->shopId, $start, $end);
         if (!empty($orderList)) {
             foreach ($orderList as $idx => $order) {
+                $orderStatusId = (int)$order['order_status_id'];
                 $date = date('Y.m.d', $order['created_at']);
                 if (isset($orderList[$date])) {
                     $orderList[$date]['count']++;
                     $orderList[$date]['total'] += (float)$order['default_currency_total'];
+                    if (in_array($orderStatusId, $paymentOrderStatusIds)) {
+                        $orderList[$date]['payment_count']++;
+                        $orderList[$date]['payment_total'] += (float)$order['default_currency_total'];
+                    }
                 } else {
                     $orderList[$date] = [
                         'count' => 1,
-                        'total' => (float)$order['default_currency_total']
+                        'total' => (float)$order['default_currency_total'],
+                        'payment_count' => in_array($orderStatusId, $paymentOrderStatusIds) ? 1 : 0,
+                        'payment_total' => in_array($orderStatusId, $paymentOrderStatusIds) ? (float)$order['default_currency_total'] : 0,
+                        'customer_ids' => []
                     ];
                 }
+                $customerId = $order['customer_id'];
+                $orderList[$date]['customer_ids'][$customerId] = $customerId;
                 unset($orderList[$idx]);
             }
         }
@@ -100,8 +115,10 @@ class IndexController extends Controller
             'order_customer' => 0,
             'order_count' => 0,
             'order_total' => 0,
+            'customer_price' => 0,
             'payment_order_count' => 0,
             'payment_order_total' => 0,
+            'payment_customer_price' => 0
         ];
         for ($idx = 0; $start <= $end; $idx++) {
             $days[$idx] = date('Y.m.d', $start);
@@ -121,12 +138,14 @@ class IndexController extends Controller
             if ($todayDate == $days[$idx]) {
                 $todayStatistics = [
                     'register_customer' => $customerList[$days[$idx]] ?? 0,
-                    'order_customer' => 0,
+                    'order_customer' => empty($orderList[$days[$idx]]['customer_ids']) ? 0 : count($orderList[$days[$idx]]['customer_ids']),
                     'order_count' => $orderList[$days[$idx]]['count'] ?? 0,
                     'order_total' => $orderList[$days[$idx]]['total'] ?? 0,
-                    'payment_order_count' => 0,
-                    'payment_order_total' => 0,
+                    'payment_order_count' => $orderList[$days[$idx]]['payment_count'] ?? 0,
+                    'payment_order_total' => $orderList[$days[$idx]]['payment_total'] ?? 0,
                 ];
+                $todayStatistics['customer_price'] = $todayStatistics['order_total'] / $todayStatistics['order_count'];
+                $todayStatistics['payment_customer_price'] = $todayStatistics['payment_order_total'] / $todayStatistics['payment_order_count'];
             }
 
             $start += 86400;

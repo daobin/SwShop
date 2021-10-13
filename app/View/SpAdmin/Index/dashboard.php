@@ -11,16 +11,19 @@
                             注册用户：<?php echo $today_statistics['register_customer']; ?>
                         </div>
                         <div class="layui-col-xs3">
-                            下单用户：<?php echo $today_statistics['order_customer']; ?>
-                        </div>
-                        <div class="layui-col-xs3">
                             订单总数：<?php echo $today_statistics['order_count']; ?>
                         </div>
                         <div class="layui-col-xs3">
                             订单总额：<?php echo format_price_total((float)$today_statistics['order_total'], $currency); ?>
                         </div>
+                        <div class="layui-col-xs3">
+                            客单均价：<?php echo format_price_total((float)$today_statistics['customer_price'], $currency); ?>
+                        </div>
                     </div>
                     <div class="layui-row hd-margin-top-10">
+                        <div class="layui-col-xs3">
+                            下单用户：<?php echo $today_statistics['order_customer']; ?>
+                        </div>
                         <div class="layui-col-xs3">
                             付款订单总数：<?php echo $today_statistics['payment_order_count']; ?>
                         </div>
@@ -28,10 +31,7 @@
                             付款订单总额：<?php echo format_price_total((float)$today_statistics['payment_order_total'], $currency); ?>
                         </div>
                         <div class="layui-col-xs3">
-                            客单均价：<?php echo format_price_total(0, $currency); ?>
-                        </div>
-                        <div class="layui-col-xs3">
-                            付款客单均价：<?php echo format_price_total(0, $currency); ?>
+                            付款客单均价：<?php echo format_price_total((float)$today_statistics['payment_customer_price'], $currency); ?>
                         </div>
                     </div>
                 </div>

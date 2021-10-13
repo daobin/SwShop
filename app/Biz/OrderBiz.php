@@ -223,7 +223,7 @@ class OrderBiz
 
         return $this->dbHelper->table('order')->where(
             ['shop_id' => $shopId, 'created_at' => ['between', [$start, $end]]])
-            ->fields(['created_at', 'default_currency_total'])->select();
+            ->fields(['customer_id', 'order_status_id', 'created_at', 'default_currency_total'])->select();
     }
 
     public function getOrderList(array $condition, array $orderBy = [], int $page = 1, int $pageSize = 10): array
