@@ -6,8 +6,8 @@
         <div class="copyright text-center">
             <span>Copyright</span>
             <span>&copy;</span>
-            <span>2021</span>
-            <span>GlarryMusic.</span>
+            <span><?php echo $year;?></span>
+            <span><?php echo $website_name;?>.</span>
             <span>All Rights Reserved.</span>
         </div>
     </div>

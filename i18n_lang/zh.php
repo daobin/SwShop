@@ -55,4 +55,5 @@ return [
     'item_delivered_time' => '商品将在 24 小时内送达，有时可能需要 48 小时。',
     'email_no_match_order' => '抱歉，您提供的邮箱与订单号不符，请重新输入。',
     'invalid_customer' => '用户无效',
+    'invalid_email_tpl' => '邮件模板无效',
 ];

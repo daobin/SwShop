@@ -28,6 +28,7 @@ class SpAdminWidget extends Widget
                     ['name' => '广告图', 'icon' => 'layui-icon-picture', 'iframe' => 'banner'],
                     ['name' => '优惠券', 'icon' => 'layui-icon-gift', 'iframe' => 'coupon'],
 //                    ['name' => '限时限量', 'icon' => 'layui-icon-time', 'iframe' => 'time-limited'],
+                    ['name' => '系统邮件模板', 'icon' => 'layui-icon-template', 'iframe' => 'email-tpl'],
                 ]
             ],
 //            ['name' => '定时工具', 'icon' => 'layui-icon-at', 'sub_navs' =>

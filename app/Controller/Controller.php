@@ -183,8 +183,14 @@ class Controller
             $template = $template ?? implode('/', [$this->request->module, $this->request->controller, $this->request->action]);
         }
 
+        $cfgBiz = new ConfigBiz();
+
+        $websiteName = $cfgBiz->getConfigByKey($this->shopId, 'WEBSITE_NAME');
+        $data['website_name'] = $websiteName['config_value'] ?? $this->host;
+
         $timestamp = (new ConfigBiz())->getConfigByKey($this->shopId, 'TIMESTAMP');
         $data['timestamp'] = $timestamp['config_value'] ?? '?' . date('YmdH');
+
         $data['customer_id'] = $this->customerId;
         $data['lang_code'] = $this->langCode;
         $data['currency'] = $this->currency;
@@ -192,6 +198,7 @@ class Controller
         // Widget Params
         $data['widget_params'] = [
             'shop_id' => $this->shopId,
+            'website_name' => $data['website_name'],
             'timestamp' => $data['timestamp'],
             'customer_id' => $data['customer_id'],
             'cart_qty' => $this->cartQty,

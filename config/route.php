@@ -96,5 +96,7 @@ RouteHelper::get('/spadmin/coupon', 'SpAdmin.Coupon.index');
 RouteHelper::any('/spadmin/coupon/<code>', 'SpaAdmin.Coupon.detail', ['code' => '[\w\d]+']);
 RouteHelper::get('/spadmin/time-limited', 'SpAdmin.TimeLimited.index');
 RouteHelper::any('/spadmin/time-limited/<limited_id>', 'SpaAdmin.TimeLimited.detail', ['limited_id' => '\d+']);
+RouteHelper::get('/spadmin/email-tpl', 'SpAdmin.Email.emailTpl');
+RouteHelper::any('/spadmin/email-tpl/<template>', 'SpAdmin.Email.emailTplDetail', ['template' => '\w+']);
 
 return [];

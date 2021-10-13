@@ -21,7 +21,7 @@ class IndexWidget extends Widget
             'keywords' => $params['keywords'] ?? ''
         ];
 
-        if(!empty($data['shopping_nav_img'])){
+        if (!empty($data['shopping_nav_img'])) {
             return $this->render('header_shopping', $data);
         }
 
@@ -30,8 +30,17 @@ class IndexWidget extends Widget
 
     public function footer($params = [])
     {
+        $year = date('Y');
+        if($year > 2021){
+            $year = '2021 - '.$year;
+        }else{
+            $year = 2021;
+        }
+
         $data = [
+            'website_name' => $params['website_name'] ?? '',
             'timestamp' => $params['timestamp'] ?? '?' . date('YmdH'),
+            'year' => $year
         ];
         return $this->render('footer', $data);
     }
