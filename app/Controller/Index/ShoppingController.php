@@ -16,6 +16,7 @@ use App\Biz\ProductBiz;
 use App\Biz\ShippingBiz;
 use App\Biz\ShoppingBiz;
 use App\Controller\Controller;
+use App\Helper\EmailHelper;
 use App\Helper\LanguageHelper;
 use App\Helper\OrderHelper;
 use App\Helper\OssHelper;
@@ -237,6 +238,18 @@ class ShoppingController extends Controller
         }
 
         if (isset($payRes['url'])) {
+            \Swoole\Event::defer(function () use ($payRes) {
+                $mailData = [
+                    'template' => 'order_success',
+                    'to_address' => $payRes['email'],
+                    'customer_name' => $payRes['customer_name'],
+                    'order_number' => $payRes['order_number'],
+                    'order_total' => format_price_total((float)$payRes['order_total'], $this->currency),
+                    'order_date' => $payRes['order_date']
+                ];
+                (new EmailHelper($this->shopId, $this->host))->sendMail($mailData);
+            });
+
             return $this->response->redirect($payRes['url']);
         }
 

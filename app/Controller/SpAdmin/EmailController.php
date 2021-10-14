@@ -48,6 +48,21 @@ class EmailController extends Controller
 
     private function emailTplSave()
     {
-        return [];
+        $emailBiz = new EmailBiz();
+
+        $subject = $this->post('subject');
+        $template = $this->get('template');
+        $tplInfo = $emailBiz->getEmailTemplateByTpl($this->shopId, $template);
+        if (empty($tplInfo)) {
+            return ['status' => 'fail', LanguageHelper::get('invalid_email_tpl', $this->langCode)];
+        }
+
+        $bannerImages = [];
+        $save = $emailBiz->updateEmailTemplate($this->shopId, $template, $subject, $bannerImages, $this->operator);
+        if($save > 0){
+            return ['status' => 'success', 'msg' => '保存成功'];
+        }
+
+        return ['status' => 'fail', 'msg' => '保存失败'];
     }
 }

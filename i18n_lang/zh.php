@@ -56,4 +56,7 @@ return [
     'email_no_match_order' => '抱歉，您提供的邮箱与订单号不符，请重新输入。',
     'invalid_customer' => '用户无效',
     'invalid_email_tpl' => '邮件模板无效',
+    'submitted_success' => '提交成功',
+    'submitted_fail' => '提交失败',
+    'your_question_invalid' => '您输入的问题无效。',
 ];

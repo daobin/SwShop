@@ -135,7 +135,14 @@ class PaypalHelper
             $this->session->set('order_summary', '{}');
 
             $this->session->set('success_order_number', $orderInfo['order_number']);
-            return ['url' => '/shopping/success.html'];
+            return [
+                'url' => '/shopping/success.html',
+                'customer_name' => $orderInfo['customer_name'],
+                'email' => $orderInfo['customer_email'],
+                'order_number' => $orderInfo['order_number'],
+                'order_total' => $orderInfo['order_total'],
+                'order_date' => date('Y-m-d', $orderInfo['created_at'])
+            ];
         }
 
         $canceledId = get_order_status_id('canceled');

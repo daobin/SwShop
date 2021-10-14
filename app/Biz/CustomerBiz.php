@@ -25,6 +25,34 @@ class CustomerBiz
         $this->count = 0;
     }
 
+    public function submitCustomerService(array $csData): int
+    {
+        $shopId = $csData['shop_id'] ?? 0;
+        $shopId = (int)$shopId;
+        if ($shopId <= 0) {
+            return 0;
+        }
+
+        $serviceType = trim($csData['service_type']);
+        if ($serviceType != 'pre' && $serviceType != 'after') {
+            return 0;
+        }
+
+        $time = time();
+        return $this->dbHelper->table('customer_service')->insert([
+            'shop_id' => $shopId,
+            'service_type' => $serviceType,
+            'customer_id' => $csData['customer_id'] ?? 0,
+            'customer_name' => trim($csData['customer_name']),
+            'customer_email' => trim($csData['customer_email']),
+            'order_time' => $csData['order_time'] ?? 0,
+            'order_number' => $csData['order_number'] ?? '',
+            'question' => trim($csData['question']),
+            'created_at' => $time,
+            'updated_at' => $time
+        ]);
+    }
+
     public function updateBaseInfo(array $customerData): array
     {
         $shopId = $customerData['shop_id'] ?? 0;
@@ -32,6 +60,10 @@ class CustomerBiz
         $operator = $customerData['operator'] ?? '';
 
         $shopId = (int)$shopId;
+        if ($shopId <= 0) {
+            return ['status' => 'fail', 'msg' => LanguageHelper::get('invalid_request', $this->langCode)];
+        }
+
         $customerId = (int)$customerId;
         $customerInfo = $this->getCustomerById($shopId, $customerId);
         if (empty($customerInfo)) {

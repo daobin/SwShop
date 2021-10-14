@@ -34,8 +34,19 @@ class IndexController extends Controller
         return $this->render($data);
     }
 
-    public function customerService(){
-        return $this->render(['hash_tk' => (new SafeHelper($this->request, $this->response))->buildCsrfToken('IDX', 'ordertracking')]);
+    public function customerService()
+    {
+        $this->session->set('login_to', '/customer-service.html');
+
+        $customerInfo = $this->session->get('sp_customer_info');
+        $customerInfo = $customerInfo ? json_decode($customerInfo, true) : [];
+        $customerName = ($customerInfo['first_name'] ?? '') . ' ' . ($customerInfo['last_name'] ?? '');
+
+        return $this->render([
+            'customer_name' => trim($customerName),
+            'customer_email' => $customerInfo['email'] ?? '',
+            'hash_tk' => (new SafeHelper($this->request, $this->response))->buildCsrfToken('IDX', 'ordertracking')
+        ]);
     }
 
     public function orderTracking()

@@ -15,9 +15,19 @@
                 <div class="layui-input-block">
                     <div style="max-width: 900px; padding-top: 5px;">
                         <?php
+                        $header = ROOT_DIR . 'public/email/header.html';
+                        if(file_exists($header)){
+                            echo file_get_contents($header);
+                        }
+
                         $template = ROOT_DIR . 'public/email/' . $tpl_info['template'] . '.html';
                         if (file_exists($template)) {
                             echo file_get_contents($template);
+                        }
+
+                        $footer = ROOT_DIR . 'public/email/footer.html';
+                        if(file_exists($footer)){
+                            echo file_get_contents($footer);
                         }
                         ?>
                     </div>

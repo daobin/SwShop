@@ -270,7 +270,12 @@ class OrderBiz
         $pageTotal = (int)ceil($this->count / $pageSize);
         $page = $page > $pageTotal ? $pageTotal : $page;
 
-        return $this->dbHelper->table('order')->where($where)->fields($this->orderFields)
+        $fields = $this->orderFields;
+        if (!empty($condition['fields']) && is_array($condition['fields'])) {
+            $fields = $condition['fields'];
+        }
+
+        return $this->dbHelper->table('order')->where($where)->fields($fields)
             ->orderBy($orderBy)->page($page, $pageSize)->select();
     }
 

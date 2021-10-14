@@ -13,6 +13,7 @@ use App\Helper\RouteHelper;
 RouteHelper::post('/login', 'Index.Ajax.loginProcess');
 RouteHelper::post('/register', 'Index.Ajax.registerProcess');
 RouteHelper::get('/zones', 'Index.Ajax.getZoneList');
+RouteHelper::get('/order-numbers', 'Index.Ajax.getOrderNumbersByDays');
 RouteHelper::post('/add-to-cart', 'Index.Ajax.addToCart');
 RouteHelper::post('/update-cart-product', 'Index.Ajax.updateCartProduct');
 RouteHelper::post('/delete-cart-product', 'Index.Ajax.deleteCartProduct');

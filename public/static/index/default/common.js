@@ -6,7 +6,6 @@ if ($('#hd-prod-detail-scroll').length == 1) {
 }
 var winHeight = $(window).height();
 var winHalfHeight = winHeight / 2;
-var countryZoneList = [];
 
 // Box Dialog
 var boxDialog = $('#hd-dialog-box').modal({
@@ -38,78 +37,6 @@ function fixedFooter() {
         $('#hd-footer').removeClass('fixed');
     }
 }
-
-function getCountryZoneList(countryId, init) {
-    if (countryId == '0') {
-        $('select[name="state_id"]').html('').addClass('hd-display-none');
-        $('input[name="state"]').val('').removeClass('hd-display-none').prop('disabled', true);
-        return;
-    }
-
-    if (countryZoneList[countryId] != undefined) {
-        if (countryZoneList[countryId].length > 0) {
-            $('input[name="state"]').val('').addClass('hd-display-none').prop('disabled', false);
-            $('select[name="state_id"]').html(function () {
-                var html = '';
-                var stateId = $(this).data('id');
-                for (let zone of countryZoneList[countryId]) {
-                    if (stateId == zone['zone_id']) {
-                        $(this).data('id', '');
-                        html += '<option value="' + zone['zone_id'] + '" selected>' + zone['zone_name'] + '</option>';
-                    } else {
-                        html += '<option value="' + zone['zone_id'] + '">' + zone['zone_name'] + '</option>';
-                    }
-                }
-                return html;
-            }).removeClass('hd-display-none');
-        } else {
-            $('select[name="state_id"]').html('').addClass('hd-display-none');
-            $('input[name="state"]').val('').removeClass('hd-display-none').prop('disabled', false);
-        }
-        return;
-    }
-
-    $.ajax({
-        url: '/zones.html?country_id=' + countryId,
-        success: function (res) {
-            if (res.zone_list != undefined) {
-                countryZoneList[countryId] = res.zone_list;
-                if (res.zone_list.length > 0) {
-                    $('input[name="state"]').val('').addClass('hd-display-none').prop('disabled', false);
-                    $('select[name="state_id"]').html(function () {
-                        var html = '';
-                        var stateId = $(this).data('id');
-                        for (let zone of countryZoneList[countryId]) {
-                            if (stateId == zone['zone_id']) {
-                                $(this).data('id', '');
-                                html += '<option value="' + zone['zone_id'] + '" selected>' + zone['zone_name'] + '</option>';
-                            } else {
-                                html += '<option value="' + zone['zone_id'] + '">' + zone['zone_name'] + '</option>';
-                            }
-                        }
-                        return html;
-                    }).removeClass('hd-display-none');
-                } else {
-                    $('select[name="state_id"]').html('').addClass('hd-display-none');
-                    if (init !== true) {
-                        $('input[name="state"]').val('');
-                    }
-                    $('input[name="state"]').removeClass('hd-display-none').prop('disabled', false);
-                }
-            }
-        },
-        error: function () {
-            alert('Unknown error, please refresh the page later and try again!');
-        }
-    });
-}
-
-// Get country's zone list
-getCountryZoneList($.trim($('select[name="country_id"]').val()), true);
-
-$('select[name="country_id"]').change(function () {
-    getCountryZoneList($.trim($(this).val()));
-});
 
 fixedFooter();
 
@@ -446,6 +373,14 @@ $('li.hd-nav-tag').click(function () {
     $(this).parent('ul').siblings('form.hd-form').eq($('li.hd-nav-tag').index($(this))).show();
 });
 
+// Form Reset
+function formReset() {
+    var formLen = $('.hd-form').length;
+    for (let idx = 0; idx < formLen; idx++) {
+        $('.hd-form')[idx].reset();
+    }
+}
+
 // Form Submit
 $('.hd-form').submit(function () {
     $(this).ajaxSubmit({
@@ -455,6 +390,9 @@ $('.hd-form').submit(function () {
                 window.location.href = res.url;
             } else {
                 alert(res.msg);
+            }
+            if (res.reset != undefined) {
+                formReset();
             }
         },
         error: function () {

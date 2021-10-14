@@ -141,11 +141,17 @@ class IndexController extends Controller
                     'order_customer' => empty($orderList[$days[$idx]]['customer_ids']) ? 0 : count($orderList[$days[$idx]]['customer_ids']),
                     'order_count' => $orderList[$days[$idx]]['count'] ?? 0,
                     'order_total' => $orderList[$days[$idx]]['total'] ?? 0,
+                    'customer_price' => 0,
                     'payment_order_count' => $orderList[$days[$idx]]['payment_count'] ?? 0,
                     'payment_order_total' => $orderList[$days[$idx]]['payment_total'] ?? 0,
+                    'payment_customer_price' => 0
                 ];
-                $todayStatistics['customer_price'] = $todayStatistics['order_total'] / $todayStatistics['order_count'];
-                $todayStatistics['payment_customer_price'] = $todayStatistics['payment_order_total'] / $todayStatistics['payment_order_count'];
+                if($todayStatistics['order_count'] > 0){
+                    $todayStatistics['customer_price'] = $todayStatistics['order_total'] / $todayStatistics['order_count'];
+                }
+                if($todayStatistics['payment_order_count'] > 0){
+                    $todayStatistics['payment_customer_price'] = $todayStatistics['payment_order_total'] / $todayStatistics['payment_order_count'];
+                }
             }
 
             $start += 86400;

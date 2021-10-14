@@ -56,4 +56,7 @@ return [
     'email_no_match_order' => 'Sorry, the email address you provided does not match the order number, please re-enter.',
     'invalid_customer' => 'Invalid customer',
     'invalid_email_tpl' => 'Invalid email template',
+    'submitted_success' => 'Submitted successfully',
+    'submitted_fail' => 'Submission Failed',
+    'your_question_invalid' => 'The question you entered is invalid.',
 ];

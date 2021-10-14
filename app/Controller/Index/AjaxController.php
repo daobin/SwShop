@@ -8,7 +8,9 @@ declare(strict_types=1);
 namespace App\Controller\Index;
 
 use App\Biz\AddressBiz;
+use App\Biz\ConfigBiz;
 use App\Biz\CustomerBiz;
+use App\Biz\OrderBiz;
 use App\Biz\ProductBiz;
 use App\Biz\ShoppingBiz;
 use App\Controller\Controller;
@@ -19,16 +21,71 @@ class AjaxController extends Controller
 {
     public function customerService()
     {
-        $res = ['status' => 'fail', 'msg' => LanguageHelper::get('invalid_request', $this->langCode)];
+        $customerName = $this->post('your_name');
+        $customerEmail = $this->post('your_email');
+        $question = $this->post('your_question');
+        $orderTime = $this->post('order_time', 0);
+        $orderNumber = $this->post('order_number');
+
+        if (empty($customerName)) {
+            return ['status' => 'fail', 'msg' => LanguageHelper::get('invalid_name', $this->langCode)];
+        }
 
         $service = $this->post('service', '', 'trim,strtolower');
         if ($service === 'pre') {
-
+            if (empty($customerEmail) || !filter_var($customerEmail, FILTER_VALIDATE_EMAIL)) {
+                return ['status' => 'fail', 'msg' => LanguageHelper::get('email_invalid', $this->langCode)];
+            }
         } else if ($service === 'after') {
+            $customerInfo = $this->session->get('sp_customer_info');
+            $customerInfo = $customerInfo ? json_decode($customerInfo, true) : [];
+            if (empty($customerInfo['email'])) {
+                $this->session->set('login_to', '/customer-service.html');
+                return ['status' => 'fail', 'url' => '/login.html'];
+            }
 
+            if (empty($orderNumber)) {
+                return ['status' => 'fail', 'msg' => LanguageHelper::get('invalid_order', $this->langCode)];
+            }
+
+            $customerEmail = $customerInfo['email'];
         }
 
-        return $res;
+        if (empty($question)) {
+            return ['status' => 'fail', 'msg' => LanguageHelper::get('your_question_invalid', $this->langCode)];
+        }
+
+        $csData = [
+            'shop_id' => $this->shopId,
+            'service_type' => $service,
+            'customer_id' => $this->customerId,
+            'customer_name' => $customerName,
+            'customer_email' => $customerEmail,
+            'order_time' => $orderTime,
+            'order_number' => $orderNumber,
+            'question' => $question
+        ];
+        if ((new CustomerBiz($this->langCode))->submitCustomerService($csData) > 0) {
+            \Swoole\Event::defer(function () use ($csData) {
+                $csEmail = (new ConfigBiz())->getConfigByKey($this->shopId, 'CUSTOMER_SERVICE_EMAIL');
+                $csEmail = $csEmail['config_value'] ?? '';
+
+                $mailData = [
+                    'template' => 'customer_service',
+                    'to_address' => $csEmail,
+                    'submission_time' => date('Y-m-d H:i:s'),
+                    'customer_name' => $csData['customer_name'],
+                    'customer_email' => $csData['customer_email'],
+                    'customer_question' => $csData['question'],
+                    'order_number' => $csData['order_number'],
+                    'service_type' => $csData['service_type']
+                ];
+                (new EmailHelper($this->shopId, $this->host))->sendMail($mailData);
+            });
+            return ['status' => 'success', 'msg' => LanguageHelper::get('submitted_success', $this->langCode), 'reset' => 1];
+        }
+
+        return ['status' => 'fail', 'msg' => LanguageHelper::get('submitted_fail', $this->langCode)];
     }
 
     public function loginProcess()
@@ -97,7 +154,11 @@ class AjaxController extends Controller
             $this->session->set('cart_list', json_encode($this->cartList));
 
             \Swoole\Event::defer(function () use ($register) {
-                (new EmailHelper($this->shopId, $this->langCode))->sendMail(['template' => 'welcome', 'to_address' => $register['customer_info']['email']]);
+                $mailData = [
+                    'template' => 'welcome',
+                    'to_address' => $register['customer_info']['email']
+                ];
+                (new EmailHelper($this->shopId, $this->host))->sendMail($mailData);
             });
         }
 
@@ -271,6 +332,38 @@ class AjaxController extends Controller
         }
 
         return ['status' => 'fail', 'msg' => LanguageHelper::get('remove_failed', $this->langCode)];
+    }
+
+    public function getOrderNumbersByDays()
+    {
+        $days = $this->get('days', 0);
+        $days = (int)$days;
+        if ($days <= 0) {
+            return [
+                'status' => 'success',
+                'order_numbers' => []
+            ];
+        }
+
+        if ($days === 1) {
+            $start = strtotime('-1 day');
+        } else {
+            $start = strtotime('-' . $days . ' days');
+        }
+
+        $start = strtotime(date('Y-m-d 00:00:00', $start));
+        $condition = [
+            'shop_id' => $this->shopId,
+            'customer_id' => $this->customerId,
+            'created_at_between' => [$start, time()]
+        ];
+        $orderNumbers = (new OrderBiz())->getOrderList($condition, [], 1, 1000);
+        $orderNumbers = empty($orderNumbers) ? [] : array_column($orderNumbers, 'order_number');
+
+        return [
+            'status' => 'success',
+            'order_numbers' => $orderNumbers
+        ];
     }
 
     public function getZoneList()
