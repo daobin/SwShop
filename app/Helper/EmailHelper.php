@@ -86,13 +86,15 @@ class EmailHelper
                 '%CUSTOMER_NAME%', '%CUSTOMER_EMAIL%', '%YEAR%', '%WEBSITE_NAME%',
                 '%HOME_LINK%', '%CS_LINK%', '%MY_ORDER_LINK%', '%ORDER_TRACKING_LINK%',
                 '%ORDER_NUMBER%', '%ORDER_TOTAL%', '%ORDER_DATE%',
-                '%SUBMISSION_TIME%', '%CUSTOMER_QUESTION%'
+                '%SUBMISSION_TIME%', '%CUSTOMER_QUESTION%',
+                '%FORGOT_CHANGE_LINK%'
             ],
             [
                 $customerName, $customerEmail, $year, $websiteName,
                 $homeLink, $csLink, $myOrderLink, $orderTrackingLink,
                 $mailData['order_number'] ?? '', $mailData['order_total'] ?? '', $mailData['order_date'] ?? '',
-                $mailData['submission_time'] ?? '', nl2br($mailData['customer_question'] ?? '')
+                $mailData['submission_time'] ?? '', nl2br($mailData['customer_question'] ?? ''),
+                $mailData['forgot_change_link'] ?? 'javascript:void(0);'
             ],
             $content);
 
@@ -114,8 +116,6 @@ class EmailHelper
             if (basename($template) == 'customer_service.html') {
                 $mailObj->Subject .= sprintf(' [%s] #%s', strtoupper($mailData['service_type'] ?? ''), strtoupper($mailData['order_number'] ?? ''));
             }
-            print_r(basename($template) . PHP_EOL);
-            print_r($mailObj->Subject . PHP_EOL);
             $mailObj->Body = $content;
 
             $mailObj->send();

@@ -14,6 +14,7 @@ return [
     'email_invalid' => 'Invalid email',
     'pwd_invalid' => 'Invalid password',
     'email_or_pwd_invalid' => 'Invalid email or password',
+    'email_registered' => 'Email has been registered',
     'unknown_refresh_try_again' => 'Unknown error, please refresh the page later and try again!',
     'save' => 'Save',
     'cancel' => 'Cancel',
@@ -59,4 +60,9 @@ return [
     'submitted_success' => 'Submitted successfully',
     'submitted_fail' => 'Submission Failed',
     'your_question_invalid' => 'The question you entered is invalid.',
+    'enter_email_used_login' => 'Please enter the email address used to login.',
+    'forgot_password_email_submitted_tip' => 'We have sent you a confirmation email, please handle it in time.',
+    'invalid_link' => 'Sorry, the link is invalid',
+    'password_reset_success' => 'Password reset successfully',
+    'password_reset_fail_tip' => 'Password reset failed, please return to the operation again or contact us for processing.',
 ];

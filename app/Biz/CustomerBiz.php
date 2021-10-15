@@ -25,6 +25,53 @@ class CustomerBiz
         $this->count = 0;
     }
 
+    public function buildForgotPasswordToken(int $shopId, string $email): string
+    {
+        $email = trim($email);
+        if ($shopId <= 0 || empty($email)) {
+            return '';
+        }
+
+        $customerInfo = $this->getCustomerByEmail($shopId, $email);
+        if (empty($customerInfo)) {
+            return '';
+        }
+
+        $time = time();
+        $token = build_fixed_pre_random();
+        $build = $this->dbHelper->table('forgot_password')->insert([
+            'shop_id' => $shopId,
+            'email' => $email,
+            'token' => $token,
+            'expired' => $time + 1800,
+            'created_at' => $time,
+            'updated_at' => $time
+        ]);
+
+        return $build > 0 ? $token : '';
+    }
+
+    public function getForgotPasswordByToken(int $shopId, string $token): array
+    {
+        if ($shopId <= 0 || empty($token)) {
+            return [];
+        }
+
+        return $this->dbHelper->table('forgot_password')->where(['shop_id' => $shopId, 'token' => $token])
+            ->fields(['forgot_password_id', 'email', 'expired', 'status'])->find();
+    }
+
+    public function updateForgotPasswordStatus(int $shopId, int $forgotId, int $status): int
+    {
+        if ($shopId <= 0 || $forgotId <= 0 || !in_array($status, [1, 2])) {
+            return 0;
+        }
+
+        return $this->dbHelper->table('forgot_password')
+            ->where(['shop_id' => $shopId, 'forgot_password_id' => $forgotId])
+            ->update(['status' => $status, 'updated_at' => time()]);
+    }
+
     public function submitCustomerService(array $csData): int
     {
         $shopId = $csData['shop_id'] ?? 0;
@@ -168,15 +215,15 @@ class CustomerBiz
         $password = $data['password'] ?? '';
         $password2 = $data['password2'] ?? '';
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            return ['status' => 'fail', 'msg' => 'Invalid email'];
+            return ['status' => 'fail', 'msg' => LanguageHelper::get('email_invalid', $this->langCode)];
         }
         if (empty($password) || $password !== $password2) {
-            return ['status' => 'fail', 'msg' => 'Invalid password'];
+            return ['status' => 'fail', 'msg' => LanguageHelper::get('pwd_invalid', $this->langCode)];
         }
 
         $shopId = (int)$data['shop_id'];
         if (!empty($this->getCustomerByEmail($shopId, $email))) {
-            return ['status' => 'fail', 'msg' => 'Email has been registered'];
+            return ['status' => 'fail', 'msg' => LanguageHelper::get('email_registered', $this->langCode)];
         }
 
         $data['password'] = password_hash($password, PASSWORD_DEFAULT);

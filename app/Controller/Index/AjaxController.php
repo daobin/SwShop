@@ -21,6 +21,14 @@ class AjaxController extends Controller
 {
     public function customerService()
     {
+        $token = $this->post('hash_tk');
+        $idempotentField = 'idempotent_cs';
+        if (empty($this->session->get($idempotentField))) {
+            $this->session->set($idempotentField, $token);
+        } else {
+            return ['status' => 'fail'];
+        }
+
         $customerName = $this->post('your_name');
         $customerEmail = $this->post('your_email');
         $question = $this->post('your_question');
@@ -28,12 +36,14 @@ class AjaxController extends Controller
         $orderNumber = $this->post('order_number');
 
         if (empty($customerName)) {
+            $this->session->remove($idempotentField);
             return ['status' => 'fail', 'msg' => LanguageHelper::get('invalid_name', $this->langCode)];
         }
 
         $service = $this->post('service', '', 'trim,strtolower');
         if ($service === 'pre') {
             if (empty($customerEmail) || !filter_var($customerEmail, FILTER_VALIDATE_EMAIL)) {
+                $this->session->remove($idempotentField);
                 return ['status' => 'fail', 'msg' => LanguageHelper::get('email_invalid', $this->langCode)];
             }
         } else if ($service === 'after') {
@@ -41,10 +51,12 @@ class AjaxController extends Controller
             $customerInfo = $customerInfo ? json_decode($customerInfo, true) : [];
             if (empty($customerInfo['email'])) {
                 $this->session->set('login_to', '/customer-service.html');
+                $this->session->remove($idempotentField);
                 return ['status' => 'fail', 'url' => '/login.html'];
             }
 
             if (empty($orderNumber)) {
+                $this->session->remove($idempotentField);
                 return ['status' => 'fail', 'msg' => LanguageHelper::get('invalid_order', $this->langCode)];
             }
 
@@ -52,6 +64,7 @@ class AjaxController extends Controller
         }
 
         if (empty($question)) {
+            $this->session->remove($idempotentField);
             return ['status' => 'fail', 'msg' => LanguageHelper::get('your_question_invalid', $this->langCode)];
         }
 
@@ -66,25 +79,26 @@ class AjaxController extends Controller
             'question' => $question
         ];
         if ((new CustomerBiz($this->langCode))->submitCustomerService($csData) > 0) {
-            \Swoole\Event::defer(function () use ($csData) {
-                $csEmail = (new ConfigBiz())->getConfigByKey($this->shopId, 'CUSTOMER_SERVICE_EMAIL');
-                $csEmail = $csEmail['config_value'] ?? '';
+            $csEmail = (new ConfigBiz())->getConfigByKey($this->shopId, 'CUSTOMER_SERVICE_EMAIL');
+            $csEmail = $csEmail['config_value'] ?? '';
 
-                $mailData = [
-                    'template' => 'customer_service',
-                    'to_address' => $csEmail,
-                    'submission_time' => date('Y-m-d H:i:s'),
-                    'customer_name' => $csData['customer_name'],
-                    'customer_email' => $csData['customer_email'],
-                    'customer_question' => $csData['question'],
-                    'order_number' => $csData['order_number'],
-                    'service_type' => $csData['service_type']
-                ];
-                (new EmailHelper($this->shopId, $this->host))->sendMail($mailData);
-            });
+            $mailData = [
+                'template' => 'customer_service',
+                'to_address' => $csEmail,
+                'submission_time' => date('Y-m-d H:i:s'),
+                'customer_name' => $csData['customer_name'],
+                'customer_email' => $csData['customer_email'],
+                'customer_question' => $csData['question'],
+                'order_number' => $csData['order_number'],
+                'service_type' => $csData['service_type']
+            ];
+            (new EmailHelper($this->shopId, $this->host))->sendMail($mailData);
+
+            $this->session->remove($idempotentField);
             return ['status' => 'success', 'msg' => LanguageHelper::get('submitted_success', $this->langCode), 'reset' => 1];
         }
 
+        $this->session->remove($idempotentField);
         return ['status' => 'fail', 'msg' => LanguageHelper::get('submitted_fail', $this->langCode)];
     }
 

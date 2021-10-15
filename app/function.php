@@ -22,6 +22,16 @@ function get_world_times(): array
     return [$cnTime, $usTime, $ukTime];
 }
 
+// 生成指定开头字符的随机字符串
+function build_fixed_pre_random(string $fixedPre = 'HD'): string
+{
+    $time = time();
+    $randomString = strtoupper(base64_encode($time . uniqid()));
+    $randomString = substr($randomString, mt_rand(0, strlen($randomString) - 8), 4);
+
+    return $fixedPre . date('YmdHi') . $randomString;
+}
+
 // URL 字串处理
 function process_url_string(string $url): string
 {

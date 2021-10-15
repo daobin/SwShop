@@ -47,12 +47,9 @@ class OrderBiz
         try {
             $time = time();
 
-            $orderNumber = strtoupper(base64_encode($time . uniqid()));
-            $orderNumber = substr($orderNumber, mt_rand(0, strlen($orderNumber) - 8), 4);
-
             $orderId = $this->dbHelper->table('order')->insert([
                 'shop_id' => $shopId,
-                'order_number' => 'HD' . date('YmdHi') . $orderNumber,
+                'order_number' => build_fixed_pre_random(),
                 'customer_id' => $orderSummary['customer_info']['customer_id'],
                 'customer_email' => $orderSummary['customer_info']['email'],
                 'customer_name' => trim($orderSummary['customer_info']['first_name'] . ' ' . $orderSummary['customer_info']['last_name']),

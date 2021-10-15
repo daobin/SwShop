@@ -15,6 +15,7 @@ use App\Biz\CustomerBiz;
 use App\Biz\OrderBiz;
 use App\Biz\ProductBiz;
 use App\Controller\Controller;
+use App\Helper\EmailHelper;
 use App\Helper\LanguageHelper;
 use App\Helper\OssHelper;
 use App\Helper\SafeHelper;
@@ -81,10 +82,22 @@ class CustomerController extends Controller
 
             $updated = $customerBiz->updatePassword($this->shopId, $this->customerId, $newPwd, $this->operator);
             if ($updated) {
+                $email = $customerInfo['email'];
+                \Swoole\Event::defer(function () use ($email) {
+                    $mailData = [
+                        'template' => 'password_success',
+                        'to_address' => $email
+                    ];
+                    (new EmailHelper($this->shopId, $this->host))->sendMail($mailData);
+                });
+
+                $this->session->set('password_reset_success', 1);
+                $this->session->remove('sp_customer_info');
+
                 return [
                     'status' => 'success',
                     'msg' => LanguageHelper::get('update_completed', $this->langCode),
-                    'url' => '/logout.html'
+                    'url' => '/login.html'
                 ];
             }
 

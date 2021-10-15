@@ -14,6 +14,7 @@ return [
     'email_invalid' => '邮箱无效',
     'pwd_invalid' => '邮箱或密码无效',
     'email_or_pwd_invalid' => '邮箱或密码无效',
+    'email_registered' => '邮箱已注册',
     'unknown_refresh_try_again' => '未知错误，请稍候刷新页面重试！',
     'save' => '保存',
     'cancel' => '取消',
@@ -59,4 +60,9 @@ return [
     'submitted_success' => '提交成功',
     'submitted_fail' => '提交失败',
     'your_question_invalid' => '您输入的问题无效。',
+    'enter_email_used_login' => '请输入用于登录的电子邮件地址。',
+    'forgot_password_email_submitted_tip' => '我们已经向您发送了一封确认邮件，请及时处理。',
+    'invalid_link' => '对不起，链接无效',
+    'password_reset_success' => '密码重置成功',
+    'password_reset_fail_tip' => '密码重置失败，请重新返回操作或联系我们处理。',
 ];

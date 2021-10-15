@@ -12,16 +12,18 @@ use App\Helper\RouteHelper;
 // 店铺前台路由配置
 RouteHelper::post('/login', 'Index.Ajax.loginProcess');
 RouteHelper::post('/register', 'Index.Ajax.registerProcess');
-RouteHelper::get('/zones', 'Index.Ajax.getZoneList');
-RouteHelper::get('/order-numbers', 'Index.Ajax.getOrderNumbersByDays');
 RouteHelper::post('/add-to-cart', 'Index.Ajax.addToCart');
 RouteHelper::post('/update-cart-product', 'Index.Ajax.updateCartProduct');
 RouteHelper::post('/delete-cart-product', 'Index.Ajax.deleteCartProduct');
 RouteHelper::post('/default-address', 'Index.Ajax.setDefaultAddress');
 RouteHelper::post('/delete-address', 'Index.Ajax.deleteAddress');
 RouteHelper::post('/customer-service', 'Index.Ajax.customerService');
+RouteHelper::get('/zones', 'Index.Ajax.getZoneList');
+RouteHelper::get('/order-numbers', 'Index.Ajax.getOrderNumbersByDays');
 
 RouteHelper::get('/', 'Index.Index.index');
+RouteHelper::any('/forgot-password', 'Index.Index.forgotPassword');
+RouteHelper::any('/reset-password', 'Index.Index.resetPassword');
 RouteHelper::get('/login', 'Index.Index.login');
 RouteHelper::get('/logout', 'Index.Index.logout');
 RouteHelper::any('/account', 'Index.Customer.index');

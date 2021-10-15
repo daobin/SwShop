@@ -10,9 +10,12 @@ namespace App\Controller\Index;
 use App\Biz\BannerBiz;
 use App\Biz\ConfigBiz;
 use App\Biz\CurrencyBiz;
+use App\Biz\CustomerBiz;
 use App\Biz\OrderBiz;
 use App\Biz\ProductBiz;
 use App\Controller\Controller;
+use App\Helper\EmailHelper;
+use App\Helper\LanguageHelper;
 use App\Helper\OssHelper;
 use App\Helper\SafeHelper;
 
@@ -84,11 +87,114 @@ class IndexController extends Controller
         ]);
     }
 
+    public function forgotPassword()
+    {
+        $email = $this->session->get('forgot_password_email', '');
+        $this->session->remove('forgot_password_email');
+
+        $error = $this->session->get('forgot_password_error', '');
+        $this->session->remove('forgot_password_error');
+
+        if ($this->request->isPost) {
+            $email = $this->post('email');
+            $this->session->set('forgot_password_email', $email);
+
+            $token = (new CustomerBiz($this->langCode))->buildForgotPasswordToken($this->shopId, $email);
+            if (empty($token)) {
+                $this->session->set('forgot_password_error', LanguageHelper::get('email_invalid', $this->langCode));
+            } else {
+                \Swoole\Event::defer(function () use ($email, $token) {
+                    $mailData = [
+                        'template' => 'forgot_password',
+                        'to_address' => $email,
+                        'submission_time' => date('Y-m-d H:i:s'),
+                        'forgot_change_link' => 'http://' . $this->host . '/reset-password.html?token=' . $token
+                    ];
+                    (new EmailHelper($this->shopId, $this->host))->sendMail($mailData);
+                });
+            }
+
+            $this->response->redirect('/forgot-password.html');
+        }
+
+        return $this->render([
+            'email' => $email,
+            'error' => $error,
+            'is_post' => $this->request->isPost,
+            'hash_tk' => (new SafeHelper($this->request, $this->response))->buildCsrfToken('IDX', 'forgotpwd'),
+        ]);
+    }
+
+    public function resetPassword()
+    {
+        $customerBiz = new CustomerBiz($this->langCode);
+
+        $token = $this->get('token');
+        $tokenInfo = $customerBiz->getForgotPasswordByToken($this->shopId, $token);
+        if (empty($tokenInfo)) {
+            return $this->render(['error' => LanguageHelper::get('invalid_link', $this->langCode)]);
+        }
+
+        if ($tokenInfo['status'] != 0) {
+            return $this->render(['error' => LanguageHelper::get('invalid_link', $this->langCode)]);
+        }
+
+        if (time() >= $tokenInfo['expired']) {
+            $customerBiz->updateForgotPasswordStatus($this->shopId, $tokenInfo['forgot_password_id'], 2);
+            return $this->render(['error' => LanguageHelper::get('invalid_link', $this->langCode)]);
+        }
+
+        $email = $tokenInfo['email'];
+        $emailCustomerInfo = $customerBiz->getCustomerByEmail($this->shopId, $email);
+        if (empty($emailCustomerInfo)) {
+            return $this->render(['error' => LanguageHelper::get('invalid_link', $this->langCode)]);
+        }
+
+        $error = '';
+        if ($this->request->isPost) {
+            $password = $this->post('password');
+            $password2 = $this->post('password2');
+            if (empty($password) || $password !== $password2) {
+                return $this->render(['email' => $email, 'error' => LanguageHelper::get('pwd_invalid', $this->langCode)]);
+            }
+
+            $reset = $customerBiz->updatePassword($this->shopId, $emailCustomerInfo['customer_id'], $password, '');
+            if ($reset > 0) {
+                \Swoole\Event::defer(function () use ($email) {
+                    $mailData = [
+                        'template' => 'password_success',
+                        'to_address' => $email
+                    ];
+                    (new EmailHelper($this->shopId, $this->host))->sendMail($mailData);
+                });
+
+                $customerBiz->updateForgotPasswordStatus($this->shopId, $tokenInfo['forgot_password_id'], 1);
+                $this->session->set('password_reset_success', 1);
+                $this->session->remove('sp_customer_info');
+                $this->response->redirect('/login.html');
+            } else {
+                $email = '';
+                $error = LanguageHelper::get('password_reset_fail_tip', $this->langCode);
+                $customerBiz->updateForgotPasswordStatus($this->shopId, $tokenInfo['forgot_password_id'], 3);
+            }
+        }
+
+        return $this->render([
+            'email' => $email,
+            'error' => $error,
+            'is_post' => $this->request->isPost,
+            'hash_tk' => (new SafeHelper($this->request, $this->response))->buildCsrfToken('IDX', 'resetpwd'),
+        ]);
+    }
+
     public function login()
     {
         $safeHelper = new SafeHelper($this->request, $this->response);
+        $passwordResetSuccess = $this->session->get('password_reset_success', 0);
+        $this->session->remove('password_reset_success');
 
         $data = [
+            'password_reset_success' => $passwordResetSuccess,
             'register_tk' => $safeHelper->buildCsrfToken('IDX', 'register'),
             'login_tk' => $safeHelper->buildCsrfToken('IDX', 'login'),
         ];
@@ -97,7 +203,7 @@ class IndexController extends Controller
 
     public function logout()
     {
-        $this->session->clear();
+        $this->session->remove('sp_customer_info');
         return $this->response->redirect('/login.html');
     }
 

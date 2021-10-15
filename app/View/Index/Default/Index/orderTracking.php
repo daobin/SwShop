@@ -155,6 +155,13 @@
             </div>
         <?php } else { ?>
             <form class="form-horizontal" method="post" autocomplete="off">
+                <?php if ($is_post) { ?>
+                    <div class="form-group hd-margin-top-30">
+                        <div class="col-md-8 col-md-offset-2 hd-font-size-18 text-danger">
+                            <?php echo '<i class="glyphicon glyphicon-remove"></i>&nbsp;', xss_text('email_no_match_order', $lang_code); ?>
+                        </div>
+                    </div>
+                <?php } ?>
                 <div class="form-group hd-margin-top-30">
                     <label class="control-label col-md-2">Email Address <span class="text-danger">*</span></label>
                     <div class="col-md-8">
@@ -173,13 +180,6 @@
                         <input type="submit" class="btn btn-warning" value="Tracking"/>
                     </div>
                 </div>
-                <?php
-                if ($is_post) {
-                    echo '<div class="form-group hd-margin-top-30"><div class="col-md-8 col-md-offset-2 text-danger hd-font-size-16">';
-                    echo '<i class="glyphicon glyphicon-exclamation-sign"></i>&nbsp;';
-                    echo xss_text('email_no_match_order', $lang_code), '</div></div>';
-                }
-                ?>
             </form>
         <?php } ?>
     </div>
