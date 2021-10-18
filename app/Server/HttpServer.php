@@ -41,9 +41,6 @@ class HttpServer
             'enable_coroutine' => true,
             'enable_static_handler' => true,
             'document_root' => ROOT_DIR . 'public',
-            'http_index_files' => [
-                'index.html'
-            ],
         ]);
         $server->on('Request', [$this, 'requestHandler']);
         $server->start();

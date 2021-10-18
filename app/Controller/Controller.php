@@ -188,6 +188,9 @@ class Controller
         $websiteName = $cfgBiz->getConfigByKey($this->shopId, 'WEBSITE_NAME');
         $data['website_name'] = $websiteName['config_value'] ?? $this->host;
 
+        $websiteLogo = $cfgBiz->getConfigByKey($this->shopId, 'WEBSITE_LOGO');
+        $data['website_logo'] = $websiteLogo['config_value'] ?? '';
+
         $timestamp = (new ConfigBiz())->getConfigByKey($this->shopId, 'TIMESTAMP');
         $data['timestamp'] = $timestamp['config_value'] ?? '?' . date('YmdH');
 
@@ -199,6 +202,7 @@ class Controller
         $data['widget_params'] = [
             'shop_id' => $this->shopId,
             'website_name' => $data['website_name'],
+            'website_logo' => $data['website_logo'],
             'timestamp' => $data['timestamp'],
             'customer_id' => $data['customer_id'],
             'cart_qty' => $this->cartQty,

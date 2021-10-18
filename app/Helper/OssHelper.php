@@ -17,15 +17,15 @@ use OSS\OssClient;
 class OssHelper
 {
     private $ossCfgs;
+    private $ossIsOpen;
     public $accessHost;
 
     public function __construct($shopId)
     {
         $this->ossCfgs = (new ConfigBiz())->getConfigListByGroup($shopId, 'oss');
         $this->ossCfgs = array_column($this->ossCfgs, 'config_value', 'config_key');
-
-        $this->accessHost = str_ireplace(['https://', 'http://'], '', $this->ossCfgs['OSS_ENDPOINT']);
-        $this->accessHost = 'https://' . $this->ossCfgs['OSS_BUCKET'] . '.' . trim($this->accessHost, '/') . '/';
+        $this->ossIsOpen = strtotime($this->ossCfgs['OSS_OPEN_CLOSE']) == 'open';
+        $this->accessHost = trim($this->ossCfgs['FILE_HOST'], '/') . '/';
     }
 
     public function putObjectForImage(string $imageFile, string $localPath): string
@@ -40,8 +40,10 @@ class OssHelper
             $object = str_ireplace($localPath, '', $imageFile);
             $object = trim($object, '/');
 
-            $ossClient = new OssClient($this->ossCfgs['OSS_ACCESS_KEY_ID'], $this->ossCfgs['OSS_ACCESS_KEY_SECRET'], $this->ossCfgs['OSS_ENDPOINT']);
-            $ossClient->putObject($this->ossCfgs['OSS_BUCKET'], $object, file_get_contents($imageFile));
+            if ($this->ossIsOpen) {
+                $ossClient = new OssClient($this->ossCfgs['OSS_ACCESS_KEY_ID'], $this->ossCfgs['OSS_ACCESS_KEY_SECRET'], $this->ossCfgs['OSS_ENDPOINT']);
+                $ossClient->putObject($this->ossCfgs['OSS_BUCKET'], $object, file_get_contents($imageFile));
+            }
 
         } catch (OssException $e) {
             print_r('OSS Put Image Invalid: ' . $e->getMessage());
@@ -68,18 +70,19 @@ class OssHelper
             }
 
             $thumbFileArr = [];
-            $basename = basename($imageFile);
             foreach ($imgSizeArr as $imgSize) {
-                $thumbFile = $localPath . 'thumb_' . $imgSize . '_' . $basename;
+                $thumbFile = str_replace('_d_d', '_' . $imgSize . '_' . $imgSize, $imageFile);
                 $imgRes = ImageManagerStatic::make($imageFile)->resize($imgSize, $imgSize);
                 $imgRes->save($thumbFile);
 
                 if (is_file($thumbFile)) {
                     $thumbFileArr[] = $thumbFile;
-                    $thumbObject = str_replace('_d_d', '_' . $imgSize . '_' . $imgSize, $object);
+                    if ($this->ossIsOpen) {
+                        $thumbObject = str_replace('_d_d', '_' . $imgSize . '_' . $imgSize, $object);
 
-                    $ossClient = new OssClient($this->ossCfgs['OSS_ACCESS_KEY_ID'], $this->ossCfgs['OSS_ACCESS_KEY_SECRET'], $this->ossCfgs['OSS_ENDPOINT']);
-                    $ossClient->putObject($this->ossCfgs['OSS_BUCKET'], $thumbObject, file_get_contents($thumbFile));
+                        $ossClient = new OssClient($this->ossCfgs['OSS_ACCESS_KEY_ID'], $this->ossCfgs['OSS_ACCESS_KEY_SECRET'], $this->ossCfgs['OSS_ENDPOINT']);
+                        $ossClient->putObject($this->ossCfgs['OSS_BUCKET'], $thumbObject, file_get_contents($thumbFile));
+                    }
                 }
             }
 
@@ -89,13 +92,6 @@ class OssHelper
 
         if (empty($thumbFileArr)) {
             return '';
-        }
-
-        // 删除临时文件
-        foreach ($thumbFileArr as $thumbFile) {
-            if (is_file($thumbFile)) {
-                unlink($thumbFile);
-            }
         }
 
         $imgSize = reset($imgSizeArr);

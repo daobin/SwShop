@@ -76,57 +76,8 @@ class ConfigController extends Controller
 
         $cfgBiz = new ConfigBiz();
 
-        $cfgGrp = trim($this->request->post['config_group'] ?? '');
         $cfgVal = trim($this->request->post['config_value'] ?? '');
         $valType = trim($this->request->post['value_type'] ?? '');
-
-        if (strtolower($cfgGrp) == 'css') {
-            // 将样式内容保存至样式文件
-            $cssList = $this->post('css_list', []);
-            if (!empty($cssList)) {
-                foreach ($cssList as $theme => $css) {
-                    if (empty($theme) || empty($css)) {
-                        continue;
-                    }
-
-                    foreach ($css as $name => $content) {
-                        $theme = strtolower($theme);
-                        $cssPath = ROOT_DIR . 'public/static/index/' . $theme;
-                        if (!is_dir($cssPath) && !mkdir($cssPath, 0775)) {
-                            return ['status' => 'fail', 'msg' => LanguageHelper::get('invalid_request', $this->langCode)];
-                        }
-
-                        $name = strtolower($name);
-                        $cssFile = $cssPath . '/' . $name . '.css';
-                        if (file_exists($cssFile)) {
-                            // 备份原有文件内容
-                            $backFile = $cssPath . '/' . $name . date('_Ymd') . '.css';
-                            $flag = sprintf('****** Time:: %s, ****** Operator:: %s', date('Y-m-d H:i:s'), $this->operator);
-                            file_put_contents($backFile, $flag . PHP_EOL, FILE_APPEND);
-                            file_put_contents($backFile, file_get_contents($cssFile) . PHP_EOL, FILE_APPEND);
-                        }
-
-                        // 覆盖写入
-                        file_put_contents($cssFile, trim($content));
-                    }
-                }
-            }
-
-            // 更新时间戳
-            $cfgBiz->updateConfigByKey($this->shopId, $cfgKey, [
-                'updated_at' => time(),
-                'updated_by' => $this->operator
-            ]);
-
-            // 同时更新静态资源时间戳
-            $cfgBiz->updateConfigByKey($this->shopId, 'TIMESTAMP', [
-                'config_value' => '?' . date('YmdHis'),
-                'updated_at' => time(),
-                'updated_by' => $this->operator
-            ]);
-
-            return ['status' => 'success', 'msg' => '保存成功'];
-        }
 
         switch (strtolower($valType)) {
             case 'password':
@@ -160,6 +111,15 @@ class ConfigController extends Controller
 
         if ($cfgKey == 'TIMESTAMP') {
             $cfgVal = '?' . trim($cfgVal, '?');
+        } else if ($cfgKey == 'OSS_OPEN_CLOSE') {
+            $cfgVal = strtolower($cfgVal);
+            $sLinkSource = ROOT_DIR . 'upload/image/sp_' . $this->shopId;
+            $sLinkDesc = ROOT_DIR . 'public/sp_' . $this->shopId;
+            if ($cfgVal == 'open') {
+                shell_exec("rm -rf {$sLinkDesc}");
+            } else if (!file_exists($sLinkDesc)) {
+                shell_exec("ln -s {$sLinkSource} {$sLinkDesc}");
+            }
         }
 
         $update = $cfgBiz->updateConfigByKey($this->shopId, $cfgKey, [

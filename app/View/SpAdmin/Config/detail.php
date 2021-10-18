@@ -13,59 +13,36 @@
                 <label class="layui-form-label">配置值</label>
                 <div class="layui-input-block">
                     <?php
-                    if (strtolower($config_group) == 'css') {
-                        echo '<div class="layui-collapse" lay-accordion>';
-                        if (!empty($config_value)) {
-                            foreach ($config_value as $theme => $css) {
-                                echo '<div class="layui-colla-item">';
-                                echo '<h2 class="layui-colla-title">前台模板【', $theme, '】</h2>';
-                                echo '<div class="layui-colla-content layui-show">';
-                                if (is_array($css) && !empty($css)) {
-                                    foreach ($css as $name) {
-                                        $css_content = '';
-                                        $css_file = ROOT_DIR . 'public/static/index/' . strtolower($theme) . '/' . strtolower($name) . '.css';
-                                        if (file_exists($css_file)) {
-                                            $css_content = file_get_contents($css_file);
-                                        }
-
-                                        echo '<div class="layui-form-item">';
-                                        echo '<label class="layui-form-label">', $name, '.css</label>';
-                                        echo '<div class="layui-input-block">';
-                                        echo '<textarea class="layui-textarea" name="css_list[', $theme, '][', $name, ']" style="height: 200px;">', $css_content, '</textarea></div></div>';
-                                    }
-                                }
-                                echo '</div></div>';
+                    $config_value = $config_value ?? '';
+                    switch (strtolower($value_type)) {
+                        case 'radio':
+                            if ($config_value == 'open') {
+                                echo '<input type="checkbox" name="config_value" lay-skin="switch" lay-text="开启|关闭" checked/>';
+                            } else {
+                                echo '<input type="checkbox" name="config_value" lay-skin="switch" lay-text="开启|关闭"/>';
                             }
-                        }
-                        echo '</div>';
-                        // 避免 JS 解析错误
-                        $config_value = json_encode([]);
-                        echo '<input type="hidden" name="config_value" value="{}"/>';
-                    } else {
-                        $config_value = $config_value ?? '';
-                        switch (strtolower($value_type)) {
-                            case 'password':
-                                echo '<textarea class="layui-textarea" name="config_value" placeholder="' . hide_chars($config_value) . '"></textarea>';
-                                break;
-                            case 'list':
-                                $config_value_arr = [];
-                                if (!empty($config_value)) {
-                                    foreach ($config_value as $name => $val) {
-                                        $config_value_arr[] = [
-                                            'name' => $name,
-                                            'value' => $name . '=' . $val,
-                                            'selected' => true
-                                        ];
-                                    }
+                            break;
+                        case 'password':
+                            echo '<textarea class="layui-textarea" name="config_value" placeholder="' . hide_chars($config_value) . '"></textarea>';
+                            break;
+                        case 'list':
+                            $config_value_arr = [];
+                            if (!empty($config_value)) {
+                                foreach ($config_value as $name => $val) {
+                                    $config_value_arr[] = [
+                                        'name' => $name,
+                                        'value' => $name . '=' . $val,
+                                        'selected' => true
+                                    ];
                                 }
-                                $config_value = json_encode($config_value_arr);
-                                unset($config_value_arr);
+                            }
+                            $config_value = json_encode($config_value_arr);
+                            unset($config_value_arr);
 
-                                echo '<div id="value_select"></div>';
-                                break;
-                            default:
-                                echo '<textarea class="layui-textarea" name="config_value">' . $config_value . '</textarea>';
-                        }
+                            echo '<div id="value_select"></div>';
+                            break;
+                        default:
+                            echo '<textarea class="layui-textarea" name="config_value">' . $config_value . '</textarea>';
                     }
                     ?>
                 </div>
@@ -85,7 +62,7 @@
     </div>
     <script src="/static/layui/xm-select.js"></script>
     <script>
-        layui.use(['form'], function () {
+        layui.use(['form', 'jquery'], function () {
             <?php if (strtolower($value_type) == 'list') { ?>
             if ($('#value_select').length == 1) {
                 xmSelect.render({
@@ -115,7 +92,15 @@
             <?php } ?>
 
             layui.form.on('submit(cfg_edit)', function (formObj) {
-                if ($.trim(formObj.field.config_value) == '') {
+                if ($.trim(formObj.field.value_type) == 'radio') {
+                    if ($.trim(formObj.field.config_value) == '') {
+                        formObj.field.config_value = 'close';
+                    } else {
+                        formObj.field.config_value = 'open';
+                    }
+                    form_submit(window.location.href, formObj.field);
+
+                } else if ($.trim(formObj.field.config_value) == '') {
                     layer.confirm('配置值是否保存为空？', open_ask_cfg, function (idx) {
                         form_submit(window.location.href, formObj.field);
                         layer.close(idx);

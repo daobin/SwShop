@@ -53,7 +53,6 @@ class UploadController extends Controller
         }
 
         if ($fileInfo['error'] > 0) {
-            print_r($fileInfo);
             return ['status' => 'fail', 'msg' => '上传图片 [' . $fileInfo['name'] . '] 错误'];
         }
 
@@ -86,7 +85,7 @@ class UploadController extends Controller
         $fileClass = 'image';
         $localPath = ROOT_DIR . 'upload/' . $fileClass . '/';
         $prefix = $this->getImgPrefix('post');
-        $imageFile = $localPath . $prefix . '/';
+        $imageFile = $localPath . $prefix . date('/Ymd/');
         if (!is_dir($imageFile) && !mkdir($imageFile, 0700, true)) {
             return ['status' => 'fail', 'msg' => '上传图片 [' . $fileInfo['name'] . '] 路径无效'];
         }
@@ -109,7 +108,7 @@ class UploadController extends Controller
         $data = [
             'shop_id' => $this->shopId,
             'origin_name' => $fileInfo['name'],
-            'oss_object' => $prefix . '/' . $imageName,
+            'oss_object' => str_replace($localPath, '', $imageFile),
             'file_class' => $fileClass,
             'folder' => $this->getImgPrefix('post', true),
             'created_at' => $time,

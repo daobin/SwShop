@@ -26,10 +26,11 @@
     <div class="container hd-margin-top-bottom-15">
         <div class="row">
             <div class="col-md-2 text-center">
-                <a href="/">
-                    <img class="logo" src="http://www.gm-php7.com/public/static/index/pc/images/Glarry_Logo.png"
-                         alt="Sw Shop"/>
-                </a>
+                <?php
+                if (!empty($website_logo)) {
+                    echo '<a href="/"><img class="logo" src="', $website_logo, '" alt="', ($website_name ?? ''), '" /></a>';
+                }
+                ?>
             </div>
             <div class="col-md-5">
                 <div class="form-group">

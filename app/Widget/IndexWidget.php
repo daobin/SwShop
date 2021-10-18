@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Widget;
 
+use App\Biz\ConfigBiz;
 use App\Biz\ProductBiz;
 
 class IndexWidget extends Widget
@@ -18,7 +19,9 @@ class IndexWidget extends Widget
             'cart_qty' => $params['cart_qty'] ?? 0,
             'shopping_nav_img' => $params['shopping_nav_img'] ?? '',
             'cate_list' => $cateList,
-            'keywords' => $params['keywords'] ?? ''
+            'keywords' => $params['keywords'] ?? '',
+            'website_name' => $params['website_name'] ?? '',
+            'website_logo' => $params['website_logo'] ?? '',
         ];
 
         if (!empty($data['shopping_nav_img'])) {
