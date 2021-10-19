@@ -106,4 +106,13 @@ RouteHelper::get('/spadmin/admin', 'SpAdmin.Admin.index');
 RouteHelper::any('/spadmin/admin/<admin_id>', 'SpAdmin.Admin.detail', ['admin_id' => '\d+']);
 RouteHelper::post('/spadmin/admin/delete', 'SpAdmin.Admin.delete');
 
+// 域名站点绑定
+RouteHelper::get('/spbind', 'SpBind.Index.index');
+RouteHelper::get('/spbind/shop', 'SpBind.Shop.index');
+RouteHelper::any('/spbind/shop/<shop_id>', 'SpBind.Shop.detail', ['shop_id' => '\w+']);
+RouteHelper::post('/spbind/shop/delete', 'SpBind.Shop.delete');
+RouteHelper::get('/spbind/login', 'SpBind.Index.login');
+RouteHelper::post('/spbind/login', 'SpBind.Index.loginProcess');
+RouteHelper::get('/spbind/logout', 'SpBind.Index.logout');
+
 return [];
