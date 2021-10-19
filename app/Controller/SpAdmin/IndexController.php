@@ -287,7 +287,7 @@ class IndexController extends Controller
 
     public function logout()
     {
-        $this->session->remove('sp_admin_info');
+        $this->session->clear();
         $this->response->redirect('/spadmin/login.html');
     }
 }

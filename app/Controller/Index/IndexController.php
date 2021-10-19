@@ -203,7 +203,7 @@ class IndexController extends Controller
 
     public function logout()
     {
-        $this->session->remove('sp_customer_info');
+        $this->session->clear();
         return $this->response->redirect('/login.html');
     }
 
