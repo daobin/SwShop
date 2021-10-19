@@ -13,6 +13,7 @@ use App\Biz\UploadBiz;
 use App\Controller\Controller;
 use App\Helper\ConfigHelper;
 use App\Helper\OssHelper;
+use App\Helper\SafeHelper;
 
 class UploadController extends Controller
 {
@@ -48,61 +49,12 @@ class UploadController extends Controller
     public function uploadImage()
     {
         $fileInfo = $this->request->files['file'] ?? [];
-        if (empty($fileInfo)) {
-            return ['status' => 'fail', 'msg' => '上传图片不存在'];
+        $checked = (new SafeHelper($this->request, $this->response))->chkUploadImage($fileInfo, $this->getImgPrefix('post'));
+        if (isset($checked['status']) && $checked['status'] == 'fail') {
+            return $checked;
         }
 
-        if ($fileInfo['error'] > 0) {
-            return ['status' => 'fail', 'msg' => '上传图片 [' . $fileInfo['name'] . '] 错误'];
-        }
-
-        // Max 2MB
-        if ($fileInfo['size'] > 2097152) {
-            return ['status' => 'fail', 'msg' => '上传图片 [' . $fileInfo['name'] . '] 过大'];
-        }
-
-        $imageName = md5($fileInfo['name']) . '_d_d';
-        switch (strtolower($fileInfo['type'])) {
-            case 'image/jpeg':
-            case 'image/jpg':
-                $imageName .= '.jpg';
-                break;
-            case 'image/png':
-                $imageName .= '.png';
-                break;
-            default:
-                return ['status' => 'fail', 'msg' => '上传图片 [' . $fileInfo['name'] . '] 类型错误'];
-        }
-
-        if (!is_uploaded_file($fileInfo['tmp_name'])) {
-            return ['status' => 'fail', 'msg' => '上传图片 [' . $fileInfo['name'] . '] 非法'];
-        }
-
-        if (chk_file_security_is_risk($fileInfo['tmp_name'])) {
-            return ['status' => 'fail', 'msg' => '上传图片 [' . $fileInfo['name'] . '] 无效'];
-        }
-
-        $fileClass = 'image';
-        $localPath = ROOT_DIR . 'upload/' . $fileClass . '/';
-        $prefix = $this->getImgPrefix('post');
-        $imageFile = $localPath . $prefix . date('/Ymd/');
-        if (!is_dir($imageFile) && !mkdir($imageFile, 0700, true)) {
-            return ['status' => 'fail', 'msg' => '上传图片 [' . $fileInfo['name'] . '] 路径无效'];
-        }
-
-        $imageFile .= $imageName;
-        if (!move_uploaded_file($fileInfo['tmp_name'], $imageFile)) {
-            return ['status' => 'fail', 'msg' => '上传图片 [' . $fileInfo['name'] . '] 迁移失败'];
-        }
-
-        if (strpos($prefix, '/prod_img/') !== false) {
-            $imgSrc = (new OssHelper($this->shopId))->putObjectForProductImage($imageFile, $localPath);
-        } else {
-            $imgSrc = (new OssHelper($this->shopId))->putObjectForImage($imageFile, $localPath);
-        }
-        if (empty($imgSrc)) {
-            return ['status' => 'fail', 'msg' => '上传图片 [' . $fileInfo['name'] . '] 上传失败'];
-        }
+        list($fileClass, $localPath, $imageFile, $imgSrc) = $checked;
 
         $time = time();
         $data = [

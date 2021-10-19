@@ -6,6 +6,7 @@ namespace App\Controller;
 use App\Biz\ConfigBiz;
 use App\Biz\WarehouseBiz;
 use App\Helper\LanguageHelper;
+use App\Helper\OssHelper;
 use App\Helper\SessionHelper;
 use App\Helper\TemplateHelper;
 use IP2Location\Database;
@@ -197,12 +198,13 @@ class Controller
         $data['customer_id'] = $this->customerId;
         $data['lang_code'] = $this->langCode;
         $data['currency'] = $this->currency;
+        $data['oss_access_host'] = (new OssHelper($this->shopId))->accessHost;
 
         // Widget Params
         $data['widget_params'] = [
             'shop_id' => $this->shopId,
             'website_name' => $data['website_name'],
-            'website_logo' => $data['website_logo'],
+            'website_logo' => empty($data['website_logo']) ? '' : ($data['oss_access_host'] . $data['website_logo']),
             'timestamp' => $data['timestamp'],
             'customer_id' => $data['customer_id'],
             'cart_qty' => $this->cartQty,

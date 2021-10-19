@@ -12,6 +12,7 @@ namespace App\Controller\SpAdmin;
 use App\Biz\ConfigBiz;
 use App\Controller\Controller;
 use App\Helper\LanguageHelper;
+use App\Helper\OssHelper;
 use App\Helper\SafeHelper;
 
 class ConfigController extends Controller
@@ -63,6 +64,9 @@ class ConfigController extends Controller
         }
 
         $cfgInfo['csrf_token'] = (new SafeHelper($this->request, $this->response))->buildCsrfToken('BG', $cfgKey);
+        if ($cfgInfo['value_type'] == 'image') {
+            $cfgInfo['oss_access_host'] = (new OssHelper($this->shopId))->accessHost;
+        }
         return $this->render($cfgInfo);
     }
 
@@ -109,17 +113,29 @@ class ConfigController extends Controller
                 break;
         }
 
-        if ($cfgKey == 'TIMESTAMP') {
-            $cfgVal = '?' . trim($cfgVal, '?');
-        } else if ($cfgKey == 'OSS_OPEN_CLOSE') {
-            $cfgVal = strtolower($cfgVal);
-            $sLinkSource = ROOT_DIR . 'upload/image/sp_' . $this->shopId;
-            $sLinkDesc = ROOT_DIR . 'public/sp_' . $this->shopId;
-            if ($cfgVal == 'open') {
-                shell_exec("rm -rf {$sLinkDesc}");
-            } else if (!file_exists($sLinkDesc)) {
-                shell_exec("ln -s {$sLinkSource} {$sLinkDesc}");
-            }
+        switch ($cfgKey) {
+            case 'WEBSITE_LOGO':
+                $fileInfo = $this->request->files['file'] ?? [];
+                $checked = (new SafeHelper($this->request, $this->response))->chkUploadImage($fileInfo, 'sp_' . $this->shopId . '/logo');
+                if (isset($checked['status']) && $checked['status'] == 'fail') {
+                    return $checked;
+                }
+                list(, $localPath, $imageFile) = $checked;
+                $cfgVal = str_replace($localPath, '', $imageFile);
+                break;
+            case 'OSS_OPEN_CLOSE':
+                $cfgVal = strtolower($cfgVal);
+                $sLinkSource = ROOT_DIR . 'upload/image/sp_' . $this->shopId;
+                $sLinkDesc = ROOT_DIR . 'public/sp_' . $this->shopId;
+                if ($cfgVal == 'open') {
+                    shell_exec("rm -rf {$sLinkDesc}");
+                } else if (!file_exists($sLinkDesc)) {
+                    shell_exec("ln -s {$sLinkSource} {$sLinkDesc}");
+                }
+                break;
+            case 'TIMESTAMP':
+                $cfgVal = '?' . trim($cfgVal, '?');
+                break;
         }
 
         $update = $cfgBiz->updateConfigByKey($this->shopId, $cfgKey, [
