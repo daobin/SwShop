@@ -44,19 +44,19 @@
                 </div>
             </div>
             <div class="col-md-5 hidden-xs text-right" id="hd-nav-icon">
-                <a class="cs" href="/customer-service.html" data-toggle="tooltip" title="Customer Service"></a>
-                <a class="order-tracking" href="/order-tracking.html" data-toggle="tooltip" title="Order Tracking"></a>
+                <a class="hd-nav cs" href="/customer-service.html" data-toggle="tooltip" title="Customer Service"></a>
+                <a class="hd-nav order-tracking" href="/order-tracking.html" data-toggle="tooltip" title="Order Tracking"></a>
                 <?php
                 if (empty($cart_qty)) {
-                    echo '<a class="cart" href="/shopping/cart.html" data-toggle="tooltip" title="Shopping Cart"></a>';
+                    echo '<a class="hd-nav cart" href="/shopping/cart.html" data-toggle="tooltip" title="Shopping Cart"></a>';
                 } else {
-                    echo '<a class="cart2" href="/shopping/cart.html" data-toggle="tooltip" title="Shopping Cart"><span class="badge">', $cart_qty, '</span></a>';
+                    echo '<a class="hd-nav cart2" href="/shopping/cart.html" data-toggle="tooltip" title="Shopping Cart"><span class="badge">', $cart_qty, '</span></a>';
                 }
 
                 if (empty($customer_id)) {
-                    echo '<a class="login" href="/login.html" data-toggle="tooltip" title="Register / Sign In"></a>';
+                    echo '<a class="hd-nav login" href="/login.html" data-toggle="tooltip" title="Register / Sign In"></a>';
                 } else {
-                    echo '<a class="logined" data-toggle="tooltip" title="Account" href="/account.html"></a>';
+                    echo '<a class="hd-nav logined" data-toggle="popover" id="hd-nav-account"></a>';
                 }
                 ?>
             </div>

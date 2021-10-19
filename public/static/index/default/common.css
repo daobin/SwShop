@@ -49,7 +49,7 @@ body .hd-error-tip a{color: #1ea1ea; font-weight: bold;}
 #hd-header .hd-shopping-nav img{max-width: 100%;}
 #hd-header .input-group{position: relative; top: 30px;}
 #hd-header .input-group .hd-search{height: 40px;}
-#hd-nav-icon a{position: relative; display: inline-block; width: 50px; height: 50px; margin: 20px 10px; border-radius: 25px; border: 1px solid #333;}
+#hd-nav-icon a.hd-nav{position: relative; display: inline-block; width: 50px; height: 50px; margin: 20px 10px; border-radius: 25px; border: 1px solid #333;}
 #hd-nav-icon a span{position: absolute; top: -5px; right: -5px; display: block; min-width: 20px; text-align: center; font-size: 12px; background: #1ea1ea;}
 #hd-nav-icon a.cs{background: url("/static/index/default/nav-cs.png") no-repeat center;}
 #hd-nav-icon a.order-tracking{background: url("/static/index/default/nav-order-tracking.png") no-repeat center;}

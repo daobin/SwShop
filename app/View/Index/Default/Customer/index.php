@@ -15,14 +15,10 @@ $widget_params['tkd_title'] = 'My Profile - ' . $website_name;
             <li><a href="/password.html">Change Password</a></li>
             <li><a href="/address.html">My Address</a></li>
             <li><a href="/order.html">My Order</a></li>
+            <li><a href="/logout.html">Logout</a></li>
         </ul>
         <div class="page-header">
-            <h2 class="hd-color-333">
-                My Profile
-                <a class="btn btn-link pull-right" href="/logout.html">
-                    <i class="glyphicon glyphicon-log-out"></i> Logout
-                </a>
-            </h2>
+            <h2 class="hd-color-333">My Profile</h2>
         </div>
         <form class="hd-form form-horizontal hd-margin-top-30" method="post" autocomplete="off">
             <div class="form-group">

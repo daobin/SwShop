@@ -318,6 +318,27 @@ $('a[data-toggle="tooltip"]').tooltip({
     trigger: 'hover'
 });
 
+// Account Popover Tool
+$('#hd-nav-account').popover({
+    placement: 'bottom',
+    trigger: 'click',
+    html: true,
+    content: function () {
+        var accountNavs = '<div class="hd-width-150">' +
+            '<a class="btn-link hd-display-block" href="/account.html"/>My Profile</a>' +
+            '<a class="btn-link hd-display-block hd-margin-top-10" href="/password.html"/>Change Password</a>' +
+            '<a class="btn-link hd-display-block hd-margin-top-10" href="/address.html"/>My Address</a>' +
+            '<a class="btn-link hd-display-block hd-margin-top-10" href="/order.html"/>My Order</a>' +
+            '<a class="btn-link hd-display-block hd-margin-top-10" href="/logout.html"/>Logout</a>' +
+            '</div>';
+        return accountNavs;
+    },
+    whiteList: {
+        div: ['class'],
+        a: ['href', 'class']
+    }
+});
+
 // Remove Cart Product Popover Tool
 $('#hd-cart-products a[data-toggle="popover"]').each(function () {
     $(this).popover({
@@ -336,7 +357,7 @@ $('#hd-cart-products a[data-toggle="popover"]').each(function () {
             div: ['class'],
             a: ['class', 'data-sku']
         }
-    })
+    });
 });
 
 // Remove Address Popover Tool
@@ -357,7 +378,7 @@ $('#hd-address-list a[data-toggle="popover"]').each(function () {
             div: ['class'],
             a: ['class', 'data-addr']
         }
-    })
+    });
 });
 
 // Text to pwd

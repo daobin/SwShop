@@ -5,9 +5,9 @@
     <meta name="renderer" content="webkit|ie-comp|ie-stand"/>
     <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
 
-    <title>Hello Sw Shop</title>
-    <meta name="keywords" content=""/>
-    <meta name="description" content=""/>
+    <title><?php echo $tkd_title;?></title>
+    <meta name="keywords" content="<?php echo $tkd_keywords;?>"/>
+    <meta name="description" content="<?php echo $tkd_description;?>"/>
 
     <!--[if lt IE 9]>
     <script type="text/javascript" src="/static/html5shiv.min.js"></script>

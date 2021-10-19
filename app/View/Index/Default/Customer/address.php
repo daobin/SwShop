@@ -15,6 +15,7 @@ $widget_params['tkd_title'] = 'My Address - ' . $website_name;
             <li><a href="/password.html">Change Password</a></li>
             <li class="active"><a>My Address</a></li>
             <li><a href="/order.html">My Order</a></li>
+            <li><a href="/logout.html">Logout</a></li>
         </ul>
         <div class="page-header">
             <h2 class="hd-color-333">
