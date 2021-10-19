@@ -26,7 +26,7 @@ class SpAdminWidget extends Widget
             ['name' => '促销管理', 'icon' => 'layui-icon-rate', 'sub_navs' =>
                 [
                     ['name' => '广告图', 'icon' => 'layui-icon-picture', 'iframe' => 'banner'],
-                    ['name' => '优惠券', 'icon' => 'layui-icon-gift', 'iframe' => 'coupon'],
+//                    ['name' => '优惠券', 'icon' => 'layui-icon-gift', 'iframe' => 'coupon'],
 //                    ['name' => '限时限量', 'icon' => 'layui-icon-time', 'iframe' => 'time-limited'],
                     ['name' => '系统邮件模板', 'icon' => 'layui-icon-template', 'iframe' => 'email-tpl'],
                 ]

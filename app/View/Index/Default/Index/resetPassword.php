@@ -1,4 +1,5 @@
 <?php
+$widget_params['tkd_title'] = 'Reset Password - ' . $website_name;
 \App\Helper\TemplateHelper::widget('index', 'header', $widget_params ?? []);
 ?>
     <div class="hd-height-15">&nbsp;</div>

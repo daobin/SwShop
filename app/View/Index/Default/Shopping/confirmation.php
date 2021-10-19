@@ -1,4 +1,5 @@
 <?php
+$widget_params['tkd_title'] = 'Confirmation - ' . $website_name;
 $widget_params['shopping_nav_img'] = 'step2.png';
 \App\Helper\TemplateHelper::widget('index', 'header', $widget_params);
 ?>

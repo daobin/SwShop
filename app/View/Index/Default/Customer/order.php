@@ -1,22 +1,23 @@
 <?php
+$widget_params['tkd_title'] = 'My Order - ' . $website_name;
 \App\Helper\TemplateHelper::widget('index', 'header', $widget_params ?? []);
 ?>
     <div class="hd-height-15">&nbsp;</div>
     <div id="hd-crumb" class="container">
         <ol class="breadcrumb">
             <li><a href="/">Home</a></li>
-            <li class="active">Order History</li>
+            <li class="active">My Order</li>
         </ol>
     </div>
     <div class="container">
         <ul class="nav nav-pills nav-justified bg-info hd-border-radius-4">
             <li><a href="/account.html">My Profile</a></li>
             <li><a href="/password.html">Change Password</a></li>
-            <li><a href="/address.html">Address Book</a></li>
-            <li class="active"><a>Order History</a></li>
+            <li><a href="/address.html">My Address</a></li>
+            <li class="active"><a>My Order</a></li>
         </ul>
         <div class="page-header">
-            <h2 class="hd-color-333">Order History</h2>
+            <h2 class="hd-color-333">My Order</h2>
         </div>
         <?php if (empty($order_list)) { ?>
             <div class="row hidden-xs hidden-sm hd-margin-top-130">

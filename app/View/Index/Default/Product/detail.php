@@ -1,7 +1,14 @@
 <?php
-\App\Helper\TemplateHelper::widget('index', 'header', $widget_params ?? []);
-$default_sku = reset($sku_arr);
 $first_img_src = '';
+$default_sku = reset($sku_arr);
+$prod_name = xss_text($prod_info['desc']['product_name'] ?? '');
+
+$tkdTitle = empty($prod_info['desc']['meta_title']) ? $prod_name : $prod_info['desc']['meta_title'];
+$widget_params['tkd_title'] = $prod_name . ' - ' . $website_name;
+$widget_params['tkd_keywords'] = empty($prod_info['desc']['meta_keywords']) ? $prod_name : $prod_info['desc']['meta_keywords'];
+$widget_params['tkd_description'] = empty($prod_info['desc']['meta_description']) ? $prod_name : $prod_info['desc']['meta_description'];
+
+\App\Helper\TemplateHelper::widget('index', 'header', $widget_params ?? []);
 ?>
     <div class="hd-height-15">&nbsp;</div>
     <div id="hd-crumb" class="container">
@@ -57,7 +64,7 @@ $first_img_src = '';
             </div>
             <div class="col-md-6" id="hd-prod-info">
                 <div class="hd-margin-top-30 visible-xs visible-sm">&nbsp;</div>
-                <h1><?php echo xss_text($prod_info['desc']['product_name'] ?? ''); ?></h1>
+                <h1><?php echo $prod_name; ?></h1>
                 <div class="row hd-margin-top-30">
                     <div class="col-md-3 hd-font-weight-bold">SKU :</div>
                     <div class="col-md-9 hd-sku"><?php echo $default_sku; ?></div>

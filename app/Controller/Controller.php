@@ -184,16 +184,15 @@ class Controller
             $template = $template ?? implode('/', [$this->request->module, $this->request->controller, $this->request->action]);
         }
 
-        $cfgBiz = new ConfigBiz();
+        $webInfo = (new ConfigBiz())->getConfigListByGroup($this->shopId, 'web_info');
+        $webInfo = !empty($webInfo) ? array_column($webInfo, 'config_value', 'config_key') : [];
 
-        $websiteName = $cfgBiz->getConfigByKey($this->shopId, 'WEBSITE_NAME');
-        $data['website_name'] = $websiteName['config_value'] ?? $this->host;
-
-        $websiteLogo = $cfgBiz->getConfigByKey($this->shopId, 'WEBSITE_LOGO');
-        $data['website_logo'] = $websiteLogo['config_value'] ?? '';
-
-        $timestamp = (new ConfigBiz())->getConfigByKey($this->shopId, 'TIMESTAMP');
-        $data['timestamp'] = $timestamp['config_value'] ?? '?' . date('YmdH');
+        $data['timestamp'] = $webInfo['TIMESTAMP'] ?? ('?' . date('YmdH'));
+        $data['website_logo'] = $webInfo['WEBSITE_LOGO'] ?? '';
+        $data['website_name'] = $webInfo['WEBSITE_NAME'] ?? $this->host;
+        $data['tkd_title'] = $webInfo['TKD_TITLE'] ?? $data['website_name'];
+        $data['tkd_keywords'] = $webInfo['TKD_KEYWORDS'] ?? $data['website_name'];
+        $data['tkd_description'] = $webInfo['TKD_DESCRIPTION'] ?? $data['website_name'];
 
         $data['customer_id'] = $this->customerId;
         $data['lang_code'] = $this->langCode;
@@ -208,7 +207,10 @@ class Controller
             'timestamp' => $data['timestamp'],
             'customer_id' => $data['customer_id'],
             'cart_qty' => $this->cartQty,
-            'controller' => $this->request->controller
+            'controller' => $this->request->controller,
+            'tkd_title' => $data['tkd_title'],
+            'tkd_keywords' => $data['tkd_keywords'],
+            'tkd_description' => $data['tkd_description'],
         ];
 
         // Device

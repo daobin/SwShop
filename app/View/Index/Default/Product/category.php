@@ -2,6 +2,16 @@
 $widget_params['keywords'] = $keywords ?? '';
 $cate_name = xss_text($cate_info['description']['category_name'] ?? '');
 
+if (!empty($cate_level)) {
+    $tkdTitle = empty($cate_info['description']['meta_title']) ? $cate_name : $cate_info['description']['meta_title'];
+    $widget_params['tkd_title'] = $tkdTitle . ' - ' . $website_name;
+    $widget_params['tkd_keywords'] = empty($cate_info['description']['meta_keywords']) ? $cate_name : $cate_info['description']['meta_keywords'];
+    $widget_params['tkd_description'] = empty($cate_info['description']['meta_description']) ? $cate_name : $cate_info['description']['meta_description'];
+
+} else if (isset($keywords)) {
+    $widget_params['tkd_title'] = 'Search - ' . $widget_params['tkd_title'];
+}
+
 \App\Helper\TemplateHelper::widget('index', 'header', $widget_params ?? []);
 ?>
     <div class="hd-height-15">&nbsp;</div>

@@ -1,4 +1,5 @@
 <?php
+$widget_params['tkd_title'] = 'Change Password - ' . $website_name;
 \App\Helper\TemplateHelper::widget('index', 'header', $widget_params ?? []);
 ?>
     <div class="hd-height-15">&nbsp;</div>
@@ -12,8 +13,8 @@
         <ul class="nav nav-pills nav-justified bg-info hd-border-radius-4">
             <li><a href="/account.html">My Profile</a></li>
             <li class="active"><a>Change Password</a></li>
-            <li><a href="/address.html">Address Book</a></li>
-            <li><a href="/order.html">Order History</a></li>
+            <li><a href="/address.html">My Address</a></li>
+            <li><a href="/order.html">My Order</a></li>
         </ul>
         <div class="page-header">
             <h2 class="hd-color-333">Change Password</h2>

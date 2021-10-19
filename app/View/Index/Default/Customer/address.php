@@ -1,23 +1,24 @@
 <?php
+$widget_params['tkd_title'] = 'My Address - ' . $website_name;
 \App\Helper\TemplateHelper::widget('index', 'header', $widget_params ?? []);
 ?>
     <div class="hd-height-15">&nbsp;</div>
     <div id="hd-crumb" class="container">
         <ol class="breadcrumb">
             <li><a href="/">Home</a></li>
-            <li class="active">Address Book</li>
+            <li class="active">My Address</li>
         </ol>
     </div>
     <div class="container">
         <ul class="nav nav-pills nav-justified bg-info hd-border-radius-4">
             <li><a href="/account.html">My Profile</a></li>
             <li><a href="/password.html">Change Password</a></li>
-            <li class="active"><a>Address Book</a></li>
-            <li><a href="/order.html">Order History</a></li>
+            <li class="active"><a>My Address</a></li>
+            <li><a href="/order.html">My Order</a></li>
         </ul>
         <div class="page-header">
             <h2 class="hd-color-333">
-                Address Book
+                My Address
                 <small class="hd-font-size-18 hd-margin-left-15 hidden-xs hidden-sm">
                     <?php echo xss_text('max_10_shopping_address', $lang_code); ?>
                 </small>

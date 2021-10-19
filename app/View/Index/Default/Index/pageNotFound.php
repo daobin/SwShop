@@ -5,7 +5,7 @@
     <meta name="renderer" content="webkit|ie-comp|ie-stand"/>
     <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
 
-    <title>Hello Sw Shop</title>
+    <title>Page Not Found</title>
     <link rel="stylesheet" href="/static/bootstrap/css/bootstrap.css"/>
     <style>
         body img {
