@@ -56,6 +56,7 @@ RouteHelper::get('/page-not-found', 'Index.Index.pageNotFound');
 
 // 店铺管理路由配置
 RouteHelper::get('/spadmin', 'SpAdmin.Index.index');
+RouteHelper::get('/spadmin/world-times', 'SpAdmin.Index.worldTimes');
 RouteHelper::get('/spadmin/dashboard', 'SpAdmin.Index.dashboard');
 RouteHelper::get('/spadmin/login', 'SpAdmin.Index.login');
 RouteHelper::post('/spadmin/login', 'SpAdmin.Index.loginProcess');
@@ -101,5 +102,8 @@ RouteHelper::get('/spadmin/time-limited', 'SpAdmin.TimeLimited.index');
 RouteHelper::any('/spadmin/time-limited/<limited_id>', 'SpaAdmin.TimeLimited.detail', ['limited_id' => '\d+']);
 RouteHelper::get('/spadmin/email-tpl', 'SpAdmin.Email.emailTpl');
 RouteHelper::any('/spadmin/email-tpl/<template>', 'SpAdmin.Email.emailTplDetail', ['template' => '\w+']);
+RouteHelper::get('/spadmin/admin', 'SpAdmin.Admin.index');
+RouteHelper::any('/spadmin/admin/<admin_id>', 'SpAdmin.Admin.detail', ['admin_id' => '\d+']);
+RouteHelper::post('/spadmin/admin/delete', 'SpAdmin.Admin.delete');
 
 return [];

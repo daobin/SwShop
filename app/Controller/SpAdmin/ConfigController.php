@@ -26,6 +26,10 @@ class ConfigController extends Controller
             if (!empty($cfgList)) {
                 foreach ($cfgList as &$cfgInfo) {
                     $cfgInfo['config_value'] = $cfgInfo['config_value'] ?? '';
+                    if($cfgInfo['config_key'] == 'TIMEZONE'){
+                        $timezones = get_timezones();
+                        $cfgInfo['config_value'] = $timezones[$cfgInfo['config_value']] ?? $cfgInfo['config_value'];
+                    }
                     switch (strtolower($cfgInfo['value_type'])) {
                         case 'password':
                             $cfgInfo['config_value'] = hide_chars($cfgInfo['config_value']);

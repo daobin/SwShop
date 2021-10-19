@@ -1,8 +1,8 @@
 <?php
-\App\Helper\TemplateHelper::widget('sp_admin', 'header', ['show_top_line' => false, 'timestamp' => $timestamp ?? '']);
+\App\Helper\TemplateHelper::widget('sp_admin', 'header', ['timestamp' => $timestamp ?? '']);
 ?>
     <div class="layui-fluid hd-padding-top30 hd-padding-bottom30">
-        <div class="hd-margin-top-30">
+        <div class="hd-margin-top-60">
             <div class="layui-card">
                 <div class="layui-card-header layui-font-16">今日统计</div>
                 <div class="layui-card-body">

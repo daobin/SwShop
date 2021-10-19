@@ -22,6 +22,15 @@ function get_world_times(): array
     return [$cnTime, $usTime, $ukTime];
 }
 
+function get_timezones(): array
+{
+    return [
+        'Asia/Shanghai' => '中国北京',
+        'America/New_York' => '美国纽约',
+        'Europe/London' => '英国伦敦',
+    ];
+}
+
 // 生成指定开头字符的随机字符串
 function build_fixed_pre_random(string $fixedPre = 'HD'): string
 {

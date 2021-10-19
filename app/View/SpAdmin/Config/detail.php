@@ -46,7 +46,17 @@
                             echo '<div id="value_select"></div>';
                             break;
                         default:
-                            echo '<textarea class="layui-textarea" name="config_value">' . $config_value . '</textarea>';
+                            if ($config_key == 'TIMEZONE') {
+                                echo '<select class="layui-select" name="config_value">';
+                                $timezones = get_timezones();
+                                foreach ($timezones as $timezone => $timezoneText) {
+                                    $selected = $timezone == $config_value ? ' selected ' : '';
+                                    echo '<option ', $selected, ' value="', $timezone, '">', $timezoneText, '</option>';
+                                }
+                                echo '</select>';
+                            } else {
+                                echo '<textarea class="layui-textarea" name="config_value">' . $config_value . '</textarea>';
+                            }
                     }
                     ?>
                 </div>

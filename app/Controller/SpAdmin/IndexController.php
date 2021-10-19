@@ -41,6 +41,17 @@ class IndexController extends Controller
         ]);
     }
 
+    public function worldTimes()
+    {
+        list($cnTime, $usTime, $ukTime) = get_world_times();
+
+        return [
+            'cn_time' => $cnTime,
+            'us_time' => $usTime,
+            'uk_time' => $ukTime
+        ];
+    }
+
     public function dashboard()
     {
         $customerBiz = new CustomerBiz($this->langCode);
@@ -146,10 +157,10 @@ class IndexController extends Controller
                     'payment_order_total' => $orderList[$days[$idx]]['payment_total'] ?? 0,
                     'payment_customer_price' => 0
                 ];
-                if($todayStatistics['order_count'] > 0){
+                if ($todayStatistics['order_count'] > 0) {
                     $todayStatistics['customer_price'] = $todayStatistics['order_total'] / $todayStatistics['order_count'];
                 }
-                if($todayStatistics['payment_order_count'] > 0){
+                if ($todayStatistics['payment_order_count'] > 0) {
                     $todayStatistics['payment_customer_price'] = $todayStatistics['payment_order_total'] / $todayStatistics['payment_order_count'];
                 }
             }

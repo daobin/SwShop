@@ -94,7 +94,8 @@ class HttpServer
 
             // 时区设置
             $timezone = (new ConfigBiz())->getConfigByKey($request->shopId, 'TIMEZONE');
-            $timezone = !empty($timezone['config_value']) ? $timezone['config_value'] : ConfigHelper::get('app.timezone', 'UTC');
+            $timezone = !empty($timezone['config_value']) ? $timezone['config_value'] : ConfigHelper::get('app.timezone', 'America/New_York');
+            print_r($timezone.PHP_EOL);
             date_default_timezone_set($timezone);
 
             // 路由设置

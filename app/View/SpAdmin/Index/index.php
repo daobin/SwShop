@@ -21,7 +21,7 @@
         // 页内 Iframe 导航映射
         var iframeNavMaps = [];
 
-        layui.use(['element'], function () {
+        layui.use(['element', 'jquery'], function () {
             let element = layui.element;
             let iframe_reload = null;
 
@@ -90,15 +90,15 @@
                 <li class="layui-nav-item hd-margin-left-30"></li>
                 <li class="layui-nav-item hd-margin-left-30">
                     <span>北京</span>
-                    <span><?php echo $cn_time ?? '--'; ?></span>
+                    <span id="hd-time-cn"><?php echo $cn_time ?? '--'; ?></span>
                 </li>
                 <li class="layui-nav-item hd-margin-left-30">
                     <span>纽约</span>
-                    <span><?php echo $us_time ?? '--'; ?></span>
+                    <span id="hd-time-us"><?php echo $us_time ?? '--'; ?></span>
                 </li>
                 <li class="layui-nav-item hd-margin-left-30">
                     <span>伦敦</span>
-                    <span><?php echo $uk_time ?? '--'; ?></span>
+                    <span id="hd-time-uk"><?php echo $uk_time ?? '--'; ?></span>
                 </li>
             </ul>
             <ul class="layui-nav layui-layout-right">
@@ -124,5 +124,16 @@
         </div>
     </div>
 </div>
+<script>
+    layui.use(['jquery'], function () {
+        setInterval(function () {
+            $.get('/spadmin/world-times', function(times){
+                $('#hd-time-cn').text(times.cn_time);
+                $('#hd-time-us').text(times.us_time);
+                $('#hd-time-uk').text(times.uk_time);
+            });
+        }, 30000);
+    });
+</script>
 </body>
 </html>

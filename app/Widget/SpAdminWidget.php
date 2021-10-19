@@ -49,6 +49,7 @@ class SpAdminWidget extends Widget
                     ['name' => '货运方式', 'icon' => 'layui-icon-release', 'iframe' => 'shipping'],
                 ]
             ],
+            ['name' => '管理员', 'icon' => 'layui-icon-group', 'iframe' => 'admin'],
         ];
         return $this->render('left_nav', $params);
     }

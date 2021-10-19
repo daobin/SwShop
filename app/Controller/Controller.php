@@ -19,6 +19,7 @@ class Controller
      * @var SessionHelper
      */
     protected $session;
+    protected $operatorId;
     protected $operator;
     protected $customerId;
     protected $shippingAddressId;
@@ -48,6 +49,7 @@ class Controller
 
         $spAdminInfo = $this->session->get('sp_admin_info', '');
         $spAdminInfo = $spAdminInfo ? json_decode($spAdminInfo, true) : [];
+        $this->operatorId = $spAdminInfo['admin_id'] ?? 0;
         $this->operator = $spAdminInfo['account'] ?? '';
 
         $customerInfo = $this->session->get('sp_customer_info');
