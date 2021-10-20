@@ -537,7 +537,7 @@ class DbHelper
                 $preSql = 'DELETE FROM ' . $this->sqlBuild['table'] . ' WHERE ' . $preSql;
                 break;
             case 'INSERT':
-                if (empty($data['shop_id'])) {
+                if (substr($this->sqlBuild['table'], 0, 8) != '`hd_sys_' && empty($data['shop_id'])) {
                     throw new \PDOException('SQL: Data Invalid');
                 }
 

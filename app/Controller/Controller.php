@@ -19,6 +19,8 @@ class Controller
      * @var SessionHelper
      */
     protected $session;
+    protected $sysOperatorId;
+    protected $sysOperator;
     protected $operatorId;
     protected $operator;
     protected $customerId;
@@ -46,6 +48,11 @@ class Controller
     private function initParams()
     {
         $this->session = new SessionHelper($this->request, $this->response);
+
+        $spAdminInfo = $this->session->get('sp_bind_info', '');
+        $spAdminInfo = $spAdminInfo ? json_decode($spAdminInfo, true) : [];
+        $this->sysOperatorId = $spAdminInfo['admin_id'] ?? 0;
+        $this->sysOperator = $spAdminInfo['account'] ?? '';
 
         $spAdminInfo = $this->session->get('sp_admin_info', '');
         $spAdminInfo = $spAdminInfo ? json_decode($spAdminInfo, true) : [];

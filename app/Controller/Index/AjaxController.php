@@ -16,6 +16,7 @@ use App\Biz\ShoppingBiz;
 use App\Controller\Controller;
 use App\Helper\EmailHelper;
 use App\Helper\LanguageHelper;
+use App\Helper\SafeHelper;
 
 class AjaxController extends Controller
 {
@@ -348,6 +349,48 @@ class AjaxController extends Controller
         return ['status' => 'fail', 'msg' => LanguageHelper::get('remove_failed', $this->langCode)];
     }
 
+    public function encode()
+    {
+        if ($this->request->isPost) {
+            $res = [];
+
+            $redisHost = $this->post('redis_host');
+            if ($redisHost != '') {
+                $sql = 'update `hd_config` set `config_value` = "%s" where `shop_id` = %d and `config_key` = "REDIS_HOST";';
+                $res[] = sprintf($sql, $redisHost, $this->shopId);
+            }
+
+            $redisPort = (int)$this->post('redis_port', 0);
+            if ($redisHost > 0) {
+                $sql = 'update `hd_config` set `config_value` = "%s" where `shop_id` = %d and `config_key` = "REDIS_PORT";';
+                $res[] = sprintf($sql, $redisPort, $this->shopId);
+            }
+
+            $redisAuth = $this->post('redis_auth');
+            if ($redisAuth != '') {
+                $sql = 'update `hd_config` set `config_value` = "%s" where `shop_id` = %d and `config_key` = "REDIS_AUTH";';
+                $res[] = sprintf($sql, SafeHelper::encodeString($redisAuth), $this->shopId);
+            }
+
+            $redisExpire = (int)$this->post('redis_expire', 0);
+            if ($redisExpire > 0) {
+                $sql = 'update `hd_config` set `config_value` = "%s" where `shop_id` = %d and `config_key` = "REDIS_EXPIRE";';
+                $res[] = sprintf($sql, $redisExpire, $this->shopId);
+            }
+
+            return empty($res) ? ['msg' => LanguageHelper::get('invalid_request', $this->langCode)] : $res;
+        }
+
+        $string = $this->get('string');
+        if ($string != '') {
+            return [
+                'encode' => SafeHelper::encodeString($string)
+            ];
+        }
+
+        return ['msg' => LanguageHelper::get('invalid_request', $this->langCode)];
+    }
+
     public function getOrderNumbersByDays()
     {
         $days = $this->get('days', 0);
@@ -387,6 +430,17 @@ class AjaxController extends Controller
         return [
             'status' => 'success',
             'zone_list' => $zoneList ? $zoneList : []
+        ];
+    }
+
+    public function worldTimes()
+    {
+        list($cnTime, $usTime, $ukTime) = get_world_times();
+
+        return [
+            'cn_time' => $cnTime,
+            'us_time' => $usTime,
+            'uk_time' => $ukTime
         ];
     }
 }

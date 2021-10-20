@@ -41,17 +41,6 @@ class IndexController extends Controller
         ]);
     }
 
-    public function worldTimes()
-    {
-        list($cnTime, $usTime, $ukTime) = get_world_times();
-
-        return [
-            'cn_time' => $cnTime,
-            'us_time' => $usTime,
-            'uk_time' => $ukTime
-        ];
-    }
-
     public function dashboard()
     {
         $customerBiz = new CustomerBiz($this->langCode);

@@ -43,7 +43,7 @@
                 } else {
                     iframeNavMaps.push(lay_id);
 
-                    let iframeHtml = '<iframe src="/spadmin/' + iframe + '.html"></iframe>';
+                    let iframeHtml = '<iframe src="/spbind/' + iframe + '.html"></iframe>';
                     element.tabAdd('iframe', {
                         id: lay_id,
                         title: $(this).html(),
@@ -68,8 +68,8 @@
                 iframeNavMaps.splice(data.index, 1);
             });
 
-            // 初始化数据表盘
-            $('#hd-main .layui-nav .layui-nav-item a[iframe=dashboard]').click();
+            // 初始化店铺绑定列表
+            $('#hd-main .layui-nav .layui-nav-item a[iframe=shop]').click();
         });
     </script>
 </head>
@@ -78,17 +78,10 @@
     <div class="layui-layout-admin">
         <div class="layui-header">
             <div class="layui-logo hd-color-white">
-                商城后台管理系统
+                店铺绑定管理系统
             </div>
             <ul class="layui-nav layui-layout-left">
                 <li class="layui-nav-item">
-                    <a to-iframe="customer">今日用户<span class="layui-badge"><?php echo $today_customer_cnt ?? 0; ?></span></a>
-                </li>
-                <li class="layui-nav-item hd-margin-left-30">
-                    <a to-iframe="order">今日订单<span class="layui-badge"><?php echo $today_order_cnt ?? 0; ?></span></a>
-                </li>
-                <li class="layui-nav-item hd-margin-left-30"></li>
-                <li class="layui-nav-item hd-margin-left-30">
                     <span>北京</span>
                     <span id="hd-time-cn"><?php echo $cn_time ?? '--'; ?></span>
                 </li>
@@ -103,12 +96,9 @@
             </ul>
             <ul class="layui-nav layui-layout-right">
                 <li class="layui-nav-item">
-                    <a href="/" target="_blank"><i class="layui-icon layui-icon-home"></i> 网站首页</a>
-                </li>
-                <li class="layui-nav-item">
                     <a><img src="//t.cn/RCzsdCq" class="layui-nav-img"/><?php echo xss_text($admin_name); ?></a>
                     <dl class="layui-nav-child">
-                        <dd><a href="/spadmin/logout.html" class="hd-color-red">安全退出</a></dd>
+                        <dd><a href="/spbind/logout.html" class="hd-color-red">安全退出</a></dd>
                     </dl>
                 </li>
             </ul>
@@ -116,7 +106,7 @@
     </div>
 </div>
 <div id="hd-main">
-    <?php \App\Helper\TemplateHelper::widget('sp_admin', 'leftNav'); ?>
+    <?php \App\Helper\TemplateHelper::widget('sp_bind', 'leftNav'); ?>
     <div class="hd-main-content">
         <div class="layui-tab" lay-allowClose="true" lay-filter="iframe">
             <ul class="layui-tab-title"></ul>

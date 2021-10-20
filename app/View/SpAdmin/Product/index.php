@@ -70,16 +70,18 @@
                         {field: 'product_id', hide: true},
                         {field: 'product_name', title: '商品名称', align: 'center'},
                         {
-                            title: '商品状态', align: 'center', templet: function (d) {
-                            switch (d.product_status) {
-                                case 1:
-                                    return '上架中';
-                                case 2:
-                                    return '<div class="layui-bg-red">下架中</div>';
-                                default:
-                                    return '<div class="layui-bg-orange">待处理</div>';
+                            title: '商品状态',
+                            align: 'center',
+                            templet: function (d) {
+                                switch (d.product_status) {
+                                    case 1:
+                                        return '上架中';
+                                    case 2:
+                                        return '<div class="layui-bg-red">下架中</div>';
+                                    default:
+                                        return '<div class="layui-bg-orange">待处理</div>';
+                                }
                             }
-                        }
                         },
                         {field: 'cate_level', title: '所属类目', align: 'center'},
                         {field: 'price', title: '默认价格（<?php echo $currency_symbol;?>）', align: 'center'},

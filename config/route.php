@@ -20,6 +20,8 @@ RouteHelper::post('/delete-address', 'Index.Ajax.deleteAddress');
 RouteHelper::post('/customer-service', 'Index.Ajax.customerService');
 RouteHelper::get('/zones', 'Index.Ajax.getZoneList');
 RouteHelper::get('/order-numbers', 'Index.Ajax.getOrderNumbersByDays');
+RouteHelper::get('/world-times', 'Index.Ajax.worldTimes');
+RouteHelper::any('/encode', 'Index.Ajax.encode');
 
 RouteHelper::get('/', 'Index.Index.index');
 RouteHelper::any('/forgot-password', 'Index.Index.forgotPassword');
@@ -56,7 +58,6 @@ RouteHelper::get('/page-not-found', 'Index.Index.pageNotFound');
 
 // 店铺管理路由配置
 RouteHelper::get('/spadmin', 'SpAdmin.Index.index');
-RouteHelper::get('/spadmin/world-times', 'SpAdmin.Index.worldTimes');
 RouteHelper::get('/spadmin/dashboard', 'SpAdmin.Index.dashboard');
 RouteHelper::get('/spadmin/login', 'SpAdmin.Index.login');
 RouteHelper::post('/spadmin/login', 'SpAdmin.Index.loginProcess');
@@ -106,7 +107,7 @@ RouteHelper::get('/spadmin/admin', 'SpAdmin.Admin.index');
 RouteHelper::any('/spadmin/admin/<admin_id>', 'SpAdmin.Admin.detail', ['admin_id' => '\d+']);
 RouteHelper::post('/spadmin/admin/delete', 'SpAdmin.Admin.delete');
 
-// 域名站点绑定
+// 店铺绑定路由配置
 RouteHelper::get('/spbind', 'SpBind.Index.index');
 RouteHelper::get('/spbind/shop', 'SpBind.Shop.index');
 RouteHelper::any('/spbind/shop/<shop_id>', 'SpBind.Shop.detail', ['shop_id' => '\w+']);
@@ -114,5 +115,8 @@ RouteHelper::post('/spbind/shop/delete', 'SpBind.Shop.delete');
 RouteHelper::get('/spbind/login', 'SpBind.Index.login');
 RouteHelper::post('/spbind/login', 'SpBind.Index.loginProcess');
 RouteHelper::get('/spbind/logout', 'SpBind.Index.logout');
+RouteHelper::get('/spbind/admin', 'SpBind.Admin.index');
+RouteHelper::any('/spbind/admin/<admin_id>', 'SpBind.Admin.detail', ['admin_id' => '\d+']);
+RouteHelper::post('/spbind/admin/delete', 'SpBind.Admin.delete');
 
 return [];

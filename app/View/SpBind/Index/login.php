@@ -13,7 +13,7 @@
         body {
             width: 100%;
             overflow: hidden;
-            background: url("/static/spadmin/login.bg.jpg") center no-repeat;
+            background: url("/static/spadmin/bg.jpg") center no-repeat;
         }
 
         form {

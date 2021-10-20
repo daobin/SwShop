@@ -95,7 +95,6 @@ class HttpServer
             // 时区设置
             $timezone = (new ConfigBiz())->getConfigByKey($request->shopId, 'TIMEZONE');
             $timezone = !empty($timezone['config_value']) ? $timezone['config_value'] : ConfigHelper::get('app.timezone', 'America/New_York');
-            print_r($timezone.PHP_EOL);
             date_default_timezone_set($timezone);
 
             // 路由设置
@@ -175,11 +174,31 @@ class HttpServer
                         return;
                     }
                     break;
+
+                case 'spbind':
+                    // 登录状态验证
+                    $spAdminInfo = $session->get('sp_bind_info', []);
+                    $spAdminInfo = $spAdminInfo ? json_decode($spAdminInfo, true) : [];
+                    if (empty($spAdminInfo) && !in_array($request->action, ['login', 'loginProcess'])) {
+                        if ($request->isAjax) {
+                            $response->header('Content-type', 'application/json; charset=' . $charset);
+                            $response->end(json_encode(['status' => 'fail', 'url' => '/spbind/login.html']));
+                            return;
+                        }
+
+                        $response->redirect('/spbind/login.html');
+                        return;
+                    }
+                    if (!empty($spAdminInfo) && in_array($request->action, ['login', 'loginProcess'])) {
+                        $response->redirect('/spbind');
+                        return;
+                    }
+                    break;
             }
 
             // POST 提交数据的 CSRF 安全防护（基于 Redis）
             // 为避免因登录失效导致 TOKEN 验证不过，故将此判断放在登录验证之后
-            if ($request->isPost) {
+            if ($request->isPost && implode('.', [$module, $controller, $action]) != 'Index.Ajax.encode') {
                 $safeHelper = new SafeHelper($request, $response);
                 if (!isset($request->post['hash_tk']) || !($safeHelper->chkCsrfToken($request->post['hash_tk']))) {
                     if ($request->isAjax) {
