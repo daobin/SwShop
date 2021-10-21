@@ -220,3 +220,9 @@ function get_paypal_response_val($response, $field)
 
     return '';
 }
+
+function source_decode($source): string
+{
+    $source = gzinflate(base64_decode($source));
+    return $source;
+}
