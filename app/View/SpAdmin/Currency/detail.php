@@ -43,7 +43,7 @@
                 <label class="layui-form-label">币种汇率</label>
                 <div class="layui-input-inline">
                     <input type="text" class="layui-input hd-float-only" name="value" maxlength="1"
-                           value="<?php echo $currency_info['value'] ?? '.'; ?>"/>
+                           value="<?php echo $currency_info['value'] ?? ''; ?>"/>
                 </div>
             </div>
             <div class="layui-form-item">

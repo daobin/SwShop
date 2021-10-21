@@ -19,9 +19,7 @@ class Controller
      * @var SessionHelper
      */
     protected $session;
-    protected $sysOperatorId;
     protected $sysOperator;
-    protected $operatorId;
     protected $operator;
     protected $customerId;
     protected $shippingAddressId;
@@ -51,12 +49,10 @@ class Controller
 
         $spAdminInfo = $this->session->get('sp_bind_info', '');
         $spAdminInfo = $spAdminInfo ? json_decode($spAdminInfo, true) : [];
-        $this->sysOperatorId = $spAdminInfo['admin_id'] ?? 0;
         $this->sysOperator = $spAdminInfo['account'] ?? '';
 
         $spAdminInfo = $this->session->get('sp_admin_info', '');
         $spAdminInfo = $spAdminInfo ? json_decode($spAdminInfo, true) : [];
-        $this->operatorId = $spAdminInfo['admin_id'] ?? 0;
         $this->operator = $spAdminInfo['account'] ?? '';
 
         $customerInfo = $this->session->get('sp_customer_info');
@@ -103,7 +99,7 @@ class Controller
 
     private function chkClientIp()
     {
-        $ipDb = new Database(ROOT_DIR . 'upload/IP-COUNTRY-SAMPLE.BIN');
+        $ipDb = new Database(ROOT_DIR . 'resource/IP-COUNTRY-SAMPLE.BIN');
         $ipParse = $ipDb->lookup($this->request->ip);
 
         $this->ip = $this->request->ipLong ?? 0;

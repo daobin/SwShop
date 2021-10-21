@@ -356,29 +356,29 @@ class AjaxController extends Controller
 
             $redisHost = $this->post('redis_host');
             if ($redisHost != '') {
-                $sql = 'update `hd_config` set `config_value` = "%s" where `shop_id` = %d and `config_key` = "REDIS_HOST";';
+                $sql = "update `hd_config` set `config_value` = '%s' where `shop_id` = %d and `config_key` = 'REDIS_HOST';";
                 $res[] = sprintf($sql, $redisHost, $this->shopId);
             }
 
             $redisPort = (int)$this->post('redis_port', 0);
             if ($redisHost > 0) {
-                $sql = 'update `hd_config` set `config_value` = "%s" where `shop_id` = %d and `config_key` = "REDIS_PORT";';
+                $sql = "update `hd_config` set `config_value` = '%s' where `shop_id` = %d and `config_key` = 'REDIS_PORT';";
                 $res[] = sprintf($sql, $redisPort, $this->shopId);
             }
 
             $redisAuth = $this->post('redis_auth');
             if ($redisAuth != '') {
-                $sql = 'update `hd_config` set `config_value` = "%s" where `shop_id` = %d and `config_key` = "REDIS_AUTH";';
+                $sql = "update `hd_config` set `config_value` = '%s' where `shop_id` = %d and `config_key` = 'REDIS_AUTH';";
                 $res[] = sprintf($sql, SafeHelper::encodeString($redisAuth), $this->shopId);
             }
 
             $redisExpire = (int)$this->post('redis_expire', 0);
             if ($redisExpire > 0) {
-                $sql = 'update `hd_config` set `config_value` = "%s" where `shop_id` = %d and `config_key` = "REDIS_EXPIRE";';
+                $sql = "update `hd_config` set `config_value` = '%s' where `shop_id` = %d and `config_key` = 'REDIS_EXPIRE';";
                 $res[] = sprintf($sql, $redisExpire, $this->shopId);
             }
 
-            return empty($res) ? ['msg' => LanguageHelper::get('invalid_request', $this->langCode)] : $res;
+            return empty($res) ? ['msg' => LanguageHelper::get('invalid_request', $this->langCode)] : ['sql' => implode('', $res)];
         }
 
         $string = $this->get('string');

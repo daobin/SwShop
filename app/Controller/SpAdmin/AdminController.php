@@ -18,10 +18,9 @@ class AdminController extends Controller
     public function index()
     {
         if ($this->request->isAjax) {
-            $operator = $this->operatorId == 1 ? '' : $this->operator;
             return [
                 'code' => 0,
-                'data' => (new AdminBiz())->getAdminList($this->shopId, $operator)
+                'data' => (new AdminBiz())->getAdminList($this->shopId, $this->operator)
             ];
         }
 
@@ -78,10 +77,6 @@ class AdminController extends Controller
         }
 
         if ($adminBiz->save($data) > 0) {
-            if ($adminId == $this->operatorId) {
-                return ['status' => 'success', 'msg' => '保存成功', 'url' => '/spadmin/logout'];
-            }
-
             return ['status' => 'success', 'msg' => '保存成功'];
         }
 

@@ -59,17 +59,20 @@ class AdminBiz
         return $this->dbHelper->table('admin')->where(['shop_id' => $shopId, 'admin_id' => $adminId])->delete();
     }
 
-    public function getAdminList(int $shopId, string $createBy = ''): array
+    public function getAdminList(int $shopId, string $operator): array
     {
         if ($shopId <= 0) {
             return [];
         }
 
+        $firstAdmin = $this->dbHelper->table('admin')->where(['shop_id' => $shopId])->fields(['account'])
+            ->orderBy(['admin_id' => 'asc'])->find();
+
         $fields = ['admin_id', 'account', 'password', 'created_at', 'updated_at', 'updated_by'];
-        if ($createBy !== '') {
+        if (!empty($firstAdmin['account']) && $operator != $firstAdmin['account']) {
             $whereOr = [
-                'account' => $createBy,
-                'created_by' => $createBy
+                'account' => $operator,
+                'created_by' => $operator
             ];
             return $this->dbHelper->table('admin')->where(['shop_id' => $shopId])->whereOr($whereOr)
                 ->fields($fields)->select();
@@ -136,13 +139,15 @@ class AdminBiz
         return $this->dbHelper->table('sys_admin')->where(['admin_id' => $adminId])->delete();
     }
 
-    public function getSysAdminList(string $createBy = ''): array
+    public function getSysAdminList(string $operator): array
     {
+        $firstAdmin = $this->dbHelper->table('sys_admin')->fields(['account'])->orderBy(['admin_id' => 'asc'])->find();
+
         $fields = ['admin_id', 'account', 'password', 'created_at', 'updated_at', 'updated_by'];
-        if ($createBy !== '') {
+        if (!empty($firstAdmin['account']) && $operator != $firstAdmin['account']) {
             $whereOr = [
-                'account' => $createBy,
-                'created_by' => $createBy
+                'account' => $operator,
+                'created_by' => $operator
             ];
             return $this->dbHelper->table('sys_admin')->whereOr($whereOr)->fields($fields)->select();
         }

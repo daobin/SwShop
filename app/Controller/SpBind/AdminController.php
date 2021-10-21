@@ -18,10 +18,9 @@ class AdminController extends Controller
     public function index()
     {
         if ($this->request->isAjax) {
-            $operator = $this->sysOperatorId == 1 ? '' : $this->sysOperator;
             return [
                 'code' => 0,
-                'data' => (new AdminBiz())->getSysAdminList($operator)
+                'data' => (new AdminBiz())->getSysAdminList($this->sysOperator)
             ];
         }
 
@@ -77,10 +76,6 @@ class AdminController extends Controller
         }
 
         if ($adminBiz->saveSysAdmin($data) > 0) {
-            if ($adminId == $this->sysOperatorId) {
-                return ['status' => 'success', 'msg' => '保存成功', 'url' => '/spbind/logout'];
-            }
-
             return ['status' => 'success', 'msg' => '保存成功'];
         }
 
