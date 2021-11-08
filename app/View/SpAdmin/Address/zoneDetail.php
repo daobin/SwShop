@@ -9,7 +9,7 @@
                     <select name="zone_id">
                         <option value="">请选择州</option>
                         <?php
-                        if ($zone_list) {
+                        if (!empty($zone_list)) {
                             foreach ($zone_list as $id => $zone) {
                                 if ($zone_id == $id) {
                                     echo '<option value="', $id, '" selected>', $zone['zone_name'], '</option>';

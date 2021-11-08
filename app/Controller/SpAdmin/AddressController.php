@@ -80,6 +80,7 @@ class AddressController extends Controller
             'iso_code_2' => $sysCountry['iso_code_2'],
             'iso_code_3' => $sysCountry['iso_code_3'],
             'icon_path' => $sysCountry['icon_path'],
+            'init_zone' => isset($this->request->post['init_zone']) ? 1 : 0,
             'is_high_risk' => isset($this->request->post['is_high_risk']) ? 1 : 0,
             'sort' => $this->post('sort', 0),
             'operator' => $this->operator
@@ -155,7 +156,7 @@ class AddressController extends Controller
             'country_id' => $countryId,
             'zone_id' => $zoneId,
             'zone_info' => $addBiz->getZoneById($this->shopId, $zoneId),
-            'zone_list' => $addBiz->getSysZoneList(),
+            'zone_list' => $addBiz->getSysZoneList($countryId),
             'csrf_token' => (new SafeHelper($this->request, $this->response))->buildCsrfToken('BG', 'zone' . $zoneId)
         ];
 

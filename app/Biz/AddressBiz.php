@@ -14,11 +14,13 @@ use App\Helper\DbHelper;
 class AddressBiz
 {
     private $dbHelper;
+    private $sysCountryFields;
     public $count;
 
     public function __construct()
     {
         $this->dbHelper = new DbHelper();
+        $this->sysCountryFields = ['country_id', 'country_name', 'iso_code_2', 'iso_code_3', 'sort', 'icon_path', 'is_high_risk', 'updated_at', 'updated_by'];
         $this->count = 0;
     }
 
@@ -52,7 +54,41 @@ class AddressBiz
                 ->where(['shop_id' => $shopId, 'country_id' => $origCountryId])->update($data);
         }
 
-        return $this->dbHelper->table('country')->insert($data);
+        if (empty($country['init_zone'])) {
+            return $this->dbHelper->table('country')->insert($data);
+        }
+
+        $res = 1;
+        $this->dbHelper->beginTransaction();
+        try {
+            $this->dbHelper->table('country')->insert($data);
+
+            $zoneList = $this->getSysZoneList((int)$country['country_id']);
+            if (!empty($zoneList)) {
+                foreach ($zoneList as $zone) {
+                    $this->dbHelper->table('zone')->insert([
+                        'shop_id' => $shopId,
+                        'zone_id' => $zone['zone_id'],
+                        'zone_name' => $zone['zone_name'],
+                        'country_id' => $country['country_id'],
+                        'sort' => $zone['sort'],
+                        'created_at' => $time,
+                        'created_by' => $country['operator'] ?? '',
+                        'updated_at' => $time,
+                        'updated_by' => $country['operator'] ?? ''
+                    ]);
+                }
+            }
+
+
+            $this->dbHelper->commit();
+
+        } catch (\Throwable $e) {
+            $res = 0;
+            $this->dbHelper->rollBack();
+        }
+
+        return $res;
     }
 
     public function getCountryById(int $shopId, int $countryId): array
@@ -93,23 +129,64 @@ class AddressBiz
             return 0;
         }
 
-        $this->dbHelper->table('zone')
-            ->where(['shop_id' => $shopId, 'country_id' => $countryId])->delete();
+        $res = 1;
+        $this->dbHelper->beginTransaction();
+        try {
+            $this->dbHelper->table('zone')
+                ->where(['shop_id' => $shopId, 'country_id' => $countryId])->delete();
 
-        return $this->dbHelper->table('country')
-            ->where(['shop_id' => $shopId, 'country_id' => $countryId])->delete();
+            $this->dbHelper->table('country')
+                ->where(['shop_id' => $shopId, 'country_id' => $countryId])->delete();
+
+            $this->dbHelper->commit();
+
+        } catch (\Throwable $e) {
+            $res = 0;
+            $this->dbHelper->rollBack();
+        }
+
+        return $res;
+    }
+
+    public function saveSysCountry(array $country): int
+    {
+        if (empty($country['iso_code_2']) || empty($country['iso_code_3']) || empty($country['country_name'])) {
+            return 0;
+        }
+
+        $time = time();
+
+        $data = [
+            'country_id' => $country['country_id'],
+            'country_name' => $country['country_name'],
+            'iso_code_2' => $country['iso_code_2'],
+            'iso_code_3' => $country['iso_code_3'],
+            'created_at' => $time,
+            'created_by' => $country['operator'] ?? '',
+            'updated_at' => $time,
+            'updated_by' => $country['operator'] ?? ''
+        ];
+
+        $countryInfo = $this->getSysCountryById($country['country_id']);
+        if (!empty($countryInfo)) {
+            unset($data['created_at'], $data['created_by']);
+
+            return $this->dbHelper->table('sys_country')
+                ->where(['country_id' => $countryInfo['country_id']])->update($data);
+        }
+
+        return $this->dbHelper->table('sys_country')->insert($data);
     }
 
     public function getSysCountryList(): array
     {
-        $fields = ['country_id', 'country_name', 'iso_code_2', 'iso_code_3', 'sort', 'icon_path', 'is_high_risk'];
-        $currencyList = $this->dbHelper->table('sys_country')->fields($fields)
-            ->orderBy(['sort' => 'asc'])->select();
-        if (empty($currencyList)) {
+        $countryList = $this->dbHelper->table('sys_country')->fields($this->sysCountryFields)
+            ->orderBy(['sort' => 'asc', 'iso_code_2' => 'asc'])->select();
+        if (empty($countryList)) {
             return [];
         }
 
-        return array_column($currencyList, null, 'country_id');
+        return array_column($countryList, null, 'country_id');
     }
 
     public function getSysCountryById(int $countryId): array
@@ -118,8 +195,34 @@ class AddressBiz
             return [];
         }
 
-        $fields = ['country_id', 'country_name', 'iso_code_2', 'iso_code_3', 'sort', 'icon_path', 'is_high_risk'];
-        return $this->dbHelper->table('sys_country')->where(['country_id' => $countryId])->fields($fields)->find();
+        return $this->dbHelper->table('sys_country')->where(['country_id' => $countryId])->fields($this->sysCountryFields)->find();
+    }
+
+    public function getSysCountryByCode2(string $code): array
+    {
+        if (strlen($code) != 2) {
+            return [];
+        }
+
+        return $this->dbHelper->table('sys_country')->where(['iso_code_2' => $code])->fields($this->sysCountryFields)->find();
+    }
+
+    public function getSysCountryByCode3(string $code): array
+    {
+        if (strlen($code) != 3) {
+            return [];
+        }
+
+        return $this->dbHelper->table('sys_country')->where(['iso_code_3' => $code])->fields($this->sysCountryFields)->find();
+    }
+
+    public function getSysCountryByName(string $name): array
+    {
+        if (empty($name)) {
+            return [];
+        }
+
+        return $this->dbHelper->table('sys_country')->where(['country_name' => $name])->fields($this->sysCountryFields)->find();
     }
 
     public function saveZone(int $shopId, int $origZoneId, array $zone): int
@@ -195,11 +298,15 @@ class AddressBiz
             ->where(['shop_id' => $shopId, 'zone_id' => $zoneId])->delete();
     }
 
-    public function getSysZoneList(): array
+    public function getSysZoneList(int $countryId): array
     {
+        if ($countryId <= 0) {
+            return [];
+        }
+
         $fields = ['zone_id', 'zone_name', 'zone_code', 'country_id', 'sort'];
-        $currencyList = $this->dbHelper->table('sys_zone')->fields($fields)
-            ->orderBy(['sort' => 'asc'])->select();
+        $currencyList = $this->dbHelper->table('sys_zone')->where(['country_id' => $countryId])
+            ->fields($fields)->orderBy(['sort' => 'asc', 'zone_code' => 'asc'])->select();
         if (empty($currencyList)) {
             return [];
         }
@@ -215,6 +322,46 @@ class AddressBiz
 
         $fields = ['zone_id', 'zone_name', 'zone_code', 'country_id', 'sort'];
         return $this->dbHelper->table('sys_zone')->where(['zone_id' => $zoneId])->fields($fields)->find();
+    }
+
+    public function getSysZoneByCode(string $zoneCode): array
+    {
+        if (empty($zoneCode)) {
+            return [];
+        }
+
+        $fields = ['zone_id', 'zone_name', 'zone_code', 'country_id', 'sort'];
+        return $this->dbHelper->table('sys_zone')->where(['zone_code' => $zoneCode])->fields($fields)->find();
+    }
+
+    public function saveSysZone(array $zone): int
+    {
+        if (empty($zone['country_id']) || empty($zone['zone_name']) || empty($zone['zone_code'])) {
+            return 0;
+        }
+
+        $time = time();
+
+        $data = [
+            'country_id' => $zone['country_id'],
+            'zone_name' => $zone['zone_name'],
+            'zone_code' => $zone['zone_code'],
+            'sort' => 0,
+            'created_at' => $time,
+            'created_by' => $zone['operator'] ?? '',
+            'updated_at' => $time,
+            'updated_by' => $zone['operator'] ?? ''
+        ];
+
+        $zoneInfo = $this->getSysZoneByCode($zone['zone_code']);
+        if (!empty($zoneInfo)) {
+            unset($data['created_at'], $data['created_by']);
+
+            return $this->dbHelper->table('sys_zone')
+                ->where(['zone_id' => $zoneInfo['zone_id']])->update($data);
+        }
+
+        return $this->dbHelper->table('sys_zone')->insert($data);
     }
 
     public function getAddressListByCustomerId(int $shopId, int $customerId): array

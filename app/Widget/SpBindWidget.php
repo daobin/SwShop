@@ -18,7 +18,7 @@ class SpBindWidget extends Widget
 //            ['name' => '仓库配置', 'icon' => 'layui-icon-location', 'iframe' => 'warehouse'],
 //            ['name' => '语言配置', 'icon' => 'layui-icon-dialogue', 'iframe' => 'language'],
 //            ['name' => '币种配置', 'icon' => 'layui-icon-dollar', 'iframe' => 'currency'],
-//            ['name' => '国家地址', 'icon' => 'layui-icon-website', 'iframe' => 'country'],
+            ['name' => '国家地址', 'icon' => 'layui-icon-website', 'iframe' => 'country'],
 //            ['name' => '支付方式', 'icon' => 'layui-icon-senior', 'iframe' => 'payment'],
 //            ['name' => '货运方式', 'icon' => 'layui-icon-release', 'iframe' => 'shipping'],
             ['name' => '管理员', 'icon' => 'layui-icon-group', 'iframe' => 'admin'],

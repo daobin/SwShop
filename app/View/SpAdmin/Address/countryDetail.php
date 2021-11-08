@@ -22,6 +22,14 @@
                     </select>
                 </div>
             </div>
+            <?php if (empty($country_info)) { ?>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">初始化洲省地区</label>
+                    <div class="layui-input-block">
+                        <input type="checkbox" name="init_zone" lay-skin="switch" lay-text="是|否"/>
+                    </div>
+                </div>
+            <?php } ?>
             <div class="layui-form-item">
                 <label class="layui-form-label">风险国家</label>
                 <div class="layui-input-block">

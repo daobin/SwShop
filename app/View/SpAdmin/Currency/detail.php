@@ -4,12 +4,12 @@
     <div class="layui-fluid">
         <form class="layui-form hd-margin-top-30" method="post" autocomplete="off">
             <div class="layui-form-item">
-                <label class="layui-form-label">币种</label>
+                <label class="layui-form-label">币种<?php echo $currency_code;?></label>
                 <div class="layui-input-block">
                     <select name="code" lay-filter="code">
                         <option left="" right="" value="">请选择币种</option>
                         <?php
-                        if ($currency_list) {
+                        if (!empty($currency_list)) {
                             foreach ($currency_list as $code => $currency) {
                                 $symbol = ' left="' . $currency['symbol_left'] . '" right="' . $currency['symbol_right'] . '" ';;
                                 if ($currency_code == $code) {

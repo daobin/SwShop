@@ -118,5 +118,8 @@ RouteHelper::get('/spbind/logout', 'SpBind.Index.logout');
 RouteHelper::get('/spbind/admin', 'SpBind.Admin.index');
 RouteHelper::any('/spbind/admin/<admin_id>', 'SpBind.Admin.detail', ['admin_id' => '\d+']);
 RouteHelper::post('/spbind/admin/delete', 'SpBind.Admin.delete');
+RouteHelper::get('/spbind/country', 'SpBind.Country.index');
+RouteHelper::any('/spbind/country/<country_id>', 'SpBind.Country.detail', ['country_id' => '\d+']);
+RouteHelper::post('/spbind/synczones', 'SpBind.Country.syncZoneList');
 
 return [];

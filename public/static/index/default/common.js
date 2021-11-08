@@ -15,11 +15,12 @@ var boxDialog = $('#hd-dialog-box').modal({
 
 // Tip Dialog
 var tipDialog = $('#hd-dialog-tip').modal({
-    show: false
+    show: false,
+    backdrop: 'static'
 });
 window.alert = function (msg) {
     if (msg != undefined && msg != '') {
-        $('#hd-dialog-tip .modal-body').html('<p>' + msg + '</p>');
+        $('#hd-dialog-tip .modal-body > p > span').html(msg);
         tipDialog.modal('show');
     }
 };

@@ -365,6 +365,7 @@ class PaypalCcHelper
                 break;
         }
         $chOptions[CURLOPT_URL] = sprintf($chOptions[CURLOPT_URL], trim($request));
+        print_r($chOptions);
 
         $ch = curl_init();
         curl_setopt_array($ch, $chOptions);

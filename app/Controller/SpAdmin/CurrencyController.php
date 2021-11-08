@@ -37,6 +37,7 @@ class CurrencyController extends Controller
         }
 
         $code = $this->get('code', '', 'trim,strtoupper');
+        print_r($code);
 
         $currencyBiz = new CurrencyBiz();
         $currencyInfo = $currencyBiz->getCurrencyByCode($this->shopId, $code);

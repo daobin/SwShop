@@ -13,14 +13,25 @@
     </div>
 </div>
 <div class="modal" id="hd-dialog-tip">
-    <div class="modal-dialog modal-sm" style="margin-top: 20%;">
+    <div class="modal-dialog modal-sm" style="margin-top: 10%;">
         <div class="modal-content">
-            <div class="modal-body"></div>
+            <div class="modal-header">
+                <h4 class="modal-title">Tips</h4>
+            </div>
+            <div class="modal-body">
+               <p class="text-warning hd-font-size-16">
+                   <i class="glyphicon glyphicon-info-sign"></i>
+                   <span></span>
+               </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-sm btn-warning" data-dismiss="modal">OK</button>
+            </div>
         </div>
     </div>
 </div>
 <div class="modal" id="hd-dialog-box">
-    <div class="modal-dialog" style="margin-top: 20%;">
+    <div class="modal-dialog" style="margin-top: 10%;">
         <div class="modal-content">
             <div class="modal-header">
                 <button class="close" data-dismiss="modal"><span>&times;</span></button>

@@ -164,7 +164,7 @@ class Controller
     {
         $value = strip_tags($value);
 
-        if (empty($filter)) {
+        if (empty($filterArr)) {
             return $value;
         }
 
@@ -173,7 +173,6 @@ class Controller
             if (empty($filter)) {
                 continue;
             }
-
             $value = $filter($value);
         }
 
