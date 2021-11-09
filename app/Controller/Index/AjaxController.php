@@ -93,7 +93,8 @@ class AjaxController extends Controller
                 'order_number' => $csData['order_number'],
                 'service_type' => $csData['service_type']
             ];
-            (new EmailHelper($this->shopId, $this->host))->sendMail($mailData);
+            $mailed = (new EmailHelper($this->shopId, $this->host))->sendMail($mailData);
+            add_log('mail', ['mail' => $mailData['template'], 'res' => $mailed]);
 
             $this->session->remove($idempotentField);
             return ['status' => 'success', 'msg' => LanguageHelper::get('submitted_success', $this->langCode), 'reset' => 1];
@@ -173,7 +174,8 @@ class AjaxController extends Controller
                     'template' => 'welcome',
                     'to_address' => $register['customer_info']['email']
                 ];
-                (new EmailHelper($this->shopId, $this->host))->sendMail($mailData);
+                $mailed = (new EmailHelper($this->shopId, $this->host))->sendMail($mailData);
+                add_log('mail', ['mail' => $mailData['template'], 'res' => $mailed]);
             });
         }
 

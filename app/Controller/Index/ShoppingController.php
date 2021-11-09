@@ -247,7 +247,8 @@ class ShoppingController extends Controller
                     'order_total' => format_price_total((float)$payRes['order_total'], $this->currency),
                     'order_date' => $payRes['order_date']
                 ];
-                (new EmailHelper($this->shopId, $this->host))->sendMail($mailData);
+                $mailed = (new EmailHelper($this->shopId, $this->host))->sendMail($mailData);
+                add_log('mail', ['mail' => $mailData['template'], 'res' => $mailed]);
             });
 
             return $this->response->redirect($payRes['url']);

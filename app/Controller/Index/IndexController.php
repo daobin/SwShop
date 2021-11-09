@@ -110,7 +110,8 @@ class IndexController extends Controller
                         'submission_time' => date('Y-m-d H:i:s'),
                         'forgot_change_link' => 'http://' . $this->host . '/reset-password.html?token=' . $token
                     ];
-                    (new EmailHelper($this->shopId, $this->host))->sendMail($mailData);
+                    $mailed = (new EmailHelper($this->shopId, $this->host))->sendMail($mailData);
+                    add_log('mail', ['mail' => $mailData['template'], 'res' => $mailed]);
                 });
             }
 
@@ -165,7 +166,8 @@ class IndexController extends Controller
                         'template' => 'password_success',
                         'to_address' => $email
                     ];
-                    (new EmailHelper($this->shopId, $this->host))->sendMail($mailData);
+                    $mailed = (new EmailHelper($this->shopId, $this->host))->sendMail($mailData);
+                    add_log('mail', ['mail' => $mailData['template'], 'res' => $mailed]);
                 });
 
                 $customerBiz->updateForgotPasswordStatus($this->shopId, $tokenInfo['forgot_password_id'], 1);

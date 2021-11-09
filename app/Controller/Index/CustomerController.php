@@ -88,7 +88,8 @@ class CustomerController extends Controller
                         'template' => 'password_success',
                         'to_address' => $email
                     ];
-                    (new EmailHelper($this->shopId, $this->host))->sendMail($mailData);
+                    $mailed = (new EmailHelper($this->shopId, $this->host))->sendMail($mailData);
+                    add_log('mail', ['mail' => $mailData['template'], 'res' => $mailed]);
                 });
 
                 $this->session->set('password_reset_success', 1);

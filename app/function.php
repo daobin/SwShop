@@ -221,8 +221,16 @@ function get_paypal_response_val($response, $field)
     return '';
 }
 
-function source_decode($source): string
+function add_log($type, $message)
 {
-    $source = gzinflate(base64_decode($source));
-    return $source;
+    $type = trim($type, '/');
+    $path = ROOT_DIR.'runtime/log/'.$type.'/';
+    if(!is_dir($path)){
+        if(!mkdir($path, 0755, true)){
+            return;
+        }
+    }
+
+    $logfile = $path.date('Ymd');
+    file_put_contents($logfile, print_r($message, true).PHP_EOL);
 }
