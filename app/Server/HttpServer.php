@@ -83,8 +83,17 @@ class HttpServer
             // 店铺检验合法，初始化店铺相关配置至 Request 对象
             $request->shopId = (int)$shopInfo['shop_id'];
             $request->domain = $domain;
-            $request->ip = $request->server['remote_addr'] ?? '';
+
+            // 获取用户访问真实IP
+            $request->ip = !empty($request->server['remote_addr']) ? trim($request->server['remote_addr']) : '';
+            if (!empty($request->header['x-forwarder-for'])) {
+                $request->ip = explode(',', $request->header['x-forwarder-for']);
+                $request->ip = trim(reset($request->ip));
+            } else if (!empty($request->header['x-real-ip'])) {
+                $request->ip = trim($request->header['x-real-ip']);
+            }
             $request->ipLong = ip2long($request->ip);
+
             // 请求方式目前仅支持 GET 、POST
             $request->isGet = true;
             $request->isPost = false;

@@ -181,6 +181,13 @@ class IndexController extends Controller
                 'min' => 0,
                 'max' => $countMax
             ],
+            'legend' => [
+                'data' => ['用户累计数', '订单累计数'],
+                'top' => 'center',
+                'left' => 10,
+                'orient' => 'vertical',
+                'itemGap' => 20
+            ],
             'series' => [
                 [
                     'name' => '用户累计数',
@@ -214,6 +221,13 @@ class IndexController extends Controller
             'yAxis' => [
                 'min' => floor(min($customerPrices)),
                 'max' => ceil(max($orderTotals))
+            ],
+            'legend' => [
+                'data' => ['订单总额', '客单均价'],
+                'top' => 'center',
+                'left' => 10,
+                'orient' => 'vertical',
+                'itemGap' => 20
             ],
             'series' => [
                 [

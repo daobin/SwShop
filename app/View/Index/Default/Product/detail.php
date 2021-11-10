@@ -15,21 +15,15 @@ $widget_params['tkd_description'] = empty($prod_info['desc']['meta_description']
         <ol class="breadcrumb">
             <li><a href="/">Home</a></li>
             <?php
-            $cate_name = '';
             if (!empty($cate_level)) {
                 foreach ($cate_level as $level_info) {
                     $level_name = xss_text($level_info['category_name']);
-                    if ($prod_info['product_category_id'] == $level_info['product_category_id']) {
-                        $cate_name = $level_name;
-                        break;
-                    }
-
                     $cate_link = $level_info['category_url'] . '-c' . $level_info['product_category_id'] . '.html';
                     echo '<li><a href="/', $cate_link, '">', $level_name, '</a></li>';
                 }
             }
             ?>
-            <li class="active"><?php echo $cate_name; ?></li>
+            <li class="active"><?php echo $prod_name; ?></li>
         </ol>
     </div>
     <div class="container hd-margin-top-30">
@@ -68,10 +62,6 @@ $widget_params['tkd_description'] = empty($prod_info['desc']['meta_description']
                 <div class="row hd-margin-top-30">
                     <div class="col-md-3 hd-font-weight-bold">SKU :</div>
                     <div class="col-md-9 hd-sku"><?php echo $default_sku; ?></div>
-                </div>
-                <div class="row hd-margin-top-30">
-                    <div class="col-md-3 hd-font-weight-bold">Ship From :</div>
-                    <div class="col-md-9">US Warehouse (Arrivals in 5-7 business days)</div>
                 </div>
                 <?php
                 if (!empty($sku_arr)) {

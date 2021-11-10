@@ -10,6 +10,7 @@ use App\Helper\OssHelper;
 use App\Helper\SessionHelper;
 use App\Helper\TemplateHelper;
 use IP2Location\Database;
+use IP2Location\WebService;
 
 class Controller
 {
@@ -99,8 +100,8 @@ class Controller
 
     private function chkClientIp()
     {
-        $ipDb = new Database(ROOT_DIR . 'resource/IP-COUNTRY-SAMPLE.BIN');
-        $ipParse = $ipDb->lookup($this->request->ip);
+        $ipDb = new Database(ROOT_DIR . 'resource/IP2LOCATION-LITE-DB1.BIN');
+        $ipParse = $ipDb->lookup($this->request->ip, Database::COUNTRY);
 
         $this->ip = $this->request->ipLong ?? 0;
         $this->ipCountryIsoCode2 = $ipParse['countryCode'] ?? '';
@@ -109,8 +110,6 @@ class Controller
         if ($this->ipCountryIsoCode2 === 'UK') {
             $this->ipCountryIsoCode2 = 'GB';
         }
-        print_r('ISO_Code_2 >> ' . $this->ipCountryIsoCode2 . PHP_EOL);
-        print_r($this->request);
     }
 
     private function getCartList()
