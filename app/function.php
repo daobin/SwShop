@@ -224,13 +224,13 @@ function get_paypal_response_val($response, $field)
 function add_log($type, $message)
 {
     $type = trim($type, '/');
-    $path = ROOT_DIR.'runtime/log/'.$type.'/';
-    if(!is_dir($path)){
-        if(!mkdir($path, 0755, true)){
+    $path = ROOT_DIR . 'runtime/log/' . $type . '/';
+    if (!is_dir($path)) {
+        if (!mkdir($path, 0755, true)) {
             return;
         }
     }
 
-    $logfile = $path.date('Ymd');
-    file_put_contents($logfile, print_r($message, true).PHP_EOL);
+    $logfile = $path . date('Ymd');
+    file_put_contents($logfile, print_r($message, true) . PHP_EOL);
 }

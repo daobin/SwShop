@@ -50,9 +50,8 @@ class SessionHelper
         }
 
         // 防止第三方恶意获取客户会话ID
-        $clientIp = $this->request->server['remote_addr'] ?? '';
         $chkSidArr = explode('_', $this->sid);
-        if (count($chkSidArr) != 2 || (int)end($chkSidArr) != ip2long($clientIp)) {
+        if (count($chkSidArr) != 2 || (int)end($chkSidArr) != $this->request->ipLong) {
             $this->sid = $this->createSessionId();
         }
 
