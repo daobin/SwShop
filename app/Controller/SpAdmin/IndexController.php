@@ -21,7 +21,7 @@ class IndexController extends Controller
     public function index()
     {
         $start = strtotime(date('Y-m-d 00:00:00'));
-        $end = strtotime(date('-m-d 23:59:59'));
+        $end = strtotime(date('Y-m-d 23:59:59'));
 
         $customerBiz = new CustomerBiz($this->langCode);
         $customerBiz->getCustomerList(['shop_id' => $this->shopId, 'register_at_between' => [$start, $end]], [], 1, 1);
@@ -55,7 +55,7 @@ class IndexController extends Controller
         $days = [];
         $start = date('Y-m-d 00:00:00', strtotime('-1 month'));
         $start = strtotime($start);
-        $end = time();
+        $end = strtotime(date('Y-m-d 23:59:59'));
 
         $customerList = $customerBiz->getNewCustomerListByTime($this->shopId, $start, $end);
         if (!empty($customerList)) {

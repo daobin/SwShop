@@ -185,7 +185,7 @@ class ProductController extends Controller
                 $qtyPriceData = [];
                 if (!empty($datum['warehouse']) && is_array($datum['warehouse']) && !empty(reset($datum['warehouse']))) {
                     foreach ($datum['warehouse'] as $warehouse) {
-                        $qty = empty($datum['qty'][$warehouse]) ? 0 : (float)$datum['qty'][$warehouse];
+                        $qty = empty($datum['qty'][$warehouse]) ? 0 : (int)$datum['qty'][$warehouse];
                         $price = empty($datum['price'][$warehouse]) ? 0 : (float)$datum['price'][$warehouse];
                         $listPrice = empty($datum['list_price'][$warehouse]) ? 0 : (float)$datum['list_price'][$warehouse];
 

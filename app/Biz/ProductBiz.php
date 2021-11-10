@@ -396,6 +396,7 @@ class ProductBiz
         $this->dbHelper->beginTransaction();
         try {
             if (empty($prodInfo)) {
+                $prodData['price'] = 0;
                 unset($prodData['product_id']);
                 $prodId = $this->dbHelper->table('product')->insert($prodData);
 
@@ -574,7 +575,6 @@ class ProductBiz
             $res = $prodId;
             $this->dbHelper->commit();
         } catch (\PDOException $e) {
-            print_r(__CLASS__ . ' :: ' . $e->getMessage());
             $res = 0;
             $this->dbHelper->rollBack();
         }

@@ -109,7 +109,8 @@ class Controller
         if ($this->ipCountryIsoCode2 === 'UK') {
             $this->ipCountryIsoCode2 = 'GB';
         }
-//        print_r('ISO_Code_2 >> ' . $this->ipCountryIsoCode2 . PHP_EOL);
+        print_r('ISO_Code_2 >> ' . $this->ipCountryIsoCode2 . PHP_EOL);
+        print_r($this->request);
     }
 
     private function getCartList()
