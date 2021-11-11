@@ -44,13 +44,14 @@
                 html += '<div class="layui-form-item">';
                 html += '<label class="layui-form-label">商品描述（电脑端）</label>';
                 html += '<div class="layui-input-block">';
-                html += '<textarea class="layui-textarea" name="prod_desc[' + lang_code + ']">' + prod_desc + '</textarea>';
+                html += '<div class="prod_desc" id="prod_desc_' + lang_code + '">' + prod_desc + '</div>';
+                html += '<textarea id="textarea_prod_desc_' + lang_code + '" class="layui-hide" name="prod_desc[' + lang_code + ']">' + prod_desc + '</textarea>';
                 html += '</div></div>';
                 html += '<div class="layui-form-item">';
                 html += '<label class="layui-form-label">商品描述（移动端）</label>';
                 html += '<div class="layui-input-block">';
-                html += '<textarea class="layui-textarea" name="prod_desc_m[' + lang_code + ']"' +
-                    ' placeholder="不填则默认为类目描述（电脑端）">' + prod_desc_m + '</textarea>';
+                html += '<div class="prod_desc_m" id="prod_desc_m_' + lang_code + '">' + prod_desc_m + '</div>';
+                html += '<textarea id="textarea_prod_desc_m_' + lang_code + '" class="layui-hide" name="prod_desc_m[' + lang_code + ']">' + prod_desc_m + '</textarea>';
                 html += '</div></div>';
                 html += '<div class="layui-form-item">';
                 html += '<label class="layui-form-label">Meta 标题</label>';
@@ -229,6 +230,7 @@
             </div>
         </form>
     </div>
+    <script src="/static/wangEditor.min.js"></script>
     <script src="/static/layui/xm-select.js"></script>
     <script>
         xmSelect.render({
@@ -257,7 +259,36 @@
         });
     </script>
     <script>
-        layui.use('form', function () {
+        var editors = {};
+        var mEditors = {};
+        layui.use(['form', 'jquery'], function () {
+            if ($('.prod_desc').length > 0) {
+                $('.prod_desc').each(function () {
+                    let id = $(this).attr('id');
+                    let lang = id.replace('prod_desc_', '');
+
+                    editors[lang] = new wangEditor('#' + id);
+                    editors[lang].config.onchange = function (html) {
+                        $('#textarea_' + id).val(html);
+                    };
+                    editors[lang].create();
+                });
+            }
+
+            if ($('.prod_desc_m').length > 0) {
+                $('.prod_desc_m').each(function () {
+                    let id = $(this).attr('id');
+                    let lang = id.replace('prod_desc_m_', '');
+
+                    mEditors[lang] = new wangEditor('#' + id);
+                    mEditors[lang].config.placeholder = '不填则默认为类目描述（电脑端）';
+                    mEditors[lang].config.onchange = function (html) {
+                        $('#textarea_' + id).val(html);
+                    };
+                    mEditors[lang].create();
+                });
+            }
+
             hdImg.init({
                 elem: '.sku_images',
                 url: '/spadmin/upload-image',

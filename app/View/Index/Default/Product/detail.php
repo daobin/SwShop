@@ -134,8 +134,7 @@ $widget_params['tkd_description'] = empty($prod_info['desc']['meta_description']
                 <h3>Shipping</h3>
                 <p>Generally speaking, we arrange for shipment within 48 hours after placing the order. Individual
                     orders may be delayed due to temporary shortages. We provide free shipping and paid courier
-                    services. Express shipping freight depends on the quantity of goods.All orders are shipped out via
-                    UPS or USPS or Fedex or Yodel or Royal Mail or Herms.</p>
+                    services. Express shipping freight depends on the quantity of goods.</p>
                 <h3>Payment</h3>
                 <p>
                     Glarrymusic.com accepts Paypal, Visa, MasterCard, JCB and America Express. Glarrymusic.com secured

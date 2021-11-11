@@ -33,7 +33,7 @@ a, image, a:active, image:active{border: none !important;}
 #hd-main .layui-tab-content iframe{width: 100%; height: 100%; border: none;}
 
 #hd-top-line{position: fixed; top: 0; left: 0; z-index: 9; right: 0; padding-top: 10px; background: #fff;}
-#hd-bottom-options{position: fixed; bottom: 0; right: 15px; background: #fff;}
+#hd-bottom-options{position: fixed; bottom: 0; right: 15px; background: #fff; z-index: 11100;}
 
 .layui-table-cell{height: auto !important;}
 .layui-icon-edit, .layui-icon-delete, .layui-icon-release{cursor: pointer !important; font-size: 18px;}
