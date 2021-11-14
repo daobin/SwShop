@@ -25,6 +25,219 @@ class ProductBiz
         $this->count = 0;
     }
 
+    public function getAttrValueList(int $shopId, int $groupId, string $langCode):array {
+        if ($shopId <= 0  || $groupId <= 0 || empty($langCode)) {
+            return [];
+        }
+
+        return $this->dbHelper->table('product_attribute_value', 'val')
+            ->join('product_attribute_value_description', 'desc', ['val.attr_value_id'=>'desc.attr_value_id'])
+            ->where(['val.shop_id' => $shopId, 'val.attr_group_id' => $groupId, 'desc.language_code' => $langCode])
+            ->orderBy(['desc.value_name' => 'asc'])
+            ->fields(['val.attr_value_id', 'val.attr_group_id', 'desc.value_name', 'desc.updated_at', 'desc.updated_by'])
+            ->select();
+    }
+
+    public function getAttrValueById(int $shopId, int $attrId):array {
+        if ($shopId <= 0 || $attrId <= 0) {
+            return [];
+        }
+
+        $attrValue = $this->dbHelper->table('product_attribute_value')
+            ->where(['shop_id' => $shopId, 'attr_value_id' => $attrId])->find();
+        if(empty($attrValue)){
+            return [];
+        }
+
+        $attrValue['desc_list'] = $this->dbHelper->table('product_attribute_value_description')
+            ->where(['shop_id' => $shopId, 'attr_value_id' => $attrId])
+            ->fields(['value_name', 'language_code'])->select();
+
+        $attrValue['desc_list'] = empty($attrValue['desc_list']) ? [] : array_column(
+            $attrValue['desc_list'], 'value_name', 'language_code');
+
+        return $attrValue;
+    }
+
+    public function getAttrValueIdByName(int $shopId, string $langCode, string $valueName): int {
+        if($shopId <= 0 || empty($langCode) || empty($valueName)){
+            return 0;
+        }
+
+        $attrId = $this->dbHelper->table('product_attribute_value_description')
+            ->where(['shop_id' => $shopId, 'language_code' => $langCode, 'value_name' => $valueName])
+            ->fields(['attr_value_id'])->find();
+
+        return $attrId ? (int)reset($attrId) : 0;
+    }
+
+    public function saveAttrValue($data): int{
+        if(empty($data['shop_id']) || empty($data['group_id']) || empty($data['value_names'])){
+            return 0;
+        }
+
+        $shopId = (int)$data['shop_id'];
+        $groupId = (int)$data['group_id'];
+        $attrId = (int)$data['attr_id'];
+        $operator = $data['operator'] ?? '';
+
+        $res = 1;
+        $this->dbHelper->beginTransaction();
+        try{
+            $time = time();
+
+            $attrInfo = $this->getAttrValueById($shopId, $attrId);
+            if($attrInfo){
+                $this->dbHelper->table('product_attribute_value')
+                    ->where(['shop_id' => $shopId, 'attr_value_id' => $groupId])
+                    ->update(['updated_at' => $time, 'updated_by' => $operator]);
+            }else{
+                $attrId = $this->dbHelper->table('product_attribute_value')
+                    ->insert([
+                        'shop_id' => $shopId,
+                        'attr_group_id' => $groupId,
+                        'created_at' => $time,
+                        'created_by' => $operator,
+                        'updated_at' => $time,
+                        'updated_by' => $operator
+                    ]);
+            }
+
+            foreach($data['value_names'] as $langCode => $valueName){
+                $langCode = strtolower($langCode);
+                if(empty($groupInfo['desc_list'][$langCode])){
+                    $this->dbHelper->table('product_attribute_value_description')
+                        ->insert([
+                            'shop_id' => $shopId,
+                            'attr_value_id' => $attrId,
+                            'language_code' => $langCode,
+                            'value_name' => $valueName,
+                            'created_at' => $time,
+                            'created_by' => $operator,
+                            'updated_at' => $time,
+                            'updated_by' => $operator
+                        ]);
+                }else{
+                    $this->dbHelper->table('product_attribute_value_description')
+                        ->where(['shop_id' => $shopId, 'attr_value_id' => $groupId, 'language_code' => $langCode])
+                        ->update(['value_name' => $valueName,'updated_at' => $time, 'updated_by' => $operator]);
+                }
+            }
+
+            $this->dbHelper->commit();
+        }catch (\Throwable $e){
+            $res = 0;
+            $this->dbHelper->rollBack();
+        }
+
+        return $res;
+    }
+
+    public function getAttrGroupList(int $shopId, string $langCode):array {
+        if ($shopId <= 0  || empty($langCode)) {
+            return [];
+        }
+
+        return $this->dbHelper->table('product_attribute_group', 'group')
+            ->join('product_attribute_group_description', 'desc', ['group.attr_group_id'=>'desc.attr_group_id'])
+            ->where(['group.shop_id' => $shopId, 'desc.language_code' => $langCode])
+            ->orderBy(['desc.group_name' => 'asc'])
+            ->fields(['desc.attr_group_id', 'desc.group_name', 'desc.updated_at', 'desc.updated_by'])->select();
+    }
+
+    public function getAttrGroupById(int $shopId, int $groupId):array {
+        if ($shopId <= 0 || $groupId <= 0) {
+            return [];
+        }
+
+        $attrGroup = $this->dbHelper->table('product_attribute_group')
+            ->where(['shop_id' => $shopId, 'attr_group_id' => $groupId])->find();
+        if(empty($attrGroup)){
+            return [];
+        }
+
+        $attrGroup['desc_list'] = $this->dbHelper->table('product_attribute_group_description')
+            ->where(['shop_id' => $shopId, 'attr_group_id' => $groupId])
+            ->fields(['group_name', 'language_code'])->select();
+
+        $attrGroup['desc_list'] = empty($attrGroup['desc_list']) ? [] : array_column(
+            $attrGroup['desc_list'], 'group_name', 'language_code');
+
+        return $attrGroup;
+    }
+
+    public function getAttrGroupIdByName(int $shopId, string $langCode, string $groupName): int {
+        if($shopId <= 0 || empty($langCode) || empty($groupName)){
+            return 0;
+        }
+
+        $groupId = $this->dbHelper->table('product_attribute_group_description')
+            ->where(['shop_id' => $shopId, 'language_code' => $langCode, 'group_name' => $groupName])
+            ->fields(['attr_group_id'])->find();
+
+        return $groupId ? (int)reset($groupId) : 0;
+    }
+
+    public function saveAttrGroup($data): int{
+        if(empty($data['shop_id']) || empty($data['group_names'])){
+            return 0;
+        }
+
+        $shopId = (int)$data['shop_id'];
+        $groupId = (int)$data['group_id'];
+        $operator = $data['operator'] ?? '';
+
+        $res = 1;
+        $this->dbHelper->beginTransaction();
+        try{
+            $time = time();
+
+            $groupInfo = $this->getAttrGroupById($shopId, $groupId);
+            if($groupInfo){
+                $this->dbHelper->table('product_attribute_group')
+                    ->where(['shop_id' => $shopId, 'attr_group_id' => $groupId])
+                    ->update(['updated_at' => $time, 'updated_by' => $operator]);
+            }else{
+                $groupId = $this->dbHelper->table('product_attribute_group')
+                    ->insert([
+                        'shop_id' => $shopId,
+                        'created_at' => $time,
+                        'created_by' => $operator,
+                        'updated_at' => $time,
+                        'updated_by' => $operator
+                    ]);
+            }
+
+            foreach($data['group_names'] as $langCode => $groupName){
+                $langCode = strtolower($langCode);
+                if(empty($groupInfo['desc_list'][$langCode])){
+                    $this->dbHelper->table('product_attribute_group_description')
+                        ->insert([
+                            'shop_id' => $shopId,
+                            'attr_group_id' => $groupId,
+                            'language_code' => $langCode,
+                            'group_name' => $groupName,
+                            'created_at' => $time,
+                            'created_by' => $operator,
+                            'updated_at' => $time,
+                            'updated_by' => $operator
+                        ]);
+                }else{
+                    $this->dbHelper->table('product_attribute_group_description')
+                        ->where(['shop_id' => $shopId, 'attr_group_id' => $groupId, 'language_code' => $langCode])
+                        ->update(['group_name' => $groupName,'updated_at' => $time, 'updated_by' => $operator]);
+                }
+            }
+
+            $this->dbHelper->commit();
+        }catch (\Throwable $e){
+            $res = 0;
+            $this->dbHelper->rollBack();
+        }
+
+        return $res;
+    }
+
     public function getFeaturedProductList(int $shopId, string $langCode, string $warehouseCode): array
     {
         if ($shopId <= 0) {

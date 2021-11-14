@@ -138,9 +138,6 @@ class ProductController extends Controller
         }
         $prodUrl = trim($prodUrl, '/');
         $prodUrl = process_url_string($prodUrl);
-        if (empty($prodUrl)) {
-            return ['status' => 'fail', 'msg' => '请输入商品 URL'];
-        }
         if (filter_var($prodUrl, FILTER_VALIDATE_URL)) {
             return ['status' => 'fail', 'msg' => '商品 URL 无效'];
         }
@@ -284,6 +281,9 @@ class ProductController extends Controller
                 $metaTitle = empty($metaTitle) ? $metaTitleList[$this->langCode] : $metaTitle;
                 $metaKeywords = empty($metaKeywords) ? $metaKeywordsList[$this->langCode] : $metaKeywords;
                 $metaDesc = empty($metaDesc) ? $metaDescList[$this->langCode] : $metaDesc;
+            }else if (empty($prodUrl)) {
+                // 默认URL为商品名称
+                $prodUrl = process_url_string($prodName);
             }
 
             $prodDescM = empty($prodDescM) ? $prodDesc : $prodDescM;

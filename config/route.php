@@ -89,6 +89,10 @@ RouteHelper::any('/spadmin/shipping/<code>', 'SpAdmin.Shipping.detail', ['code' 
 RouteHelper::post('/spadmin/shipping/delete', 'SpAdmin.Shipping.delete');
 RouteHelper::get('/spadmin/category', 'SpAdmin.Category.index');
 RouteHelper::any('/spadmin/category/<cate_id>', 'SpAdmin.Category.detail', ['cate_id' => '\d+']);
+RouteHelper::get('/spadmin/attr-group', 'SpAdmin.Attribute.group');
+RouteHelper::any('/spadmin/attr-group/<group_id>', 'SpAdmin.Attribute.groupDetail', ['group_id' => '\d+']);
+RouteHelper::get('/spadmin/attr-value/<group_id>', 'SpAdmin.Attribute.value', ['group_id' => '\d+']);
+RouteHelper::any('/spadmin/attr-value/<group_id>/<attr_id>', 'SpAdmin.Attribute.valueDetail', ['group_id' => '\d+','attr_id' => '\d+']);
 RouteHelper::get('/spadmin/product', 'SpAdmin.Product.index');
 RouteHelper::any('/spadmin/product/<prod_id>', 'SpAdmin.Product.detail', ['prod_id' => '\d+']);
 RouteHelper::get('/spadmin/customer', 'SpAdmin.Customer.index');

@@ -20,6 +20,7 @@ class SpAdminWidget extends Widget
             ['name' => '商品管理', 'icon' => 'layui-icon-note', 'sub_navs' =>
                 [
                     ['name' => '商品类目', 'icon' => 'layui-icon-more-vertical', 'iframe' => 'category'],
+                    ['name' => '商品属性', 'icon' => 'layui-icon-component', 'iframe' => 'attr-group'],
                     ['name' => '商品列表', 'icon' => 'layui-icon-list', 'iframe' => 'product'],
                 ]
             ],

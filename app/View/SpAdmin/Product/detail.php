@@ -118,13 +118,12 @@
                 <div class="layui-form-mid layui-word-aux">排序由小到大，不填则默认为0</div>
             </div>
             <div class="layui-form-item">
-                <label class="layui-form-label">商品 URL <span class="hd-color-red">*</span></label>
-                <div class="layui-input-inline">
+                <label class="layui-form-label">商品 URL</label>
+                <div class="layui-input-block">
                     <input type="text" class="layui-input" name="prod_url" maxlength="100"
-                           placeholder="不含请求协议和域名部分"
+                           placeholder="不填写默认使用商品名称生成"
                            value="<?php echo $prod_info['product_url'] ?? ''; ?>"/>
                 </div>
-                <div class="layui-form-mid layui-word-aux">用于 SEO 优化</div>
             </div>
             <div class="layui-form-item">
                 <label class="layui-form-label">商品重量</label>
@@ -281,7 +280,7 @@
                     let lang = id.replace('prod_desc_m_', '');
 
                     mEditors[lang] = new wangEditor('#' + id);
-                    mEditors[lang].config.placeholder = '不填则默认为类目描述（电脑端）';
+                    mEditors[lang].config.placeholder = '不填则默认为商品描述（电脑端）';
                     mEditors[lang].config.onchange = function (html) {
                         $('#textarea_' + id).val(html);
                     };
