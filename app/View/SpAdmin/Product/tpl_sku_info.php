@@ -1,9 +1,11 @@
 <script type="text/html" id="tpl_sku_info">
     <tr>
         <td>
-            <input type="text" class="layui-input hd-input-sku" name="sku_data[-IDX-][sku]"/>
+            <input type="hidden" class="hd-input-sku" name="sku_data[-IDX-][sku]"/>
         </td>
         <td>
+            <div class="hd-attr-list" data-sku="-IDX-">-ATTR-LIST-</div>
+            <hr/>
             <?php
             reset($warehouses);
             foreach ($warehouses as $code => $name) {

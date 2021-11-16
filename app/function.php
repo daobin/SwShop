@@ -32,13 +32,23 @@ function get_timezones(): array
 }
 
 // 生成指定开头字符的随机字符串
-function build_fixed_pre_random(string $fixedPre = 'HD'): string
+function build_fixed_pre_random(string $fixedPre = ''): string
 {
-    $time = time();
-    $randomString = strtoupper(base64_encode($time . uniqid()));
+    $randomString = time() . uniqid();
+    $randomString = strtoupper(base64_encode($randomString));
     $randomString = substr($randomString, mt_rand(0, strlen($randomString) - 8), 4);
 
-    return $fixedPre . date('YmdHi') . $randomString;
+    $fixedPre = strtoupper(trim($fixedPre));
+    switch($fixedPre){
+        case 'SK':
+            $randomString = $fixedPre . date('Ymd') . $randomString;
+            break;
+        default:
+            $randomString = $fixedPre . date('YmdHi') . $randomString;
+            break;
+    }
+
+    return $randomString;
 }
 
 // URL 字串处理

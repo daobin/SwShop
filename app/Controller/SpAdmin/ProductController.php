@@ -54,8 +54,8 @@ class ProductController extends Controller
         }
 
         $currencySymbol = '';
-        if($this->currency){
-            $currencySymbol = $this->currency['symbol_left'].$this->currency['symbol_right'];
+        if ($this->currency) {
+            $currencySymbol = $this->currency['symbol_left'] . $this->currency['symbol_right'];
         }
 
         return $this->render([
@@ -90,6 +90,14 @@ class ProductController extends Controller
         $warehouses = (new WarehouseBiz())->getWarehouseList($this->shopId);
         $warehouses = $warehouses ? array_column($warehouses, 'warehouse_name', 'warehouse_code') : ['-' => '无仓库模式'];
 
+        $attrGroupIds = [];
+        $attrGroupList = $prodBiz->getAttrGroupList($this->shopId, $this->langCode);
+        if (!empty($attrGroupList)) {
+            $attrGroupList = array_column($attrGroupList, null, 'attr_group_id');
+            $attrGroupIds = array_keys($attrGroupList);
+        }
+        $attrValueList = $prodBiz->getAttrValueListByGroupIds($this->shopId, $attrGroupIds, $this->langCode);
+
         return $this->render([
             'prod_info' => $prodInfo,
             'prod_desc_list' => $prodDescList,
@@ -102,6 +110,8 @@ class ProductController extends Controller
             'cate_tree_list' => $prodBiz->getCategoryTree($this->shopId, 0, $this->langCode),
             'upload_folders' => (new UploadBiz())->getFolderArr($this->shopId),
             'lang_codes' => (new LanguageBiz())->getLangCodes($this->shopId),
+            'attr_group_list' => $attrGroupList,
+            'attr_value_list' => $attrValueList,
             'csrf_token' => (new SafeHelper($this->request, $this->response))->buildCsrfToken('BG', 'prod_' . $prodId)
         ]);
     }
@@ -170,13 +180,28 @@ class ProductController extends Controller
 
         // 商品SKU信息
         $skuData = [];
+        $skuAttCheckData = [];
         if (!empty($this->request->post['sku_data'])) {
             foreach ($this->request->post['sku_data'] as $datum) {
                 $sku = trim($datum['sku'] ?? '');
-                $sku = strtoupper($sku);
                 if (empty($sku)) {
-                    continue;
+                    $sku = build_fixed_pre_random('SK');
                 }
+                $sku = strtoupper($sku);
+
+                // 商品属性
+                if (empty($datum['attr_values']) || in_array(0, $datum['attr_values'])) {
+                    return ['status' => 'fail', 'msg' => 'SKU [' . $sku . '] 请选择商品属性'];
+                }
+                ksort($datum['attr_values']);
+                $skuAttrCheck = '';
+                foreach ($datum['attr_values'] as $groupId => $attrId) {
+                    $skuAttrCheck .= $groupId . '-' . $attrId . '-';
+                }
+                if(!empty($skuAttCheckData) && in_array($skuAttrCheck, $skuAttCheckData)){
+                    return ['status' => 'fail', 'msg' => 'SKU [' . $sku . '] 商品属性重复'];
+                }
+                $skuAttCheckData[$sku] = $skuAttrCheck;
 
                 // 库存与价格
                 $qtyPriceData = [];
@@ -237,6 +262,7 @@ class ProductController extends Controller
                 }
 
                 $skuData[$sku] = [
+                    'attributes' => $datum['attr_values'],
                     'qty_price_data' => $qtyPriceData,
                     'img_data' => $imgData
                 ];
@@ -281,7 +307,7 @@ class ProductController extends Controller
                 $metaTitle = empty($metaTitle) ? $metaTitleList[$this->langCode] : $metaTitle;
                 $metaKeywords = empty($metaKeywords) ? $metaKeywordsList[$this->langCode] : $metaKeywords;
                 $metaDesc = empty($metaDesc) ? $metaDescList[$this->langCode] : $metaDesc;
-            }else if (empty($prodUrl)) {
+            } else if (empty($prodUrl)) {
                 // 默认URL为商品名称
                 $prodUrl = process_url_string($prodName);
             }

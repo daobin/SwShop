@@ -565,6 +565,7 @@ class DbHelper
                 $this->initDb();
                 $this->stmt = $this->db->prepare($preSql);
             } else {
+//                print_r($e);
                 throw $e;
             }
         }

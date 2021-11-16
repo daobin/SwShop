@@ -2,8 +2,8 @@
 \App\Helper\TemplateHelper::widget('sp_admin', 'header', ['show_top_line' => false, 'timestamp' => $timestamp ?? '']);
 ?>
     <script>
-        var lang_codes = <?php echo json_encode($lang_codes);?>;
-        var prod_desc_list = <?php echo json_encode($prod_desc_list);?>;
+        const lang_codes = <?php echo json_encode($lang_codes);?>;
+        const prod_desc_list = <?php echo json_encode($prod_desc_list);?>;
 
         layui.use('element', function () {
             let element = layui.element;
@@ -173,24 +173,38 @@
                                placeholder="高，不填则默认为0"
                                value="<?php echo $prod_info['height'] ?? ''; ?>"/>
                     </div>
-                    <label class="layui-form-label">尺寸单位</label>
-                    <div class="layui-input-inline">
-                        <select name="size_unit">
-                            <option value="">请选择单位</option>
-                            <?php
-                            if ($size_units) {
-                                foreach ($size_units as $text => $unit) {
-                                    $selected = '';
-                                    if (isset($prod_info['size_unit']) && $unit == $prod_info['size_unit']) {
-                                        $selected = ' selected ';
-                                    }
-                                    echo '<option value="', xss_text($unit), '"', $selected, '>', xss_text($text), '</option>';
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">尺寸单位</label>
+                <div class="layui-input-inline">
+                    <select name="size_unit">
+                        <option value="">请选择单位</option>
+                        <?php
+                        if ($size_units) {
+                            foreach ($size_units as $text => $unit) {
+                                $selected = '';
+                                if (isset($prod_info['size_unit']) && $unit == $prod_info['size_unit']) {
+                                    $selected = ' selected ';
                                 }
+                                echo '<option value="', xss_text($unit), '"', $selected, '>', xss_text($text), '</option>';
                             }
-                            ?>
-                        </select>
-                    </div>
-                    <div class="layui-form-mid layui-word-aux">尺寸不为空时，单位必选</div>
+                        }
+                        ?>
+                    </select>
+                </div>
+                <div class="layui-form-mid layui-word-aux">尺寸不为空时，单位必选</div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">商品属性组</label>
+                <div class="layui-input-inline">
+                    <?php
+                    if (!empty($attr_group_list)) {
+                        foreach ($attr_group_list as $group_id => $attr_group) {
+                            echo '<input lay-filter="hd-attr-group-bind" type="checkbox" value="' . $group_id . '" title="', $attr_group['group_name'], '" lay-skin="primary"/>';
+                        }
+                    }
+                    ?>
                 </div>
             </div>
             <div class="layui-form-item">
@@ -260,6 +274,8 @@
     <script>
         var editors = {};
         var mEditors = {};
+        const attr_group_list = <?php echo json_encode($attr_group_list)?>;
+        const attr_value_list = <?php echo json_encode($attr_value_list)?>;
         layui.use(['form', 'jquery'], function () {
             if ($('.prod_desc').length > 0) {
                 $('.prod_desc').each(function () {
@@ -326,14 +342,52 @@
                 }
             });
 
-            $('#btn_add_sku').click(function () {
-                $('#sku_list').append($('#tpl_sku_info').html().replaceAll('-IDX-', $('#sku_list tr').get().length));
-                layui.form.render('select');
+            function get_sku_attr_html(group_id, sku) {
+                let attr_values = attr_value_list[group_id];
+                if (attr_values == undefined || attr_group_list[group_id] == undefined) {
+                    return '';
+                }
 
+                let attr_html = '<div class="layui-form-item hd-attr-group-' + group_id + '">' +
+                    '<label class="layui-form-label">属性组：<span>' + attr_group_list[group_id]['group_name'] + '</span></label>' +
+                    '<div class="layui-input-inline">' +
+                    '<select class="hd-attr-value" name="sku_data[' + sku + '][attr_values][' + group_id + ']">' +
+                    '<option value="0">请选择属性值</option>';
+
+                for (let k in attr_values) {
+                    attr_html += '<option value="' + attr_values[k]['attr_value_id'] + '">' + attr_values[k]['value_name'] + '</option>';
+                }
+                attr_html += '</select></div></div>';
+
+                return attr_html;
+            }
+
+            $('#btn_add_sku').click(function () {
+                let sku_idx = $('#sku_list tr').get().length;
+                let attr_html = '';
+                $('input[lay-filter="hd-attr-group-bind"]:checked').each(function(){
+                    attr_html += get_sku_attr_html($(this).val(), sku_idx);
+                });
+
+                let sku_html = $('#tpl_sku_info').html().replaceAll('-IDX-', sku_idx).replace('-ATTR-LIST-', attr_html);
+                $('#sku_list').append(sku_html);
+
+                layui.form.render('select');
                 hdImg.init();
             });
             $(document).on('click', '.btn_del_sku', function () {
                 $(this).parent('td').parent('tr').remove();
+            });
+
+            layui.form.on('checkbox(hd-attr-group-bind)', function (data) {
+                if (data.elem.checked) {
+                    $('.hd-attr-list').each(function () {
+                        $(this).append(get_sku_attr_html(data.value, $(this).data('sku')));
+                    });
+                } else {
+                    $('.hd-attr-group-' + data.value).remove();
+                }
+                layui.form.render('select');
             });
 
             layui.form.on('submit(prod_edit)', function (formObj) {

@@ -49,7 +49,7 @@ class OrderBiz
 
             $orderId = $this->dbHelper->table('order')->insert([
                 'shop_id' => $shopId,
-                'order_number' => build_fixed_pre_random(),
+                'order_number' => build_fixed_pre_random('OD'),
                 'customer_id' => $orderSummary['customer_info']['customer_id'],
                 'customer_email' => $orderSummary['customer_info']['email'],
                 'customer_name' => trim($orderSummary['customer_info']['first_name'] . ' ' . $orderSummary['customer_info']['last_name']),
