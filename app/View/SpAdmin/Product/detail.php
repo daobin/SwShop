@@ -201,7 +201,8 @@
                     <?php
                     if (!empty($attr_group_list)) {
                         foreach ($attr_group_list as $group_id => $attr_group) {
-                            echo '<input lay-filter="hd-attr-group-bind" type="checkbox" value="' . $group_id . '" title="', $attr_group['group_name'], '" lay-skin="primary"/>';
+                            $checked = isset($prod_info['attr_group_ids'][$group_id]) ? ' checked ' : '';
+                            echo '<input lay-filter="hd-attr-group-bind" type="checkbox" ', $checked, ' value="', $group_id, '" title="', $attr_group['group_name'], '" lay-skin="primary"/>';
                         }
                     }
                     ?>
@@ -365,7 +366,7 @@
             $('#btn_add_sku').click(function () {
                 let sku_idx = $('#sku_list tr').get().length;
                 let attr_html = '';
-                $('input[lay-filter="hd-attr-group-bind"]:checked').each(function(){
+                $('input[lay-filter="hd-attr-group-bind"]:checked').each(function () {
                     attr_html += get_sku_attr_html($(this).val(), sku_idx);
                 });
 

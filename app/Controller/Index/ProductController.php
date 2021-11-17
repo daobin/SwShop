@@ -221,6 +221,14 @@ class ProductController extends Controller
             $cateLevel = array_reverse($cateLevel);
         }
 
+        $attrGroupIds = [];
+        $attrGroupList = $prodBiz->getAttrGroupList($this->shopId, $this->langCode);
+        if (!empty($attrGroupList)) {
+            $attrGroupList = array_column($attrGroupList, null, 'attr_group_id');
+            $attrGroupIds = array_keys($attrGroupList);
+        }
+        $attrValueList = $prodBiz->getAttrValueListByGroupIds($this->shopId, $attrGroupIds, $this->langCode);
+
         $data = [
             'oss_access_host' => (new OssHelper($this->shopId))->accessHost,
             'prod_info' => $prodInfo,
@@ -228,6 +236,8 @@ class ProductController extends Controller
             'sku_qty_price_list' => $skuQtyPriceList,
             'sku_img_list' => $skuImgList,
             'cate_level' => $cateLevel,
+            'attr_group_list' => $attrGroupList,
+            'attr_value_list' => $attrValueList,
             'cart_tk' => (new SafeHelper($this->request, $this->response))->buildCsrfToken('IDX', 'addToCart')
         ];
 

@@ -95,6 +95,9 @@ body .hd-error-tip a{color: #1ea1ea; font-weight: bold;}
 #hd-sku-img-select img.active, #hd-sku-img-select img:hover{border: 3px solid #eb631b;}
 #hd-add-to-cart{width: 100%;}
 #hd-prod-desc img{display: block; max-width: 100%; margin: 0 auto;}
+a.hd-sku-attr-select{text-decoration: none; display: inline-block; padding: 2px 5px; border: 2px solid #888; color: #888; margin-right: 10px;}
+a.hd-sku-attr-select.active, a.hd-sku-attr-select:hover{border: 2px solid #eb631b; color: inherit;}
+a.hd-sku-attr-select.not, a.hd-sku-attr-select.not:hover{border: 2px solid #ddd; color: #ddd; cursor: not-allowed;}
 
 #hd-cart-products.table td{vertical-align: middle;}
 #hd-cart-products .product > div{float: left; margin-right: 15px;}

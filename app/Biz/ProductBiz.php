@@ -521,8 +521,17 @@ class ProductBiz
             ->orderBy(['sort' => 'asc', 'product_sku_id' => 'asc'])->fields($fields)->select();
         if (empty($skuList)) {
             $prodInfo['sku_list'] = [];
+            $prodInfo['attributes'] = [];
+            $prodInfo['attr_group_ids'] = [];
         } else {
             $prodInfo['sku_list'] = array_column($skuList, null, 'sku');
+            $skuAttrList = $this->dbHelper->table('product_sku_attribute')
+                ->where(['shop_id' => $shopId, 'sku' => ['in', array_keys($prodInfo['sku_list'])]])
+                ->fields(['sku', 'attr_group_id', 'attr_value_id'])->select();
+            foreach ($skuAttrList as $skuAttr) {
+                $prodInfo['attributes'][$skuAttr['sku']][$skuAttr['attr_group_id']] = $skuAttr['attr_value_id'];
+                $prodInfo['attr_group_ids'][$skuAttr['attr_group_id']] = $skuAttr['attr_group_id'];
+            }
         }
 
         return $prodInfo;
@@ -1101,7 +1110,7 @@ class ProductBiz
             $res = $cateId;
             $this->dbHelper->commit();
         } catch (\PDOException $e) {
-            print_r(__CLASS__ . ' :: ' . $e->getMessage());
+//            print_r(__CLASS__ . ' :: ' . $e->getMessage());
             $res = 0;
             $this->dbHelper->rollBack();
         }

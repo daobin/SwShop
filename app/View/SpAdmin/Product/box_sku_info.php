@@ -2,8 +2,6 @@
 if (!empty($qty_price_list)) {
     $sku_idx = 0;
     foreach ($qty_price_list as $sku => $qty_price_data) {
-        $attr_group_id = 0;
-        $attr_value_id = 0;
         ?>
         <tr>
             <td class="hd-align-center">
@@ -12,7 +10,34 @@ if (!empty($qty_price_list)) {
                        value="<?php echo $sku; ?>"/>
             </td>
             <td>
-                <div class="hd-attr-list" data-sku="<?php echo $sku; ?>"></div>
+                <div class="hd-attr-list" data-sku="<?php echo $sku; ?>">
+                    <?php
+                    if (isset($prod_info['attributes'][$sku]) && !empty($attr_group_list)) {
+                        foreach ($attr_group_list as $group_id => $attr_group) {
+                            $sku_attr_id = $prod_info['attributes'][$sku][$group_id] ?? 0;
+                            ?>
+                            <div class="layui-form-item hd-attr-group-<?php echo $group_id; ?>">
+                                <label class="layui-form-label">属性组：<span><?php echo $attr_group['group_name']; ?></span></label>
+                                <div class="layui-input-inline">
+                                    <select class="hd-attr-value"
+                                            name="sku_data[<?php echo $sku; ?>][attr_values][<?php echo $group_id; ?>]">
+                                        <option value="0">请选择属性值</option>
+                                        <?php
+                                        if (!empty($attr_value_list[$group_id])) {
+                                            foreach ($attr_value_list[$group_id] as $attr_value) {
+                                                $selected = $sku_attr_id == $attr_value['attr_value_id'] ? ' selected ' : '';
+                                                echo '<option ', $selected, ' value="', $attr_value['attr_value_id'], '">', $attr_value['value_name'], '</option>';
+                                            }
+                                        }
+                                        ?>
+                                    </select>
+                                </div>
+                            </div>
+                            <?php
+                        }
+                    }
+                    ?>
+                </div>
                 <hr/>
                 <?php
                 foreach ($warehouses as $code => $name) {

@@ -1,6 +1,6 @@
 <?php
 $first_img_src = '';
-$default_sku = reset($sku_arr);
+$default_sku = !empty($sku_arr) ? reset($sku_arr) : '';
 $prod_name = xss_text($prod_info['desc']['product_name'] ?? '');
 
 $tkdTitle = empty($prod_info['desc']['meta_title']) ? $prod_name : $prod_info['desc']['meta_title'];
@@ -60,8 +60,8 @@ $widget_params['tkd_description'] = empty($prod_info['desc']['meta_description']
                 <div class="hd-margin-top-30 visible-xs visible-sm">&nbsp;</div>
                 <h1><?php echo $prod_name; ?></h1>
                 <div class="row hd-margin-top-30">
-                    <div class="col-md-3 hd-font-weight-bold">SKU :</div>
-                    <div class="col-md-9 hd-sku"><?php echo $default_sku; ?></div>
+                    <div class="col-xs-2 hd-font-weight-bold">SKU :</div>
+                    <div class="col-xs-10 hd-sku"><?php echo $default_sku; ?></div>
                 </div>
                 <?php
                 if (!empty($sku_arr)) {
@@ -71,16 +71,44 @@ $widget_params['tkd_description'] = empty($prod_info['desc']['meta_description']
                             continue;
                         }
 
+                        $attr_ids = $prod_info['attributes'][$sku] ?? [];
+                        $attr_ids = implode('-', $attr_ids) . '-';
+
                         $sku_img = reset($sku_img_list[$sku]);
                         $img_src = $oss_access_host . $sku_img['image_path'] . '/' . $sku_img['image_name'] . '?' . $sku_img['updated_at'];
                         $img_src = str_replace('_d_d', '_100_100', $img_src);
                         if ($sku == $default_sku) {
-                            echo '<img class="active" data-sku="', $sku, '" src="', $img_src, '" />';
+                            echo '<img class="active" data-attrids="', $attr_ids, '" data-sku="', $sku, '" src="', $img_src, '" />';
                         } else {
-                            echo '<img data-sku="', $sku, '" src="', $img_src, '" />';
+                            echo '<img data-attrids="', $attr_ids, '" data-sku="', $sku, '" src="', $img_src, '" />';
                         }
                     }
                     echo '</div>';
+                }
+                if (!empty($prod_info['attributes'])) {
+                    foreach ($prod_info['attr_group_ids'] as $group_id) {
+                        $value_btns = '';
+                        $btn_ids = [];
+                        foreach ($prod_info['attributes'] as $sku => $attr_ids) {
+                            $attr_id = $attr_ids[$group_id];
+                            if (isset($btn_ids[$attr_id])) {
+                                continue;
+                            }
+
+                            $btn_ids[$attr_id] = $attr_id;
+                            $attr_name = $attr_value_list[$group_id][$attr_id]['value_name'];
+                            if ($sku == $default_sku) {
+                                $value_btns .= '<a class="hd-sku-attr-select active" data-attrid="' . $attr_id . '">' . $attr_name . '</a>';
+                            } else {
+                                $value_btns .= '<a class="hd-sku-attr-select" data-attrid="' . $attr_id . '">' . $attr_name . '</a>';
+                            }
+                        }
+
+                        echo '<div class="row hd-margin-top-10">';
+                        echo '<div class="col-xs-2 hd-font-weight-bold">', $attr_group_list[$group_id]['group_name'], ' :</div>';
+                        echo '<div class="col-xs-10">', $value_btns, '</div>';
+                        echo '</div>';
+                    }
                 }
                 ?>
                 <div class="row hd-margin-top-30">
@@ -178,6 +206,31 @@ $widget_params['tkd_description'] = empty($prod_info['desc']['meta_description']
         var first_img_src = '<?php echo $first_img_src;?>';
         var img_list = <?php echo json_encode($sku_img_list);?>;
         var qty_price_list = <?php echo json_encode($sku_qty_price_list);?>;
+
+        var is_attr_click_img = false;
+        $('a.hd-sku-attr-select').click(function () {
+            if ($(this).hasClass('not')) {
+                return;
+            }
+
+            $(this).siblings('a.hd-sku-attr-select').removeClass('active');
+            if ($(this).hasClass('active')) {
+                $(this).removeClass('active');
+            } else {
+                $(this).addClass('active');
+            }
+
+            let attr_ids = '';
+            $('a.hd-sku-attr-select.active').each(function () {
+                attr_ids += $(this).data('attrid') + '-';
+            });
+
+            if($('#hd-sku-img-select img[data-attrids="' + attr_ids + '"]').length > 0){
+                is_attr_click_img = true;
+                $('#hd-sku-img-select img[data-attrids="' + attr_ids + '"]').click();
+            }
+        });
+
         $('#hd-sku-img-select img').click(function () {
             if ($(this).hasClass('active')) {
                 return;
@@ -223,6 +276,18 @@ $widget_params['tkd_description'] = empty($prod_info['desc']['meta_description']
 
             $('#hd-sku-img-select img').removeClass('active');
             $(this).addClass('active');
+
+            if (is_attr_click_img == true) {
+                is_attr_click_img = false;
+            } else {
+                let attr_ids = $(this).data('attrids');
+                attr_ids = attr_ids.split('-');
+
+                $('a.hd-sku-attr-select').removeClass('active');
+                for (let i in attr_ids) {
+                    $('a.hd-sku-attr-select[data-attrid="' + attr_ids[i] + '"]').addClass('active');
+                }
+            }
 
             init_zoom_sku_img_list();
         });
