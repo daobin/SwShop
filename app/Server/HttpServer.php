@@ -35,7 +35,7 @@ class HttpServer
         // 设置 HTTP 服务
         $server = new \Swoole\Http\Server($host, $port);
         $server->set([
-            'daemonize' => false,
+            'daemonize' => true,
             'open_length_check' => true,
             'worker_num' => swoole_cpu_num() * 2,
             'log_file' => ROOT_DIR . 'runtime/log/info_err_' . date('Ymd') . '.log',
