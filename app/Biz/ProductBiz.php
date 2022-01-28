@@ -25,144 +25,6 @@ class ProductBiz
         $this->count = 0;
     }
 
-    public function getAttrValueListByGroupIds(int $shopId, array $groupIds, string $langCode): array
-    {
-        if ($shopId <= 0 || empty($groupIds) || empty($langCode)) {
-            return [];
-        }
-
-        $attrValueList = $this->dbHelper->table('product_attribute_value', 'val')
-            ->join('product_attribute_value_description', 'desc', ['val.attr_value_id' => 'desc.attr_value_id'])
-            ->where(['val.shop_id' => $shopId, 'val.attr_group_id' => ['in', $groupIds], 'desc.language_code' => $langCode])
-            ->orderBy(['desc.value_name' => 'asc'])
-            ->fields(['val.attr_value_id', 'val.attr_group_id', 'desc.value_name', 'desc.updated_at', 'desc.updated_by'])
-            ->select();
-        if (empty($attrValueList)) {
-            return [];
-        }
-
-        $res = [];
-        foreach ($attrValueList as $attrValue) {
-            $groupId = $attrValue['attr_group_id'];
-            $attrId = $attrValue['attr_value_id'];
-            $res[$groupId][$attrId] = $attrValue;
-        }
-
-        return $res;
-    }
-
-    public function getAttrValueList(int $shopId, int $groupId, string $langCode): array
-    {
-        if ($shopId <= 0 || $groupId <= 0 || empty($langCode)) {
-            return [];
-        }
-
-        return $this->dbHelper->table('product_attribute_value', 'val')
-            ->join('product_attribute_value_description', 'desc', ['val.attr_value_id' => 'desc.attr_value_id'])
-            ->where(['val.shop_id' => $shopId, 'val.attr_group_id' => $groupId, 'desc.language_code' => $langCode])
-            ->orderBy(['desc.value_name' => 'asc'])
-            ->fields(['val.attr_value_id', 'val.attr_group_id', 'desc.value_name', 'desc.updated_at', 'desc.updated_by'])
-            ->select();
-    }
-
-    public function getAttrValueById(int $shopId, int $attrId): array
-    {
-        if ($shopId <= 0 || $attrId <= 0) {
-            return [];
-        }
-
-        $attrValue = $this->dbHelper->table('product_attribute_value')
-            ->where(['shop_id' => $shopId, 'attr_value_id' => $attrId])->find();
-        if (empty($attrValue)) {
-            return [];
-        }
-
-        $attrValue['desc_list'] = $this->dbHelper->table('product_attribute_value_description')
-            ->where(['shop_id' => $shopId, 'attr_value_id' => $attrId])
-            ->fields(['value_name', 'language_code'])->select();
-
-        $attrValue['desc_list'] = empty($attrValue['desc_list']) ? [] : array_column(
-            $attrValue['desc_list'], 'value_name', 'language_code');
-
-        return $attrValue;
-    }
-
-    public function getAttrValueIdByName(int $shopId, string $langCode, string $valueName): int
-    {
-        if ($shopId <= 0 || empty($langCode) || empty($valueName)) {
-            return 0;
-        }
-
-        $attrId = $this->dbHelper->table('product_attribute_value_description')
-            ->where(['shop_id' => $shopId, 'language_code' => $langCode, 'value_name' => $valueName])
-            ->fields(['attr_value_id'])->find();
-
-        return $attrId ? (int)reset($attrId) : 0;
-    }
-
-    public function saveAttrValue($data): int
-    {
-        if (empty($data['shop_id']) || empty($data['group_id']) || empty($data['value_names'])) {
-            return 0;
-        }
-
-        $shopId = (int)$data['shop_id'];
-        $groupId = (int)$data['group_id'];
-        $attrId = (int)$data['attr_id'];
-        $operator = $data['operator'] ?? '';
-
-        $res = 1;
-        $this->dbHelper->beginTransaction();
-        try {
-            $time = time();
-
-            $attrInfo = $this->getAttrValueById($shopId, $attrId);
-            if ($attrInfo) {
-                $this->dbHelper->table('product_attribute_value')
-                    ->where(['shop_id' => $shopId, 'attr_value_id' => $groupId])
-                    ->update(['updated_at' => $time, 'updated_by' => $operator]);
-            } else {
-                $attrId = $this->dbHelper->table('product_attribute_value')
-                    ->insert([
-                        'shop_id' => $shopId,
-                        'attr_group_id' => $groupId,
-                        'created_at' => $time,
-                        'created_by' => $operator,
-                        'updated_at' => $time,
-                        'updated_by' => $operator
-                    ]);
-            }
-
-            foreach ($data['value_names'] as $langCode => $valueName) {
-                $langCode = strtolower($langCode);
-                if (empty($groupInfo['desc_list'][$langCode])) {
-                    $this->dbHelper->table('product_attribute_value_description')
-                        ->insert([
-                            'shop_id' => $shopId,
-                            'attr_value_id' => $attrId,
-                            'language_code' => $langCode,
-                            'value_name' => $valueName,
-                            'created_at' => $time,
-                            'created_by' => $operator,
-                            'updated_at' => $time,
-                            'updated_by' => $operator
-                        ]);
-                } else {
-                    $this->dbHelper->table('product_attribute_value_description')
-                        ->where(['shop_id' => $shopId, 'attr_value_id' => $groupId, 'language_code' => $langCode])
-                        ->update(['value_name' => $valueName, 'updated_at' => $time, 'updated_by' => $operator]);
-                }
-            }
-
-            $this->dbHelper->commit();
-        } catch (\Throwable $e) {
-            $res = 0;
-            $this->dbHelper->rollBack();
-        }
-
-        return $res;
-    }
-
     public function getAttrGroupList(int $shopId, string $langCode): array
     {
         if ($shopId <= 0 || empty($langCode)) {
@@ -296,16 +158,16 @@ class ProductBiz
         }
 
         $skuQtyPriceList = $this->getSkuQtyPriceListBySkuArr($shopId, $prodSkuArr, $warehouseCode, true);
-        $skuImgList = $this->getSkuImageListBySkuArr($shopId, $prodSkuArr, true);
+        $prodImgList = $this->getProdImageListByProdIds($shopId, array_keys($prodList), true);
 
         $ret = [];
         foreach ($prodList as $prodId => $prodInfo) {
             $sku = $prodSkuArr[$prodId];
-            if (empty($skuQtyPriceList[$sku]) || empty($skuImgList[$sku])) {
+            if (empty($skuQtyPriceList[$sku]) || empty($prodImgList[$prodId])) {
                 continue;
             }
 
-            $ret[] = array_merge($prodList[$prodId], $skuQtyPriceList[$sku], $skuImgList[$sku]);
+            $ret[] = array_merge($prodList[$prodId], $skuQtyPriceList[$sku], $prodImgList[$prodId]);
         }
 
         return $ret;
@@ -324,16 +186,16 @@ class ProductBiz
         }
 
         $skuQtyPriceList = $this->getSkuQtyPriceListBySkuArr($shopId, $prodSkuArr, $warehouseCode);
-        $skuImgList = $this->getSkuImageListBySkuArr($shopId, $prodSkuArr, true);
+        $prodImgList = $this->getProdImageListByProdIds($shopId, array_keys($prodList), true);
 
         $ret = [];
         foreach ($prodList as $prodId => $prodInfo) {
             $sku = $prodSkuArr[$prodId];
-            if (empty($skuQtyPriceList[$sku]) || empty($skuImgList[$sku])) {
+            if (empty($skuQtyPriceList[$sku]) || empty($prodImgList[$prodId])) {
                 continue;
             }
 
-            $ret[] = array_merge($prodList[$prodId], $skuQtyPriceList[$sku], $skuImgList[$sku]);
+            $ret[] = array_merge($prodList[$prodId], $skuQtyPriceList[$sku], $prodImgList[$prodId]);
         }
 
         return $ret;
@@ -521,16 +383,20 @@ class ProductBiz
             ->orderBy(['sort' => 'asc', 'product_sku_id' => 'asc'])->fields($fields)->select();
         if (empty($skuList)) {
             $prodInfo['sku_list'] = [];
-            $prodInfo['attributes'] = [];
-            $prodInfo['attr_group_ids'] = [];
+            $prodInfo['attr_value_list'] = [];
+            $prodInfo['attr_image_list'] = [];
         } else {
             $prodInfo['sku_list'] = array_column($skuList, null, 'sku');
             $skuAttrList = $this->dbHelper->table('product_sku_attribute')
                 ->where(['shop_id' => $shopId, 'sku' => ['in', array_keys($prodInfo['sku_list'])]])
-                ->fields(['sku', 'attr_group_id', 'attr_value_id'])->select();
+                ->fields(['sku', 'attr_group_id', 'attr_value_name', 'image_path', 'image_name', 'updated_at'])->select();
             foreach ($skuAttrList as $skuAttr) {
-                $prodInfo['attributes'][$skuAttr['sku']][$skuAttr['attr_group_id']] = $skuAttr['attr_value_id'];
-                $prodInfo['attr_group_ids'][$skuAttr['attr_group_id']] = $skuAttr['attr_group_id'];
+                $grpId = $skuAttr['attr_group_id'];
+                $attrVal = $skuAttr['attr_value_name'];
+                $prodInfo['attr_value_list'][$grpId][$skuAttr['sku']] = $attrVal;
+                if (!empty($skuAttr['image_path']) && !empty($skuAttr['image_name'])) {
+                    $prodInfo['attr_image_list'][$grpId][$attrVal] = $skuAttr['image_path'] . '/' . $skuAttr['image_name'] . '?' . $skuAttr['updated_at'];
+                }
             }
         }
 
@@ -556,6 +422,29 @@ class ProductBiz
         return empty($skuList) ? [] : array_column($skuList, null, 'sku');
     }
 
+    public function getSkuAttrIdsBySkuArr(int $shopId, array $skuArr): array
+    {
+        if ($shopId <= 0 || empty($skuArr)) {
+            return [];
+        }
+
+        $skuAttrList = $this->dbHelper->table('product_sku_attribute')
+            ->where(['shop_id' => $shopId, 'sku' => ['in', $skuArr]])
+            ->fields(['sku', 'attr_group_id', 'attr_value_name', 'product_sku_attribute_id'])->select();
+        if (empty($skuAttrList)) {
+            return [];
+        }
+
+        $res = [];
+        foreach ($skuAttrList as $skuAttr) {
+            $grpId = (int)$skuAttr['attr_group_id'];
+            $valName = strtolower($skuAttr['attr_value_name']);
+            $res[$skuAttr['sku']][$grpId][$valName] = $skuAttr['product_sku_attribute_id'];
+        }
+
+        return $res;
+    }
+
     public function getSkuAttrListBySkuArr(int $shopId, array $skuArr): array
     {
         if ($shopId <= 0 || empty($skuArr)) {
@@ -564,14 +453,14 @@ class ProductBiz
 
         $skuAttrList = $this->dbHelper->table('product_sku_attribute')
             ->where(['shop_id' => $shopId, 'sku' => ['in', $skuArr]])
-            ->fields(['sku', 'attr_value_id'])->select();
+            ->fields(['sku', 'attr_value_name', 'image_path', 'image_name', 'updated_at'])->select();
         if (empty($skuAttrList)) {
             return [];
         }
 
         $res = [];
         foreach ($skuAttrList as $skuAttr) {
-            $res[$skuAttr['sku']][$skuAttr['attr_value_id']] = $skuAttr;
+            $res[$skuAttr['sku']][$skuAttr['attr_value_name']] = $skuAttr;
         }
 
         return $res;
@@ -616,15 +505,15 @@ class ProductBiz
 
     }
 
-    public function getSkuImageListBySkuArr(int $shopId, array $skuArr, bool $returnDefault = false): array
+    public function getProdImageListByProdIds(int $shopId, array $prodIds, bool $returnDefault = false): array
     {
-        if ($shopId <= 0 || empty($skuArr)) {
+        if ($shopId <= 0 || empty($prodIds)) {
             return [];
         }
 
-        $skuArr = array_values(array_unique($skuArr));
-        $where = ['shop_id' => $shopId, 'sku' => ['in', $skuArr]];
-        $fields = ['product_image_id', 'sku', 'image_path', 'image_name', 'sort', 'updated_at', 'updated_by'];
+        $prodIds = array_values(array_unique($prodIds));
+        $where = ['shop_id' => $shopId, 'product_id' => ['in', $prodIds]];
+        $fields = ['product_image_id', 'product_id', 'image_path', 'image_name', 'sort', 'updated_at', 'updated_by'];
 
         $rows = $this->dbHelper->table('product_image')->where($where)->fields($fields)
             ->orderBy(['sort' => 'asc'])->select();
@@ -632,29 +521,29 @@ class ProductBiz
             return [];
         }
 
-        $skuImageList = [];
+        $imageList = [];
         if ($returnDefault === true) {
             foreach ($rows as $row) {
-                if (isset($skuImageList[$row['sku']])) {
+                if (isset($imageList[$row['product_id']])) {
                     continue;
                 }
 
-                $skuImageList[$row['sku']] = $row;
+                $imageList[$row['product_id']] = $row;
             }
         } else {
             foreach ($rows as $row) {
-                $skuImageList[$row['sku']][$row['sort']] = $row;
+                $imageList[$row['product_id']][$row['sort']] = $row;
             }
         }
         unset($rows, $row);
 
-        return $skuImageList;
+        return $imageList;
 
     }
 
-    public function saveProduct(array $prodData, array $prodDescData, array $prodSkuData): int
+    public function saveProduct(array $prodData, array $prodImageData, array $prodDescData, array $prodSkuData): int
     {
-        if (empty($prodData) || empty($prodDescData) || empty($prodSkuData)) {
+        if (empty($prodData) || empty($prodImageData) || empty($prodDescData) || empty($prodSkuData)) {
             return 0;
         }
 
@@ -673,9 +562,16 @@ class ProductBiz
         $this->dbHelper->beginTransaction();
         try {
             if (empty($prodInfo)) {
+                // 商品新增
                 $prodData['price'] = 0;
                 unset($prodData['product_id']);
                 $prodId = $this->dbHelper->table('product')->insert($prodData);
+
+                foreach ($prodImageData as $imgSort => $prodImage) {
+                    $prodImage['product_id'] = $prodId;
+                    $prodImage['sort'] = $imgSort;
+                    $this->dbHelper->table('product_image')->insert($prodImage);
+                }
 
                 foreach ($prodDescData as $prodDesc) {
                     $prodDesc['product_id'] = $prodId;
@@ -700,22 +596,26 @@ class ProductBiz
                         throw new \PDOException('Product Attribute Empty');
                     }
 
-                    if (empty($data['qty_price_data']) || empty($data['img_data'])) {
-                        throw new \PDOException('Product Qty or Price or Image Empty');
+                    if (empty($data['qty_price_data'])) {
+                        throw new \PDOException('Product Qty and Price Empty');
                     }
 
-                    foreach ($data['attributes'] as $groupId => $attrId) {
-                        $this->dbHelper->table('product_sku_attribute')->insert([
-                            'shop_id' => $shopId,
-                            'product_id' => $prodId,
-                            'sku' => $sku,
-                            'attr_group_id' => $groupId,
-                            'attr_value_id' => $attrId,
-                            'created_at' => $prodData['created_at'],
-                            'created_by' => $prodData['created_by'],
-                            'updated_at' => $prodData['updated_at'],
-                            'updated_by' => $prodData['updated_by']
-                        ]);
+                    foreach ($data['attributes'] as $groupId => $attrList) {
+                        foreach ($attrList as $attr) {
+                            $this->dbHelper->table('product_sku_attribute')->insert([
+                                'shop_id' => $shopId,
+                                'product_id' => $prodId,
+                                'sku' => $sku,
+                                'attr_group_id' => $groupId,
+                                'attr_value_name' => $attr['value_name'],
+                                'image_path' => $attr['image_path'],
+                                'image_name' => $attr['image_name'],
+                                'created_at' => $prodData['created_at'],
+                                'created_by' => $prodData['created_by'],
+                                'updated_at' => $prodData['updated_at'],
+                                'updated_by' => $prodData['updated_by']
+                            ]);
+                        }
                     }
 
                     foreach ($data['qty_price_data'] as $qtyPrice) {
@@ -725,16 +625,30 @@ class ProductBiz
                         $qtyPrice['product_id'] = $prodId;
                         $this->dbHelper->table('product_qty_price')->insert($qtyPrice);
                     }
-
-                    foreach ($data['img_data'] as $img) {
-                        $this->dbHelper->table('product_image')->insert($img);
-                    }
                 }
 
             } else {
+                // 商品修改
                 unset($prodData['created_at'], $prodData['created_by']);
                 $this->dbHelper->table('product')->where(
                     ['shop_id' => $shopId, 'product_id' => $prodId])->update($prodData);
+
+                $prodImgList = $this->getProdImageListByProdIds($shopId, [$prodId]);
+                $prodImgList = $prodImgList[$prodId] ?? [];
+                foreach ($prodImageData as $imgSort => $prodImage) {
+                    $prodImage['product_id'] = $prodId;
+                    $prodImage['sort'] = $imgSort;
+
+                    if (empty($prodImgList[$imgSort])) {
+                        $this->dbHelper->table('product_image')->insert($prodImage);
+                    } else {
+                        $prodImgId = $prodImgList[$imgSort]['product_image_id'];
+                        unset($prodImage['created_at'], $prodImage['created_by'], $prodImgList[$imgSort]);
+
+                        $this->dbHelper->table('product_image')->where(
+                            ['shop_id' => $shopId, 'product_image_id' => $prodImgId])->update($prodImage);
+                    }
+                }
 
                 foreach ($prodDescData as $langCode => $prodDesc) {
                     if (empty($prodInfo['desc_list'][$langCode])) {
@@ -774,34 +688,52 @@ class ProductBiz
                     }
                 }
 
-                $skuAttrList = $this->getSkuAttrListBySkuArr($shopId, $skuArr);
+                $skuAttrIds = $this->getSkuAttrIdsBySkuArr($shopId, $skuArr);
                 $qtyPriceList = $this->getSkuQtyPriceListBySkuArr($shopId, $skuArr);
-                $imgList = $this->getSkuImageListBySkuArr($shopId, $skuArr);
 
                 foreach ($prodSkuData as $sku => $data) {
                     if (empty($data['attributes'])) {
                         throw new \PDOException('Product Attribute Empty');
                     }
 
-                    if (empty($data['qty_price_data']) || empty($data['img_data'])) {
-                        throw new \PDOException('Product Qty or Price or Image Empty');
+                    if (empty($data['qty_price_data'])) {
+                        throw new \PDOException('Product Qty and Price Empty');
                     }
 
-                    foreach ($data['attributes'] as $groupId => $attrId) {
-                        if (empty($skuAttrList[$sku][$attrId])) {
-                            $this->dbHelper->table('product_sku_attribute')->insert([
-                                'shop_id' => $shopId,
-                                'product_id' => $prodId,
-                                'sku' => $sku,
-                                'attr_group_id' => $groupId,
-                                'attr_value_id' => $attrId,
-                                'created_at' => $prodInfo['created_at'],
-                                'created_by' => $prodInfo['created_by'],
-                                'updated_at' => $prodInfo['updated_at'],
-                                'updated_by' => $prodInfo['updated_by']
-                            ]);
-                        } else {
-                            unset($skuAttrList[$sku][$attrId]);
+                    foreach ($data['attributes'] as $groupId => $attrList) {
+                        foreach ($attrList as $attr) {
+                            if (empty($skuAttrIds[$sku][$groupId][strtolower($attr['value_name'])])) {
+                                $this->dbHelper->table('product_sku_attribute')->insert([
+                                    'shop_id' => $shopId,
+                                    'product_id' => $prodId,
+                                    'sku' => $sku,
+                                    'attr_group_id' => $groupId,
+                                    'attr_value_name' => $attr['value_name'],
+                                    'image_path' => $attr['image_path'],
+                                    'image_name' => $attr['image_name'],
+                                    'created_at' => $prodData['created_at'],
+                                    'created_by' => $prodData['created_by'],
+                                    'updated_at' => $prodData['updated_at'],
+                                    'updated_by' => $prodData['updated_by']
+                                ]);
+                            } else {
+                                $this->dbHelper->table('product_sku_attribute')
+                                    ->where([
+                                        'product_sku_attribute_id' => $skuAttrIds[$sku][$groupId][strtolower($attr['value_name'])],
+                                        'shop_id' => $shopId
+                                    ])
+                                    ->update([
+                                        'shop_id' => $shopId,
+                                        'product_id' => $prodId,
+                                        'sku' => $sku,
+                                        'attr_group_id' => $groupId,
+                                        'attr_value_name' => $attr['value_name'],
+                                        'image_path' => $attr['image_path'],
+                                        'image_name' => $attr['image_name'],
+                                        'updated_at' => $prodData['updated_at'],
+                                        'updated_by' => $prodData['updated_by']
+                                    ]);
+                            }
                         }
                     }
 
@@ -826,58 +758,12 @@ class ProductBiz
                                 ['shop_id' => $shopId, 'product_qty_price_id' => $qtyPriceId])->update($qtyPrice);
                         }
                     }
-
-                    foreach ($data['img_data'] as $img) {
-                        $sort = $img['sort'];
-                        if (empty($imgList[$sku][$sort])) {
-                            $this->dbHelper->table('product_image')->insert($img);
-                        } else {
-                            $prodImgId = $imgList[$sku][$sort]['product_image_id'];
-                            unset($img['created_at'], $img['created_by'], $imgList[$sku][$sort]);
-
-                            $this->dbHelper->table('product_image')->where(
-                                ['shop_id' => $shopId, 'product_image_id' => $prodImgId])->update($img);
-                        }
-                    }
-                }
-
-                // 删除多余的商品属性
-                if (!empty($skuAttrList)) {
-                    foreach ($skuAttrList as $sku => $skuAttrArr) {
-                        $attrIds = array_keys($skuAttrArr);
-                        if (empty($attrIds)) {
-                            continue;
-                        }
-
-                        $this->dbHelper->table('product_sku_attribute')
-                            ->where(['shop_id' => $shopId, 'sku' => $sku, 'attr_value_id' => ['in', $attrIds]])->delete();
-                    }
-                }
-
-                // 删除多余的商品库存
-                if (!empty($qtyPriceList)) {
-                    foreach ($qtyPriceList as $sku => $qtyPrice) {
-                        if (empty($qtyPrice)) {
-                            $delSkuArr[] = $sku;
-                            continue;
-                        }
-
-                        $this->dbHelper->table('product_qty_price')->where(
-                            ['shop_id' => $shopId, 'sku' => $sku, 'warehouse_code' => ['in', array_keys($qtyPrice)]])->delete();
-                    }
                 }
 
                 // 删除多余的商品图片
-                if (!empty($imgList)) {
-                    foreach ($imgList as $sku => $img) {
-                        if (empty($img)) {
-                            $delSkuArr[] = $sku;
-                            continue;
-                        }
-
-                        $this->dbHelper->table('product_image')->where(
-                            ['shop_id' => $shopId, 'sku' => $sku, 'sort' => ['in', array_keys($img)]])->delete();
-                    }
+                if (!empty($prodImgList)) {
+                    $this->dbHelper->table('product_image')->where(
+                        ['shop_id' => $shopId, 'product_id' => $prodId, 'sort' => ['in', array_keys($prodImgList)]])->delete();
                 }
 
 
@@ -887,7 +773,7 @@ class ProductBiz
                     $this->dbHelper->table('product_sku')->where(
                         ['shop_id' => $shopId, 'sku' => ['in', $delSkuArr]])->delete();
 
-                    $this->dbHelper->table('product_image')->where(
+                    $this->dbHelper->table('product_sku_attribute')->where(
                         ['shop_id' => $shopId, 'sku' => ['in', $delSkuArr]])->delete();
 
                     $this->dbHelper->table('product_qty_price')->where(

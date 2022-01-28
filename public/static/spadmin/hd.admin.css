@@ -5,6 +5,9 @@ a, image, a:active, image:active{border: none !important;}
 .hd-color-white{color: #fff !important;}
 .hd-color-red{color: #FF5722 !important;}
 .hd-color-blue{color: #1e9fff !important;}
+.hd-color-333{color: #333;}
+.hd-color-666{color: #666;}
+.hd-color-888{color: #888;}
 .hd-align-left{text-align: left !important;}
 .hd-align-right{text-align: right !important;}
 .hd-align-center{text-align: center !important;}
@@ -14,9 +17,12 @@ a, image, a:active, image:active{border: none !important;}
 .hd-width-150{width: 150px !important;}
 .hd-width-500{width: 500px !important;}
 .hd-margin-left-30{margin-left: 30px !important;}
+.hd-margin-right-10{margin-right: 10px !important;}
+.hd-margin-right-30{margin-right: 30px !important;}
 .hd-margin-top-10{margin-top: 10px !important;}
 .hd-margin-top-30{margin-top: 30px !important;}
 .hd-margin-top-60{margin-top: 60px !important;}
+.hd-padding-left15{padding-left: 15px;}
 .hd-padding-top10{padding-top: 10px !important;}
 .hd-padding-top30{padding-top: 30px !important;}
 .hd-padding-top60{padding-top: 60px !important;}

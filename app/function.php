@@ -7,6 +7,13 @@
  */
 declare(strict_types=1);
 
+// 格式化打印输出
+function dump_view($data){
+    echo '<pre>';
+    print_r($data);
+    echo '</pre>';
+}
+
 // 获取世界时间
 function get_world_times(): array
 {

@@ -72,13 +72,23 @@ $widget_params['tkd_title'] = 'My Order - ' . $website_name;
                                     <?php
                                     $prod_idx = 0;
                                     foreach ($order_info['prod_list'] as $sku => $prod_info) {
+                                        $prod_id = $prod_info['product_id'];
                                         $prod_name = xss_text($prod_info['product_name']);
-                                        $prod_link = process_url_string($prod_name) . '-p' . $prod_info['product_id'] . '.html';
+                                        $prod_link = process_url_string($prod_name) . '-p' . $prod_id . '.html';
                                         $prod_img = '';
-                                        if (!empty($prod_img_list[$sku])) {
-                                            $prod_img = $oss_access_host . $prod_img_list[$sku]['image_path'] . '/' . $prod_img_list[$sku]['image_name'] . '?' . $prod_img_list[$sku]['updated_at'];
-                                            $prod_img = str_replace('_d_d', '_100_100', $prod_img);
+                                        if (!empty($prod_img_list[$prod_id])) {
+                                            $prod_img = $oss_access_host . $prod_img_list[$prod_id]['image_path'] . '/' . $prod_img_list[$prod_id]['image_name'] . '?' . $prod_img_list[$prod_id]['updated_at'];
                                         }
+                                        $sku_attrs = [];
+                                        if (!empty($sku_attr_list[$sku])) {
+                                            foreach ($sku_attr_list[$sku] as $attr_value => $attr_info) {
+                                                $sku_attrs[] = xss_text($attr_value);
+                                                if (!empty($attr_info['image_path']) && !empty($attr_info['image_name'])) {
+                                                    $prod_img = $oss_access_host . $attr_info['image_path'] . '/' . $attr_info['image_name'] . '?' . $attr_info['updated_at'];
+                                                }
+                                            }
+                                        }
+                                        $prod_img = str_replace('_d_d', '_100_100', $prod_img);
                                         if ($prod_idx > 0) {
                                             echo '<hr/>';
                                         }
@@ -87,13 +97,19 @@ $widget_params['tkd_title'] = 'My Order - ' . $website_name;
                                         <div class="row">
                                             <div class="col-md-1">
                                                 <a href="/<?php echo $prod_link; ?>">
-                                                    <img src="<?php echo $prod_img; ?>"
-                                                         alt="<?php echo $prod_name; ?>"/>
+                                                    <img src="<?php echo $prod_img; ?>"/>
                                                 </a>
                                             </div>
                                             <div class="col-md-6 hd-prod-title">
-                                                <a href="/<?php echo $prod_link; ?>">
-                                                    <?php echo $prod_name; ?>
+                                                <a href="/<?php echo $prod_link; ?>" title="<?php echo $prod_name; ?>">
+                                                    <?php
+                                                    if (!empty($sku_attrs)) {
+                                                        echo ' <span class="hd-color-888">[ ', implode(", ", $sku_attrs), ' ]</span>';
+                                                        echo '<span class="hd-padding-left-15">', $prod_name, '</span>';
+                                                    } else {
+                                                        echo '<span>', $prod_name, '</span>';
+                                                    }
+                                                    ?>
                                                 </a>
                                             </div>
                                             <div class="col-md-2 col-md-offset-1 hd-v-center">

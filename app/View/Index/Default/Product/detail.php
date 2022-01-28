@@ -8,6 +8,15 @@ $widget_params['tkd_title'] = $prod_name . ' - ' . $website_name;
 $widget_params['tkd_keywords'] = empty($prod_info['desc']['meta_keywords']) ? $prod_name : $prod_info['desc']['meta_keywords'];
 $widget_params['tkd_description'] = empty($prod_info['desc']['meta_description']) ? $prod_name : $prod_info['desc']['meta_description'];
 
+$attr_value_skus = [];
+if (!empty($prod_info['attr_value_list'])) {
+    foreach ($prod_info['attr_value_list'] as $group_id => $sku_attr) {
+        foreach ($sku_attr as $sku => $attr_value) {
+            $attr_value_skus[$group_id][$attr_value][$sku] = $sku;
+        }
+    }
+}
+
 \App\Helper\TemplateHelper::widget('index', 'header', $widget_params ?? []);
 ?>
     <div class="hd-height-15">&nbsp;</div>
@@ -29,12 +38,12 @@ $widget_params['tkd_description'] = empty($prod_info['desc']['meta_description']
     <div class="container hd-margin-top-30">
         <div class="row">
             <div class="col-md-6">
-                <?php if (!empty($sku_img_list[$default_sku])) { ?>
+                <?php if (!empty($prod_img_list)) { ?>
                     <div id="hd-main-image-loop" class="carousel">
                         <div class="carousel-inner">
                             <?php
-                            foreach ($sku_img_list[$default_sku] as $sku_img) {
-                                $img_src = $oss_access_host . $sku_img['image_path'] . '/' . $sku_img['image_name'] . '?' . $sku_img['updated_at'];
+                            foreach ($prod_img_list as $prod_img) {
+                                $img_src = $oss_access_host . $prod_img['image_path'] . '/' . $prod_img['image_name'] . '?' . $prod_img['updated_at'];
                                 $img_src = str_replace('_d_d', '_800_800', $img_src);
                                 echo '<div class="item ', ($first_img_src ? '' : ' active '), '">';
                                 echo '<img src="', $img_src, '"/>';
@@ -60,54 +69,41 @@ $widget_params['tkd_description'] = empty($prod_info['desc']['meta_description']
                 <div class="hd-margin-top-30 visible-xs visible-sm">&nbsp;</div>
                 <h1><?php echo $prod_name; ?></h1>
                 <div class="row hd-margin-top-30">
-                    <div class="col-xs-2 hd-font-weight-bold">SKU :</div>
-                    <div class="col-xs-10 hd-sku"><?php echo $default_sku; ?></div>
+                    <span class="col-xs-2 hd-font-weight-bold">SKU :</span>
+                    <span class="hd-sku"><?php echo $default_sku; ?></span>
                 </div>
                 <?php
-                if (!empty($sku_arr)) {
-                    echo '<div class="row hd-margin-top-30" id="hd-sku-img-select">';
-                    foreach ($sku_arr as $sku) {
-                        if (empty($sku_img_list[$sku])) {
+                if (!empty($attr_group_list)) {
+                    foreach ($attr_group_list as $group_id => $group_info) {
+                        if (empty($prod_info['attr_value_list'][$group_id])) {
                             continue;
                         }
 
-                        $attr_ids = $prod_info['attributes'][$sku] ?? [];
-                        $attr_ids = implode('-', $attr_ids) . '-';
-
-                        $sku_img = reset($sku_img_list[$sku]);
-                        $img_src = $oss_access_host . $sku_img['image_path'] . '/' . $sku_img['image_name'] . '?' . $sku_img['updated_at'];
-                        $img_src = str_replace('_d_d', '_100_100', $img_src);
-                        if ($sku == $default_sku) {
-                            echo '<img class="active" data-attrids="', $attr_ids, '" data-sku="', $sku, '" src="', $img_src, '" />';
+                        $active_attr_value = $prod_info['attr_value_list'][$group_id][$default_sku] ?? '';
+                        if (empty($prod_info['attr_image_list'][$group_id])) {
+                            echo '<div class="row hd-margin-top-10">';
+                            echo '<span class="col-xs-2 hd-font-weight-bold">', xss_text($group_info['group_name']), ':</span>';
+                            foreach ($attr_value_skus[$group_id] as $attr_value => $skus) {
+                                if ($attr_value == $active_attr_value) {
+                                    echo '<a class="hd-sku-attr-select active">' . $attr_value . '</a>';
+                                } else {
+                                    echo '<a class="hd-sku-attr-select">' . $attr_value . '</a>';
+                                }
+                            }
+                            echo '<input type="hidden" class="active_attr_value" data-group="', $group_id, '" value="', $active_attr_value, '" />';
+                            echo '</div>';
                         } else {
-                            echo '<img data-attrids="', $attr_ids, '" data-sku="', $sku, '" src="', $img_src, '" />';
-                        }
-                    }
-                    echo '</div>';
-                }
-                if (!empty($prod_info['attributes'])) {
-                    foreach ($prod_info['attr_group_ids'] as $group_id) {
-                        $value_btns = '';
-                        $btn_ids = [];
-                        foreach ($prod_info['attributes'] as $sku => $attr_ids) {
-                            $attr_id = $attr_ids[$group_id];
-                            if (isset($btn_ids[$attr_id])) {
-                                continue;
+                            echo '<div class="hd-margin-top-30" id="hd-sku-img-select">';
+                            foreach ($prod_info['attr_image_list'][$group_id] as $attr_value => $img_src) {
+                                if ($attr_value == $active_attr_value) {
+                                    echo '<img class="active" src="', $img_src, '" data-attr="', $attr_value, '" />';
+                                } else {
+                                    echo '<img src="', $img_src, '" data-attr="', $attr_value, '" />';
+                                }
                             }
-
-                            $btn_ids[$attr_id] = $attr_id;
-                            $attr_name = $attr_value_list[$group_id][$attr_id]['value_name'];
-                            if ($sku == $default_sku) {
-                                $value_btns .= '<a class="hd-sku-attr-select active" data-attrid="' . $attr_id . '">' . $attr_name . '</a>';
-                            } else {
-                                $value_btns .= '<a class="hd-sku-attr-select" data-attrid="' . $attr_id . '">' . $attr_name . '</a>';
-                            }
+                            echo '<input type="hidden" class="active_attr_value" data-group="', $group_id, '" value="', $active_attr_value, '" />';
+                            echo '</div>';
                         }
-
-                        echo '<div class="row hd-margin-top-10">';
-                        echo '<div class="col-xs-2 hd-font-weight-bold">', $attr_group_list[$group_id]['group_name'], ' :</div>';
-                        echo '<div class="col-xs-10">', $value_btns, '</div>';
-                        echo '</div>';
                     }
                 }
                 ?>
@@ -165,100 +161,38 @@ $widget_params['tkd_description'] = empty($prod_info['desc']['meta_description']
                     services. Express shipping freight depends on the quantity of goods.</p>
                 <h3>Payment</h3>
                 <p>
-                    Glarrymusic.com accepts Paypal, Visa, MasterCard, JCB and America Express. Glarrymusic.com secured
-                    by Godaddy SSL, all information we collect are secured.
+                    <?php echo $website_name; ?> accepts Paypal, Visa, MasterCard, JCB and America
+                    Express. <?php echo $website_name; ?> secured
+                    by SSL, all information we collect are secured.
                 </p>
             </div>
         </div>
     </div>
     <input type="hidden" id="hd-sku" value="<?php echo $default_sku; ?>"/>
     <input type="hidden" id="hd-cart-tk" value="<?php echo $cart_tk ?? ''; ?>"/>
-<?php if ($device == 'PC') { ?>
-    <script src="/static/jquery/jquery.zoom.min.js"></script>
-    <script>
-        function init_zoom_sku_img_list() {
-            $('#hd-main-image-loop .item img').click(function () {
-                let imgSrc = $(this).attr('src');
-
-                $('#hd-main-image-loop').zoom({
-                    url: imgSrc,
-                    callback: function () {
-                        $('#hd-main-image-loop .zoomImg').css('opacity', '1');
-                    },
-                    onZoomOut: function () {
-                        $('#hd-main-image-loop .zoomImg').remove();
-                    }
-                });
-                $(document).on('click', '#hd-main-image-loop .zoomImg', function () {
-                    $('#hd-main-image-loop .zoomImg').remove();
-                });
-            });
-        }
-    </script>
-<?php } else { ?>
-    <script>
-        function init_zoom_sku_img_list() {
-            // Nothing
-        }
-    </script>
-<?php } ?>
     <script>
         var first_img_src = '<?php echo $first_img_src;?>';
-        var img_list = <?php echo json_encode($sku_img_list);?>;
+        var attr_value_skus = <?php echo json_encode($attr_value_skus);?>;
         var qty_price_list = <?php echo json_encode($sku_qty_price_list);?>;
 
-        var is_attr_click_img = false;
-        $('a.hd-sku-attr-select').click(function () {
-            if ($(this).hasClass('not')) {
-                return;
-            }
-
-            $(this).siblings('a.hd-sku-attr-select').removeClass('active');
-            if ($(this).hasClass('active')) {
-                $(this).removeClass('active');
-            } else {
-                $(this).addClass('active');
-            }
-
-            let attr_ids = '';
-            $('a.hd-sku-attr-select.active').each(function () {
-                attr_ids += $(this).data('attrid') + '-';
-            });
-
-            if($('#hd-sku-img-select img[data-attrids="' + attr_ids + '"]').length > 0){
-                is_attr_click_img = true;
-                $('#hd-sku-img-select img[data-attrids="' + attr_ids + '"]').click();
-            }
-        });
-
-        $('#hd-sku-img-select img').click(function () {
-            if ($(this).hasClass('active')) {
-                return;
-            }
-
-            let sku = $(this).data('sku');
-            if (qty_price_list[sku] == undefined || img_list[sku] == undefined) {
-                return;
-            }
-
-            $('#hd-main-image-loop .carousel-inner').html(function () {
-                first_img_src = '';
-                let img_html = '';
-                for (let sort in img_list[sku]) {
-                    let img_src = '<?php echo $oss_access_host;?>' + img_list[sku][sort]['image_path'] + '/';
-                    img_src += img_list[sku][sort]['image_name'] + '?' + img_list[sku][sort]['updated_at'];
-                    img_src = img_src.replace('_d_d', '_800_800');
-
-                    if (first_img_src == '') {
-                        first_img_src = img_src;
-                        img_html += '<div class="item active"><img src="' + img_src + '"/></div>';
-                    } else {
-                        img_html += '<div class="item"><img src="' + img_src + '"/></div>';
-                    }
+        function resetSkuShow() {
+            let skus = [];
+            $('input.active_attr_value').each(function () {
+                let group = $.trim($(this).data('group'));
+                let attr = $.trim($(this).val());
+                if (skus.length == 0) {
+                    skus = Object.keys(attr_value_skus[group][attr]);
+                } else {
+                    skus = Object.keys(attr_value_skus[group][attr]).filter(function (sku) {
+                        return skus.indexOf(sku) !== -1;
+                    });
                 }
-
-                return img_html;
             });
+
+            let sku = skus.shift();
+            if (qty_price_list[sku] == undefined) {
+                return;
+            }
 
             $('#hd-prod-info .hd-prod-box').html(function () {
                 let qty_price_html = '<span class="price hd-display-inline-block hd-margin-right-15">' + qty_price_list[sku]['price_text'] + '</span>';
@@ -273,26 +207,31 @@ $widget_params['tkd_description'] = empty($prod_info['desc']['meta_description']
             $('#hd-sku').val(sku);
             $('.hd-prod-qty-plus, #hd-prod-qty-val').data('qty', qty_price_list[sku]['qty']);
             $('#hd-prod-qty-val').val(1);
+        }
+
+        $('a.hd-sku-attr-select').click(function () {
+            if ($(this).hasClass('active')) {
+                return;
+            }
+
+            $(this).parent('div').find('.hd-sku-attr-select').removeClass('active');
+            $(this).addClass('active');
+
+            $(this).siblings('.active_attr_value').val($.trim($(this).text()));
+            resetSkuShow();
+        });
+
+        $('#hd-sku-img-select img').click(function () {
+            if ($(this).hasClass('active')) {
+                return;
+            }
 
             $('#hd-sku-img-select img').removeClass('active');
             $(this).addClass('active');
 
-            if (is_attr_click_img == true) {
-                is_attr_click_img = false;
-            } else {
-                let attr_ids = $(this).data('attrids');
-                attr_ids = attr_ids.split('-');
-
-                $('a.hd-sku-attr-select').removeClass('active');
-                for (let i in attr_ids) {
-                    $('a.hd-sku-attr-select[data-attrid="' + attr_ids[i] + '"]').addClass('active');
-                }
-            }
-
-            init_zoom_sku_img_list();
+            $(this).siblings('.active_attr_value').val($.trim($(this).data('attr')));
+            resetSkuShow();
         });
-
-        init_zoom_sku_img_list();
     </script>
 <?php
 \App\Helper\TemplateHelper::widget('index', 'footer', $widget_params ?? []);

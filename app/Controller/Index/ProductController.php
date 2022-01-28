@@ -214,30 +214,27 @@ class ProductController extends Controller
             }
         }
 
-        $skuImgList = $prodBiz->getSkuImageListBySkuArr($this->shopId, $prodSkuArr);
+        $prodImgList = $prodBiz->getProdImageListByProdIds($this->shopId, [$prodId]);
+        $prodImgList = $prodImgList[$prodId] ?? [];
 
         $cateLevel = $prodBiz->getCateLevelByChildId($this->shopId, (int)$prodInfo['product_category_id'], $this->langCode);
         if (!empty($cateLevel)) {
             $cateLevel = array_reverse($cateLevel);
         }
 
-        $attrGroupIds = [];
         $attrGroupList = $prodBiz->getAttrGroupList($this->shopId, $this->langCode);
         if (!empty($attrGroupList)) {
             $attrGroupList = array_column($attrGroupList, null, 'attr_group_id');
-            $attrGroupIds = array_keys($attrGroupList);
         }
-        $attrValueList = $prodBiz->getAttrValueListByGroupIds($this->shopId, $attrGroupIds, $this->langCode);
 
         $data = [
-            'oss_access_host' => (new OssHelper($this->shopId))->accessHost,
             'prod_info' => $prodInfo,
             'sku_arr' => $prodSkuArr,
             'sku_qty_price_list' => $skuQtyPriceList,
-            'sku_img_list' => $skuImgList,
+            'prod_img_list' => $prodImgList,
+            'oss_access_host' => (new OssHelper($this->shopId))->accessHost,
             'cate_level' => $cateLevel,
             'attr_group_list' => $attrGroupList,
-            'attr_value_list' => $attrValueList,
             'cart_tk' => (new SafeHelper($this->request, $this->response))->buildCsrfToken('IDX', 'addToCart')
         ];
 

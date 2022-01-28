@@ -42,7 +42,7 @@
     <div class="page-header hd-border-none">
         <h2 class="hd-color-333">Shopping Cart</h2>
     </div>
-    <?php include 'error.php';?>
+    <?php include 'error.php'; ?>
     <table id="hd-cart-products" class="table hd-margin-top-30">
         <tr>
             <th style="max-width: 30%;" class="hidden-xs">Product</th>
@@ -58,11 +58,27 @@
             $prod_id = $cart_info['product_id'];
             $prod_name = xss_text($prod_name_list[$prod_id]);
             $prod_link = $prod_url_list[$prod_id] . '-p' . $prod_id . '.html';
-            $prod_img = $oss_access_host . $sku_img_list[$sku]['image_path'] . '/' . $sku_img_list[$sku]['image_name'] . '?' . $sku_img_list[$sku]['updated_at'];
+            $prod_img = '';
+            if (!empty($prod_img_list[$prod_id])) {
+                $prod_img = $oss_access_host . $prod_img_list[$prod_id]['image_path'] . '/' . $prod_img_list[$prod_id]['image_name'] . '?' . $prod_img_list[$prod_id]['updated_at'];
+            }
+            $sku_attrs = [];
+            if (!empty($sku_attr_list[$sku])) {
+                foreach ($sku_attr_list[$sku] as $attr_value => $attr_info) {
+                    $sku_attrs[] = xss_text($attr_value);
+                    if (!empty($attr_info['image_path']) && !empty($attr_info['image_name'])) {
+                        $prod_img = $oss_access_host . $attr_info['image_path'] . '/' . $attr_info['image_name'] . '?' . $attr_info['updated_at'];
+                    }
+                }
+            }
             $prod_img = str_replace('_d_d', '_100_100', $prod_img);
             $cart_qty = (int)$cart_info['qty'];
-            $prod_qty = (int)$sku_qty_price_list[$sku]['qty'];
-            $price = (float)$sku_qty_price_list[$sku]['price'];
+            $prod_qty = 0;
+            $price = 0;
+            if (isset($sku_qty_price_list[$sku])) {
+                $prod_qty = (int)$sku_qty_price_list[$sku]['qty'];
+                $price = (float)$sku_qty_price_list[$sku]['price'];
+            }
             $price_total = (float)format_price($price, $currency, $cart_qty);
             if ($prod_qty > 0) {
                 $sub_total += $price_total;
@@ -71,13 +87,22 @@
             <tr>
                 <td class="product">
                     <div class="hd-display-inline-block">
-                        <img src="<?php echo $prod_img; ?>"/>
+                        <a href="/<?php echo $prod_link; ?>">
+                            <img src="<?php echo $prod_img; ?>"/>
+                        </a>
                     </div>
                     <div class="hd-display-inline-block">
                         <p>SKU: <?php echo $sku; ?></p>
                         <p class="hidden-xs hidden-sm">
                             <a href="/<?php echo $prod_link; ?>" title="<?php echo $prod_name; ?>">
-                                <?php echo $prod_name; ?>
+                                <?php
+                                if (!empty($sku_attrs)) {
+                                    echo ' <span class="hd-color-888">[ ', implode(", ", $sku_attrs), ' ]</span>';
+                                    echo '<span class="hd-padding-left-15">', $prod_name, '</span>';
+                                } else {
+                                    echo '<span>', $prod_name, '</span>';
+                                }
+                                ?>
                             </a>
                         </p>
                     </div>
@@ -140,18 +165,18 @@
             <!--img class="hd-display-inline-block hd-margin-right-15 hd-btn-pp"
                  src="/static/index/default/buy-now-with-paypal.png"/-->
             <?php
-            if(empty($sold_out_sku)){
+            if (empty($sold_out_sku)) {
                 echo '<a class="btn btn-lg btn-warning" href="/shopping/confirmation.html">Checkout</a>';
-            }else{
+            } else {
                 echo '<a class="btn btn-lg btn-warning" disabled="" href="javascript:void(0);">Checkout</a>';
             }
             ?>
         </div>
         <div class="col-xs-6 text-right visible-xs visible-sm">
             <?php
-            if(empty($sold_out_sku)){
+            if (empty($sold_out_sku)) {
                 echo '<a class="btn btn-lg btn-warning" href="/shopping/confirmation.html">Checkout</a>';
-            }else{
+            } else {
                 echo '<a class="btn btn-lg btn-warning" disabled="" href="javascript:void(0);">Checkout</a>';
             }
             ?>

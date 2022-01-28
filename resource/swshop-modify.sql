@@ -66,4 +66,21 @@ CREATE TABLE `hd_product_sku_attribute` (
   KEY `idx_shop_sku` (`shop_id`, `sku`)
 ) ENGINE = INNODB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
+# 20220104
+ALTER TABLE `hd_product_sku_attribute` MODIFY `attr_value_id` INT UNSIGNED NOT NULL DEFAULT 0;
+ALTER TABLE `hd_product_sku_attribute` ADD `attr_value_name` VARCHAR(64) NOT NULL AFTER `attr_value_id`;
+
+# 20220117
+DROP TABLE `hd_product_attribute_value`;
+DROP TABLE `hd_product_attribute_value_description`;
+ALTER TABLE `hd_product_sku_attribute` DROP `attr_value_id`;
+
+# 20220126
+TRUNCATE TABLE `hd_product_image`;
+ALTER TABLE `hd_product_image` CHANGE `sku` `product_id` BIGINT NOT NULL;
+ALTER TABLE `hd_product_sku_attribute`
+  ADD `image_path` VARCHAR (500) NOT NULL DEFAULT '' AFTER `attr_value_name`,
+  ADD `image_name` VARCHAR (100) NOT NULL DEFAULT '' AFTER `image_path`;
+
+
 

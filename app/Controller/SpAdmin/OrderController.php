@@ -120,7 +120,11 @@ class OrderController extends Controller
             return LanguageHelper::get('invalid_order', $this->langCode);
         }
 
-        $prodImgList = (new ProductBiz())->getSkuImageListBySkuArr($this->shopId, array_keys($orderInfo['prod_list']), true);
+        $prodIds = array_column($orderInfo['prod_list'], 'product_id', 'product_id');
+
+        $prodBiz = new ProductBiz();
+        $prodImgList = $prodBiz->getProdImageListByProdIds($this->shopId, $prodIds, true);
+        $skuAttrList = $prodBiz->getSkuAttrListBySkuArr($this->shopId, array_keys($orderInfo['prod_list']));
         $orderCurrency = (new CurrencyBiz())->getCurrencyByCode($this->shopId, $orderInfo['currency_code']);
 
         $condition = [
@@ -133,6 +137,7 @@ class OrderController extends Controller
         return $this->render([
             'order_info' => $orderInfo,
             'prod_img_list' => $prodImgList,
+            'sku_attr_list' => $skuAttrList,
             'order_currency' => $orderCurrency,
             'order_statuses' => $orderBiz->getSysOrderStatuses('zh'),
             'history_list' => $orderBiz->getHistoryListByOrderId($this->shopId, $orderInfo['order_id']),

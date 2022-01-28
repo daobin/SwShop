@@ -61,14 +61,20 @@ class IndexController extends Controller
 
         $orderInfo = [];
         $skuArr = [];
+        $prodIds = [];
         $orderId = 0;
         if ($this->request->isPost) {
             $orderInfo = $orderBiz->getOrderForTracking($this->shopId, $email, $number);
-            $skuArr = $orderInfo ? array_keys($orderInfo['prod_list']) : [];
-            $orderId = $orderInfo['order_id'] ?? 0;
+            if (!empty($orderInfo)) {
+                $skuArr = array_keys($orderInfo['prod_list']);
+                $prodIds = array_column($orderInfo['prod_list'], 'product_id', 'product_id');
+                $orderId = $orderInfo['order_id'] ?? 0;
+            }
         }
 
-        $prodImgList = (new ProductBiz())->getSkuImageListBySkuArr($this->shopId, $skuArr, true);
+        $prodBiz = new ProductBiz();
+        $prodImgList = $prodBiz->getProdImageListByProdIds($this->shopId, $prodIds, true);
+        $skuAttrList = $prodBiz->getSkuAttrListBySkuArr($this->shopId, $skuArr);
         $orderCurrency = (new CurrencyBiz())->getCurrencyByCode($this->shopId, ($orderInfo['currency_code'] ?? ''));
 
         return $this->render([
@@ -76,6 +82,7 @@ class IndexController extends Controller
             'number' => $number,
             'order_info' => $orderInfo,
             'prod_img_list' => $prodImgList,
+            'sku_attr_list' => $skuAttrList,
             'order_currency' => $orderCurrency,
             'order_statuses' => $orderBiz->getSysOrderStatuses($this->langCode),
             'history_list' => $orderBiz->getHistoryListByOrderId($this->shopId, $orderId),

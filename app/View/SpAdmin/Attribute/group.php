@@ -31,23 +31,12 @@
                         });
                         layer.full(layer_idx);
                         break;
-                    case 'attr':
-                        let attr_idx = layer.open({
-                            type: 2,
-                            title: '',
-                            closeBtn: 0,
-                            skin: 'hd-open-edit',
-                            content: '/spadmin/attr-value/' + obj.data.attr_group_id
-                        });
-                        layer.full(attr_idx);
-                        break;
                 }
             });
         });
     </script>
     <script type="text/html" id="operate">
         <i class="layui-icon layui-icon-edit" lay-event="edit"></i>
-        <i class="layui-icon layui-icon-align-center hd-cursor-pointer" lay-event="attr"></i>
     </script>
 <?php
 \App\Helper\TemplateHelper::widget('sp_admin', 'footer');

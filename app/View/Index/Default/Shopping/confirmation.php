@@ -10,7 +10,7 @@ $widget_params['shopping_nav_img'] = 'step2.png';
                 <a href="/shopping/cart.html" class="btn btn-link pull-right">&lt;&lt;&nbsp;Back to cart</a>
             </h2>
         </div>
-        <?php include 'error.php';?>
+        <?php include 'error.php'; ?>
         <h3 class="hd-margin-top-30">Shipping Address</h3>
         <div class="row">
             <div class="col-md-10" style="line-height: 30px;">
@@ -55,15 +55,23 @@ $widget_params['shopping_nav_img'] = 'step2.png';
                     <tr>
                         <td class="product">
                             <div class="hd-display-inline-block">
-                                <a href="<?php echo $prod_link; ?>" title="<?php echo $prod_name; ?>">
+                                <a href="<?php echo $prod_link; ?>">
                                     <img src="<?php echo $prod_img; ?>">
                                 </a>
                             </div>
                             <div class="hd-display-inline-block">
-                                <p>SKU: GT0001</p>
+                                <p>SKU: <?php echo $prod_info['sku']; ?></p>
                                 <p class="hidden-xs hidden-sm">
-                                    <a href="<?php echo $prod_link; ?>"
-                                       title="<?php echo $prod_name; ?>"><?php echo $prod_name; ?></a>
+                                    <a href="<?php echo $prod_link; ?>" title="<?php echo $prod_name; ?>">
+                                        <?php
+                                        if (!empty($prod_info['attrs'])) {
+                                            echo ' <span class="hd-color-888">[ ', implode(", ", $prod_info['attrs']), ' ]</span>';
+                                            echo '<span class="hd-padding-left-15">', $prod_name, '</span>';
+                                        } else {
+                                            echo '<span>', $prod_name, '</span>';
+                                        }
+                                        ?>
+                                    </a>
                                 </p>
                             </div>
                         </td>

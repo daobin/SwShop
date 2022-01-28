@@ -44,7 +44,8 @@ class ShoppingController extends Controller
         }
 
         $skuQtyPriceList = [];
-        $skuImgList = [];
+        $prodImgList = [];
+        $skuAttrList = [];
         $prodNameList = [];
         $prodUrlList = [];
         $modified = false;
@@ -54,7 +55,7 @@ class ShoppingController extends Controller
 
             $cartSkuArr = array_keys($this->cartList);
             $skuQtyPriceList = $prodBiz->getSkuQtyPriceListBySkuArr($this->shopId, $cartSkuArr, $this->warehouseCode);
-            $skuImgList = $prodBiz->getSkuImageListBySkuArr($this->shopId, $cartSkuArr, true);
+
             $prodIds = [];
             foreach ($this->cartList as $sku => $cartInfo) {
                 $prodIds[$cartInfo['product_id']] = $cartInfo['product_id'];
@@ -74,6 +75,9 @@ class ShoppingController extends Controller
                     $this->cartList[$sku]['price'] = (float)$prodPrice;
                 }
             }
+
+            $prodImgList = $prodBiz->getProdImageListByProdIds($this->shopId, $prodIds, true);
+            $skuAttrList = $prodBiz->getSkuAttrListBySkuArr($this->shopId, $cartSkuArr);
 
             if ($modified) {
                 $this->cartList = $shoppingBiz->updateCart($this->shopId, $this->customerId, $this->cartList);
@@ -98,9 +102,10 @@ class ShoppingController extends Controller
             'oss_access_host' => (new OssHelper($this->shopId))->accessHost,
             'cart_list' => $this->cartList,
             'sku_qty_price_list' => $skuQtyPriceList,
-            'sku_img_list' => $skuImgList,
+            'prod_img_list' => $prodImgList,
             'prod_name_list' => $prodNameList,
             'prod_url_list' => $prodUrlList,
+            'sku_attr_list' => $skuAttrList,
             'cart_tk' => (new SafeHelper($this->request, $this->response))->buildCsrfToken('IDX', 'upCartProd'),
             'sold_out_text' => LanguageHelper::get('sold_out', $this->langCode),
             'error' => $this->session->get('shopping_error', ''),

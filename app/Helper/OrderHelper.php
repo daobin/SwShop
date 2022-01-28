@@ -39,12 +39,13 @@ class OrderHelper
 
         $cartSkuArr = array_keys($cartList);
         $skuQtyPriceList = $prodBiz->getSkuQtyPriceListBySkuArr($this->shopId, $cartSkuArr, $warehouseCode);
-        $skuImgList = $prodBiz->getSkuImageListBySkuArr($this->shopId, $cartSkuArr, true);
 
         $prodIds = array_column($cartList, 'product_id', 'product_id');
         $prodIds = array_keys($prodIds);
         $prodList = $prodBiz->getProductList(['shop_id' => $this->shopId, 'language_code' => $this->langCode, 'product_ids' => $prodIds], [], 1, count($prodIds));
         $prodNameList = $prodList ? array_column($prodList, 'product_name', 'product_id') : [];
+        $prodImgList = $prodBiz->getProdImageListByProdIds($this->shopId, $prodIds, true);
+        $skuAttrList = $prodBiz->getSkuAttrListBySkuArr($this->shopId, $cartSkuArr);
 
         $error = [];
         $subtotal = 0;
@@ -52,7 +53,17 @@ class OrderHelper
         foreach ($cartList as $sku => $cartInfo) {
             $prodId = (int)$cartInfo['product_id'];
             $cartList[$sku]['product_name'] = $prodNameList[$prodId] ?? '';
-            $cartList[$sku]['product_img'] = $skuImgList[$sku] ?? '';
+            $cartList[$sku]['product_img'] = $prodImgList[$prodId] ?? [];
+            $skuAttrs = [];
+            if (!empty($skuAttrList[$sku])) {
+                foreach ($skuAttrList[$sku] as $attrValue => $attrInfo) {
+                    $skuAttrs[] = xss_text($attrValue);
+                    if (!empty($attrInfo['image_path']) && !empty($attrInfo['image_name'])) {
+                        $cartList[$sku]['product_img'] = $attrInfo;
+                    }
+                }
+            }
+            $cartList[$sku]['attrs'] = $skuAttrs;
 
             $prodQty = $skuQtyPriceList[$sku]['qty'] ?? 0;
             if ($prodQty <= 0) {

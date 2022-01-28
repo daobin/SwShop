@@ -21,11 +21,11 @@ layui.use(['jquery', 'layer', 'element', 'flow', 'upload'], function () {
 
         imgObj.imgTpl = '<img style="width: 60px; height: auto; display: inline-block;" src="-IMG-SRC-" />';
 
-        imgObj.initContent = '<div class="layui-fluid"><div class="layui-row">' +
+        imgObj.initContent = '<div class="layui-fluid">' +
             '<div class="layui-col-xs9" id="-LIST-IMG-ID-">-IMG-TPL-</div>' +
             '<div class="layui-col-xs3" style="text-align: right;">' +
             '<a class="layui-btn layui-btn-warm hd-btn-open-image"><i class="layui-icon layui-icon-share"></i> 选择商品图片</a></div>' +
-            '</div></div>';
+            '</div>';
 
         imgObj.openContent = '<ul class="layui-nav layui-nav-tree layui-nav-side layui-bg-cyan" id="hd-nav-folder" style="top: 50px; border-radius: 0;"></ul>' +
             '<div class="layui-row" id="hd-btn-top-row">' +
@@ -46,7 +46,7 @@ layui.use(['jquery', 'layer', 'element', 'flow', 'upload'], function () {
 
             $(document).on('click', '#hd-btn-add-folder', function () {
                 var promptCfg = $.extend({}, imgObj.openAlertCfg);
-                promptCfg.title = '请输入图片目录 <span class="layui-word-aux">只允许小写字母、数字、-</span>';
+                promptCfg.title = '请输入图片目录 <span class="layui-word-aux">只允许小写字母、数字</span>';
                 promptCfg.formType = 0;
                 layer.prompt(promptCfg, function (folder, idx) {
                     imgObj.folderImages = [];
@@ -190,7 +190,7 @@ layui.use(['jquery', 'layer', 'element', 'flow', 'upload'], function () {
         imgObj.showFolderImage = function (folder) {
             folder = folder == undefined ? '' : folder;
             folder = folder.toLocaleLowerCase();
-            folder = folder.replace(/[^a-z\d_]+/, '');
+            folder = folder.replace(/[^a-z\d]+/, '');
             folder = folder == '' ? 'def' : folder;
             imgObj.folder = folder;
 

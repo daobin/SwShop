@@ -285,6 +285,7 @@ class CustomerController extends Controller
         $page = $page > $pageTotal ? $pageTotal : $page;
 
         $skuArr = [];
+        $prodIds = [];
         if (!empty($orderList)) {
             $orderList = array_column($orderList, null, 'order_id');
 
@@ -293,13 +294,16 @@ class CustomerController extends Controller
                 foreach ($orderProdList as $prodInfo) {
                     $sku = $prodInfo['sku'];
                     $skuArr[$sku] = $sku;
+                    $prodIds[$prodInfo['product_id']] = $prodInfo['product_id'];
 
                     $orderList[$prodInfo['order_id']]['prod_list'][$sku] = $prodInfo;
                 }
             }
         }
 
-        $prodImgList = (new ProductBiz())->getSkuImageListBySkuArr($this->shopId, $skuArr, true);
+        $prodBiz = new ProductBiz();
+        $prodImgList = $prodBiz->getProdImageListByProdIds($this->shopId, $prodIds, true);
+        $skuAttrList = $prodBiz->getSkuAttrListBySkuArr($this->shopId, $skuArr);
 
         $currencyList = (new CurrencyBiz())->getCurrencyList($this->shopId);
         $currencyList = $currencyList ? array_column($currencyList, null, 'currency_code') : [];
@@ -307,6 +311,7 @@ class CustomerController extends Controller
         return $this->render([
             'order_list' => $orderList,
             'prod_img_list' => $prodImgList,
+            'sku_attr_list' => $skuAttrList,
             'currency_list' => $currencyList,
             'order_statuses' => $orderBiz->getSysOrderStatuses($this->langCode),
             'oss_access_host' => (new OssHelper($this->shopId))->accessHost,
@@ -325,12 +330,17 @@ class CustomerController extends Controller
             return $this->response->redirect('/order.html');
         }
 
-        $prodImgList = (new ProductBiz())->getSkuImageListBySkuArr($this->shopId, array_keys($orderInfo['prod_list']), true);
+        $prodIds = array_column($orderInfo['prod_list'], 'product_id', 'product_id');
+
+        $prodBiz = new ProductBiz();
+        $prodImgList = $prodBiz->getProdImageListByProdIds($this->shopId, $prodIds, true);
+        $skuAttrList = $prodBiz->getSkuAttrListBySkuArr($this->shopId, array_keys($orderInfo['prod_list']));
         $orderCurrency = (new CurrencyBiz())->getCurrencyByCode($this->shopId, $orderInfo['currency_code']);
 
         return $this->render([
             'order_info' => $orderInfo,
             'prod_img_list' => $prodImgList,
+            'sku_attr_list' => $skuAttrList,
             'order_currency' => $orderCurrency,
             'order_statuses' => $orderBiz->getSysOrderStatuses($this->langCode),
             'history_list' => $orderBiz->getHistoryListByOrderId($this->shopId, $orderInfo['order_id']),
