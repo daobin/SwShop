@@ -5,9 +5,9 @@
     <meta name="renderer" content="webkit|ie-comp|ie-stand"/>
     <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
 
-    <title><?php echo $tkd_title;?></title>
-    <meta name="keywords" content="<?php echo $tkd_keywords;?>"/>
-    <meta name="description" content="<?php echo $tkd_description;?>"/>
+    <title><?php echo $tkd_title; ?></title>
+    <meta name="keywords" content="<?php echo $tkd_keywords; ?>"/>
+    <meta name="description" content="<?php echo $tkd_description; ?>"/>
 
     <!--[if lt IE 9]>
     <script type="text/javascript" src="/static/html5shiv.min.js"></script>
@@ -45,7 +45,8 @@
             </div>
             <div class="col-md-5 hidden-xs text-right" id="hd-nav-icon">
                 <a class="hd-nav cs" href="/customer-service.html" data-toggle="tooltip" title="Customer Service"></a>
-                <a class="hd-nav order-tracking" href="/order-tracking.html" data-toggle="tooltip" title="Order Tracking"></a>
+                <a class="hd-nav order-tracking" href="/order-tracking.html" data-toggle="tooltip"
+                   title="Order Tracking"></a>
                 <?php
                 if (empty($cart_qty)) {
                     echo '<a class="hd-nav cart" href="/shopping/cart.html" data-toggle="tooltip" title="Shopping Cart"></a>';
@@ -68,7 +69,7 @@
                 <?php
                 if (!empty($cate_list)) {
                     foreach ($cate_list as $cate_info) {
-                        if (!$cate_info['category_status']) {
+                        if ((int)$cate_info['category_status'] != 1) {
                             continue;
                         }
 
@@ -80,11 +81,19 @@
                             continue;
                         }
 
+                        $has_children = array_filter($cate_info['children'], function ($sub_cate) {
+                            return (int)$sub_cate['category_status'] == 1;
+                        });
+                        if (empty($has_children)) {
+                            echo '<li><a href="/', $cate_link, '">', xss_text($cate_info['category_name']), '</a></li>';
+                            continue;
+                        }
+
                         echo '<li class="dropdown">';
                         echo '<a data-toggle="dropdown">', xss_text($cate_info['category_name']), ' <span class="caret"></span></a>';
                         echo '<ul class="dropdown-menu">';
                         foreach ($cate_info['children'] as $sub_cate) {
-                            if (!$sub_cate['category_status']) {
+                            if ((int)$sub_cate['category_status'] != 1) {
                                 continue;
                             }
                             $cate_link = empty($sub_cate['category_url']) ? 'category' : process_url_string($sub_cate['category_url']);
