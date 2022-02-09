@@ -69,7 +69,7 @@ if (!empty($prod_info['attr_value_list'])) {
                 <div class="hd-margin-top-30 visible-xs visible-sm">&nbsp;</div>
                 <h1><?php echo $prod_name; ?></h1>
                 <div class="row hd-margin-top-30">
-                    <span class="col-xs-2 hd-font-weight-bold">SKU :</span>
+                    <span class="col-xs-3 col-md-2 hd-font-weight-bold">SKU :</span>
                     <span class="hd-sku"><?php echo $default_sku; ?></span>
                 </div>
                 <?php
@@ -82,7 +82,7 @@ if (!empty($prod_info['attr_value_list'])) {
                         $active_attr_value = $prod_info['attr_value_list'][$group_id][$default_sku] ?? '';
                         if (empty($prod_info['attr_image_list'][$group_id])) {
                             echo '<div class="row hd-margin-top-10">';
-                            echo '<span class="col-xs-2 hd-font-weight-bold">', xss_text($group_info['group_name']), ':</span>';
+                            echo '<span class="col-xs-3 col-md-2 hd-font-weight-bold">', xss_text($group_info['group_name']), ':</span>';
                             foreach ($attr_value_skus[$group_id] as $attr_value => $skus) {
                                 if ($attr_value == $active_attr_value) {
                                     echo '<a class="hd-sku-attr-select active">' . $attr_value . '</a>';

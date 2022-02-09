@@ -84,6 +84,9 @@
                         echo '<a data-toggle="dropdown">', xss_text($cate_info['category_name']), ' <span class="caret"></span></a>';
                         echo '<ul class="dropdown-menu">';
                         foreach ($cate_info['children'] as $sub_cate) {
+                            if (!$sub_cate['category_status']) {
+                                continue;
+                            }
                             $cate_link = empty($sub_cate['category_url']) ? 'category' : process_url_string($sub_cate['category_url']);
                             $cate_link .= '-c' . $sub_cate['product_category_id'] . '.html';
                             $cate_link = empty($sub_cate['redirect_link']) ? $cate_link : $sub_cate['redirect_link'];
